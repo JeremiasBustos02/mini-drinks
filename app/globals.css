@@ -1,0 +1,379 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #0d0d0d;
+  --canvas: #f5f3f0;
+  --paper: #ffffff;
+  --action: #024018;
+  --mint: #a5c7b7;
+  --header-height: 4.5rem;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-canvas: var(--canvas);
+  --color-paper: var(--paper);
+  --color-action: var(--action);
+  --color-mint: var(--mint);
+  --font-display: var(--font-bowlby);
+  --font-sans: var(--font-roboto);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-roboto), Arial, sans-serif;
+}
+
+button,
+a,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px var(--paper);
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+::selection {
+  background: var(--mint);
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --header-height: 5rem;
+  }
+
+  .home-sticky-title {
+    position: sticky;
+    top: calc(var(--header-height) + 1rem);
+    align-self: start;
+  }
+}
+
+/* Keeps the first viewport balanced on shorter desktop displays without shrinking the 1080p composition. */
+@media (min-width: 1024px) and (max-height: 850px) {
+  .hero-section {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .hero-layout {
+    gap: 2.5rem;
+  }
+
+  .hero-title {
+    font-size: clamp(3.75rem, 7.25vw, 6.25rem);
+  }
+
+  .hero-visual {
+    min-height: 28rem;
+  }
+
+  .product-detail-grid {
+    margin-top: 1.25rem;
+    gap: 2rem;
+  }
+
+  .product-detail-section {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .product-detail-visual {
+    top: 6rem;
+  }
+
+  .product-detail-panel {
+    padding: 1.25rem;
+  }
+
+  .product-detail-title {
+    margin-top: 1rem;
+    font-size: clamp(2.5rem, 4.5vw, 4rem);
+    line-height: 0.86;
+  }
+
+  .detail-description {
+    margin-top: 1rem;
+  }
+
+  .detail-price {
+    margin-top: 1rem;
+  }
+
+  .detail-current-price {
+    font-size: 1.5rem;
+  }
+
+  .detail-includes {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+  }
+
+  .detail-includes h2 {
+    font-size: 2rem;
+  }
+
+  .detail-includes ul {
+    margin-top: 0.75rem;
+  }
+
+  .detail-includes ul > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.5rem;
+  }
+
+  .detail-extras {
+    margin-top: 1.25rem;
+    padding: 1rem;
+  }
+
+  .purchase-preview {
+    margin-top: 1.25rem;
+  }
+
+  .purchase-preview > button {
+    min-height: 3rem;
+    margin-top: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 851px) {
+  .product-detail-panel {
+    padding: 2rem;
+  }
+
+  .product-detail-title {
+    font-size: clamp(2.75rem, 6vw, 5.25rem);
+  }
+
+  .detail-description {
+    margin-top: 1.125rem;
+  }
+
+  .detail-price {
+    margin-top: 1.5rem;
+  }
+
+  .detail-includes {
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+  }
+
+  .detail-extras {
+    margin-top: 1.5rem;
+  }
+
+  .purchase-preview {
+    margin-top: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .featured-combos > :nth-child(1) .featured-card-visual,
+  .featured-combos > :nth-child(4) .featured-card-visual {
+    height: 20rem;
+  }
+
+  .featured-combos > :nth-child(2) .featured-card-visual,
+  .featured-combos > :nth-child(3) .featured-card-visual {
+    height: 16.5rem;
+  }
+}
+
+/* Short desktop viewports keep the editorial rhythm while exposing more of the Home. */
+@media (min-width: 1024px) and (max-height: 850px) {
+  .featured-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+
+  .featured-section h2 {
+    font-size: clamp(2.75rem, 4.5vw, 3.75rem);
+  }
+
+  .featured-combos {
+    margin-top: 2.5rem;
+    gap: 1rem;
+  }
+
+  .featured-combos > :nth-child(odd) .featured-card-visual {
+    height: 16rem;
+  }
+
+  .featured-combos > :nth-child(even) .featured-card-visual {
+    height: 13.5rem;
+  }
+
+  .featured-card {
+    padding: 0.625rem;
+  }
+
+  .featured-card > div:last-child {
+    padding: 0.875rem;
+    padding-top: 1rem;
+  }
+
+  .featured-card h3 {
+    font-size: 1.5rem;
+  }
+
+  .featured-card-description {
+    font-size: 0.875rem;
+  }
+
+  .featured-card-price {
+    font-size: 1.125rem;
+  }
+
+  .buy-section,
+  .build-section,
+  .packs-section,
+  .surprise-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+
+  .buy-section > div > div,
+  .build-section > div > div {
+    gap: 3rem;
+  }
+
+  .buy-title {
+    font-size: clamp(2.75rem, 4.5vw, 3.75rem);
+  }
+
+  .category-link {
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .category-link h3 {
+    font-size: 1.5rem;
+  }
+
+  .category-link p {
+    margin-top: 0.375rem;
+    font-size: 0.875rem;
+  }
+
+  .build-section h2,
+  .packs-section h2 {
+    font-size: clamp(2.75rem, 4.5vw, 3.75rem);
+  }
+
+  .build-section .mt-8 {
+    margin-top: 1.5rem;
+  }
+
+  .build-preview {
+    padding: 1.25rem;
+  }
+
+  .build-preview > .mb-7 {
+    margin-bottom: 1.25rem;
+  }
+
+  .build-preview > .mt-7 {
+    margin-top: 1.25rem;
+  }
+
+  .build-preview h3 {
+    font-size: 2rem;
+  }
+
+  .packs-grid {
+    margin-top: 2.5rem;
+    gap: 1rem;
+  }
+
+  .pack-card {
+    min-height: 15rem;
+    padding: 1.25rem;
+  }
+
+  .pack-card > p {
+    font-size: 6.5rem;
+    bottom: 1.5rem;
+  }
+
+  .pack-card > div {
+    right: 1.25rem;
+    bottom: 1.25rem;
+    left: 1.25rem;
+  }
+
+  .pack-card > div > p:first-child {
+    font-size: 2.5rem;
+  }
+
+  .surprise-visual {
+    min-height: 25rem;
+  }
+
+  .gifts-section {
+    padding-bottom: 5rem;
+  }
+
+  .gifts-grid {
+    gap: 1rem;
+  }
+
+  .gift-card {
+    min-height: 25rem;
+    padding: 2rem;
+  }
+
+  .gift-card h2 {
+    font-size: clamp(2.75rem, 4.25vw, 3.75rem);
+  }
+
+  .gift-sticker {
+    right: 2rem;
+    bottom: 2rem;
+    width: 7rem;
+    height: 7rem;
+    font-size: 1.5rem;
+  }
+
+  .wholesale-section {
+    padding-top: 4.5rem;
+    padding-bottom: 4.5rem;
+  }
+
+  .wholesale-content {
+    gap: 0rem;
+  }
+
+  .wholesale-content h2 {
+    font-size: clamp(2.75rem, 4.75vw, 4.5rem);
+  }
+
+  .wholesale-content p {
+    margin-top: 1rem;
+  }
+}
