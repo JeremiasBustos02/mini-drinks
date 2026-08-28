@@ -29,7 +29,7 @@ export default function BuildYourComboPage() {
                 </h1>
               </div>
               <p className="max-w-xl text-sm leading-relaxed text-ink/65 sm:text-base lg:pb-1">
-                Cinco pasos, cero vueltas. Elegí cada parte y mirá cómo cambia el precio en el momento.
+                Cinco pasos, cero vueltas. Elegí cada parte a tu manera.
               </p>
             </div>
 
