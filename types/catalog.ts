@@ -23,8 +23,12 @@ export type VisualVariant =
   | "coca"
   | "tonic"
   | "speed"
+  | "sevenup"
+  | "grapefruit"
+  | "juice"
   | "glass"
-  | "extra";
+  | "extra"
+  | "packaging";
 
 export type Category = {
   slug: CatalogCategory;
@@ -53,10 +57,12 @@ export type Product = CatalogBase & {
 export type ComboItem = {
   productId: string;
   quantity: number;
+  variant?: string;
 };
 
 export type Combo = CatalogBase & {
   kind: "combo";
+  active: boolean;
   components: ComboItem[];
   referencePrice: number;
   includesSurprise: true;

@@ -162,6 +162,48 @@ summary::-webkit-details-marker {
   }
 }
 
+/* Keeps the combo builder balanced in laptop-height desktop viewports. */
+@media (min-width: 1024px) and (max-height: 850px) {
+  .combo-page {
+    padding-top: 1rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .combo-page-intro {
+    gap: 1.5rem;
+  }
+
+  .combo-builder {
+    margin-top: 0.75rem;
+  }
+
+  .combo-builder-panel {
+    padding: 1.125rem;
+  }
+
+  .combo-builder-options {
+    margin-top: 1rem;
+  }
+
+  .combo-page h1 {
+    font-size: 4rem;
+  }
+
+  .combo-builder-option {
+    padding: 0.375rem;
+  }
+
+  .combo-builder-option .combo-builder-option-visual {
+    height: 5.5rem !important;
+  }
+
+  .combo-builder-option .combo-builder-option-content {
+    min-height: 4rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.375rem;
+  }
+}
+
 @media (min-width: 1024px) and (min-height: 851px) {
   .product-detail-panel {
     padding: 2rem;

@@ -5,7 +5,7 @@ import { Container } from "@/components/container";
 
 const navigation = [
   { label: "Comprar", href: "/catalogo" },
-  { label: "Armá tu combo", href: "/#arma-tu-combo" },
+  { label: "Armá tu combo", href: "/arma-tu-combo" },
   { label: "Packs", href: "/catalogo?categoria=packs" },
   { label: "Eventos", href: "/#regalos-eventos" },
   { label: "Mayoristas", href: "/#mayoristas" },

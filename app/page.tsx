@@ -32,7 +32,7 @@ const categories = [
     number: "04",
     title: "Armá tu combo",
     copy: "Elegí cada parte y hacelo exactamente a tu manera.",
-    href: "#arma-tu-combo",
+    href: "/arma-tu-combo",
   },
 ];
 
@@ -75,7 +75,7 @@ const faq = [
   {
     question: "¿Puedo armar mi combo?",
     answer:
-      "Sí. Vas a poder elegir miniatura, mixer, vaso y extras. El constructor se implementará en una próxima etapa.",
+      "Sí. Elegí miniatura, mixer, vaso y extras en nuestro constructor. Si armás un combo existente, te aplicamos automáticamente el mejor precio.",
   },
   {
     question: "¿Hacen envíos?",
@@ -123,7 +123,7 @@ export default function Home() {
                     Ver combos
                   </ButtonLink>
                   <ButtonLink
-                    href="#arma-tu-combo"
+                    href="/arma-tu-combo"
                     variant="secondary"
                     className="min-[390px]:min-w-36"
                   >
@@ -250,12 +250,9 @@ export default function Home() {
                   description="Elegí miniatura, mixer, vaso y extras. Nosotros lo dejamos listo."
                   inverted
                 />
-                <ButtonLink href="#arma-tu-combo" variant="lightdark" className="mt-8 min-w-36">
+                <ButtonLink href="/arma-tu-combo" variant="lightdark" className="mt-8 min-w-36">
                   Empezar
                 </ButtonLink>
-                <p className="mt-4 text-xs text-white/70">
-                  Presentación visual. El constructor se implementará más adelante.
-                </p>
               </div>
 
               <div
@@ -263,7 +260,7 @@ export default function Home() {
                 className="build-preview relative rounded-[1.75rem] bg-canvas p-4 text-ink sm:p-7"
               >
                 <div className="mb-7 flex items-center gap-2" aria-hidden="true">
-                  {[1, 2, 3, 4].map((step) => (
+                  {[1, 2, 3, 4, 5].map((step) => (
                     <span
                       key={step}
                       className={`h-2 flex-1 rounded-full ${
@@ -275,7 +272,7 @@ export default function Home() {
                 <div className="flex items-end justify-between gap-4">
                   <div>
                     <span className="text-xs font-black tracking-widest text-action uppercase">
-                      Paso 1 de 4
+                      Paso 1 de 5
                     </span>
                     <h3 className="mt-2 font-display text-2xl leading-none uppercase sm:text-4xl">
                       Elegí tu mini
