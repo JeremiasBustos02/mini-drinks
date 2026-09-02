@@ -1,3 +1,4 @@
+import { productVisualStyles } from "@/components/products/product-visual-styles";
 import type { ProductType, VisualVariant } from "@/types/catalog";
 
 type ProductVisualProps = {
@@ -8,107 +9,6 @@ type ProductVisualProps = {
   className?: string;
 };
 
-const visualStyles = {
-  fernet: {
-    bottle: "bg-action text-white",
-    label: "BRANCA",
-    mixer: "bg-[#d92d20] text-white",
-    mixerLabel: "COLA",
-    surface: "bg-mint",
-  },
-  jack: {
-    bottle: "bg-ink text-white",
-    label: "JACK",
-    mixer: "bg-[#d92d20] text-white",
-    mixerLabel: "COLA",
-    surface: "bg-[#dad4ca]",
-  },
-  gin: {
-    bottle: "bg-[#dce8e2] text-action",
-    label: "GIN",
-    mixer: "bg-white text-action",
-    mixerLabel: "TONIC",
-    surface: "bg-[#cbded5]",
-  },
-  vodka: {
-    bottle: "bg-white text-[#335b8e]",
-    label: "VODKA",
-    mixer: "bg-[#d7e635] text-ink",
-    mixerLabel: "ENERGY",
-    surface: "bg-[#b9cfdd]",
-  },
-  tequila: {
-    bottle: "bg-[#f1e45c] text-ink",
-    label: "TEQUILA",
-    mixer: "bg-white text-action",
-    mixerLabel: "MINI",
-    surface: "bg-[#f3c7a6]",
-  },
-  coca: {
-    bottle: "bg-[#d92d20] text-white",
-    label: "COLA",
-    mixer: "bg-[#d92d20] text-white",
-    mixerLabel: "COKE",
-    surface: "bg-[#f4c8c3]",
-  },
-  tonic: {
-    bottle: "bg-white text-action",
-    label: "TONIC",
-    mixer: "bg-mint text-action",
-    mixerLabel: "FRESH",
-    surface: "bg-[#dce8e2]",
-  },
-  speed: {
-    bottle: "bg-[#d7e635] text-ink",
-    label: "SPEED",
-    mixer: "bg-ink text-white",
-    mixerLabel: "ENERGY",
-    surface: "bg-[#dbe48c]",
-  },
-  sevenup: {
-    bottle: "bg-[#167c43] text-white",
-    label: "7UP",
-    mixer: "bg-[#167c43] text-white",
-    mixerLabel: "7UP",
-    surface: "bg-[#cde3ce]",
-  },
-  grapefruit: {
-    bottle: "bg-[#ef9b78] text-ink",
-    label: "POMELO",
-    mixer: "bg-[#ef9b78] text-ink",
-    mixerLabel: "POMELO",
-    surface: "bg-[#f3c7b5]",
-  },
-  juice: {
-    bottle: "bg-[#f0b842] text-ink",
-    label: "JUGO",
-    mixer: "bg-[#f0b842] text-ink",
-    mixerLabel: "JUGO",
-    surface: "bg-[#f4d89b]",
-  },
-  glass: {
-    bottle: "bg-white/65 text-action",
-    label: "VASO",
-    mixer: "bg-mint text-action",
-    mixerLabel: "MINI",
-    surface: "bg-[#dce8e2]",
-  },
-  extra: {
-    bottle: "bg-[#f1e45c] text-ink",
-    label: "EXTRA",
-    mixer: "bg-white text-action",
-    mixerLabel: "SUMA",
-    surface: "bg-[#f3c7a6]",
-  },
-  packaging: {
-    bottle: "bg-action text-white",
-    label: "PACK",
-    mixer: "bg-mint text-action",
-    mixerLabel: "BOX",
-    surface: "bg-[#dce8e2]",
-  },
-} satisfies Record<VisualVariant, Record<string, string>>;
-
 export function ProductVisual({
   variant,
   volumeLabel = "MINI",
@@ -116,7 +16,7 @@ export function ProductVisual({
   productType,
   className = "",
 }: ProductVisualProps) {
-  const style = visualStyles[variant];
+  const style = productVisualStyles[variant];
   const isExtra = productType === "extra" || productType === "accessory" || productType === "supply";
 
   return (

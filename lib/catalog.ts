@@ -1,5 +1,5 @@
 import { catalogItems, categories, products } from "@/data/catalog";
-import type { CatalogItem, Combo, ProductType } from "@/types/catalog";
+import type { CatalogCategory, CatalogItem, Combo, ProductType } from "@/types/catalog";
 
 const productTypeLabels: Record<ProductType, string> = {
   miniature: "Miniatura",
@@ -20,6 +20,10 @@ export function formatPrice(price: number) {
 
 export function getCategoryName(categorySlug: CatalogItem["category"]) {
   return categories.find((category) => category.slug === categorySlug)?.name ?? categorySlug;
+}
+
+export function isCatalogCategory(value: string | undefined): value is CatalogCategory {
+  return categories.some((category) => category.slug === value);
 }
 
 export function getItemLabel(item: CatalogItem) {

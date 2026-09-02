@@ -10,6 +10,6 @@ export const metadata: Metadata = {
   description: "Miniaturas, mixers, vasos, extras y combos para hacerte uno.",
 };
 
-export default function LegacyCatalogPage(props: CatalogPageProps) {
+export default function ProductsPage(props: CatalogPageProps) {
   return <CatalogPage {...props} />;
 }

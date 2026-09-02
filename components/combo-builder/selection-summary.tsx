@@ -1,0 +1,158 @@
+import { CartIcon } from "@/components/ui/icons";
+import { formatPrice } from "@/lib/catalog";
+import type { ComboPricing } from "@/lib/pricing/combo-pricing";
+import type { Product } from "@/types/catalog";
+import type { ExtraOption } from "@/components/combo-builder/types";
+
+type SelectionSummaryProps = {
+  miniature?: Product;
+  mixer?: Product;
+  glass?: Product;
+  extras: ExtraOption[];
+  pricing: ComboPricing;
+  currentStep: number;
+  complete: boolean;
+  added: boolean;
+  showAction?: boolean;
+  onEdit: (step: number) => void;
+  onAdd: () => void;
+};
+
+export function SelectionSummary({
+  miniature,
+  mixer,
+  glass,
+  extras,
+  pricing,
+  currentStep,
+  complete,
+  added,
+  showAction = true,
+  onEdit,
+  onAdd,
+}: SelectionSummaryProps) {
+  const rows = [
+    {
+      label: "Miniatura",
+      value: miniature?.name ?? "Todavía no elegiste",
+      step: 0,
+      canEdit: true,
+    },
+    {
+      label: "Mixer",
+      value: mixer?.name ?? "Todavía no elegiste",
+      step: 1,
+      canEdit: Boolean(miniature),
+    },
+    {
+      label: "Vaso",
+      value: glass?.name ?? "Todavía no elegiste",
+      step: 2,
+      canEdit: Boolean(miniature && mixer),
+    },
+    {
+      label: "Extras",
+      value: extras.length > 0 ? extras.map((extra) => extra.displayName).join(", ") : "Sin extras",
+      step: 3,
+      canEdit: complete,
+    },
+  ];
+
+  return (
+    <div className="rounded-[1.25rem] bg-white p-4 shadow-[0_1px_0_rgba(13,13,13,0.08)] sm:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-black tracking-[0.18em] text-action uppercase">
+            Tu combo
+          </p>
+          <h2 className="mt-1.5 font-display text-xl leading-none uppercase sm:text-2xl">
+            Lo que elegiste
+          </h2>
+        </div>
+        <span className="rounded-full bg-mint px-2.5 py-1 text-[0.7rem] font-black">
+          {currentStep + 1}/5
+        </span>
+      </div>
+
+      <dl className="mt-4 divide-y divide-ink/10 border-y border-ink/10">
+        {rows.map((row) => (
+          <div key={row.label} className="grid grid-cols-[1fr_auto] gap-2 py-2.5">
+            <div className="min-w-0">
+              <dt className="text-[0.6rem] font-black tracking-[0.14em] text-ink/45 uppercase">
+                {row.label}
+              </dt>
+              <dd className="mt-0.5 text-[0.8rem] leading-snug font-bold sm:text-sm">
+                {row.value}
+              </dd>
+            </div>
+            <button
+              type="button"
+              disabled={!row.canEdit}
+              onClick={() => onEdit(row.step)}
+              className="self-center text-[0.7rem] font-black text-action underline decoration-2 underline-offset-4 disabled:cursor-not-allowed disabled:text-ink/30 disabled:no-underline"
+            >
+              {row.canEdit ? "Cambiar" : "Pendiente"}
+            </button>
+          </div>
+        ))}
+      </dl>
+
+      {pricing.matchingCombo ? (
+        <div className="mt-3 rounded-xl bg-mint/60 p-3">
+          <p className="text-[0.7rem] font-black tracking-[0.12em] text-action uppercase">
+            Mejor precio activado
+          </p>
+          <p className="mt-1 text-[0.8rem] leading-relaxed text-ink/70">
+            Esta combinación coincide con uno de nuestros combos. Te aplicamos el mejor precio.
+          </p>
+          <p className="mt-1.5 text-[0.8rem] font-black">{pricing.matchingCombo.name}</p>
+        </div>
+      ) : null}
+
+      <div className="mt-4 space-y-1.5">
+        <div className="flex items-center justify-between gap-3 text-[0.8rem] text-ink/60">
+          <span>Componentes</span>
+          <span className={pricing.savings > 0 ? "line-through" : ""}>
+            {formatPrice(pricing.componentsPrice)}
+          </span>
+        </div>
+        {pricing.extrasPrice > 0 ? (
+          <div className="flex items-center justify-between gap-3 text-[0.8rem] text-ink/60">
+            <span>Extras</span>
+            <span>{formatPrice(pricing.extrasPrice)}</span>
+          </div>
+        ) : null}
+        {pricing.savings > 0 ? (
+          <div className="flex items-center justify-between gap-3 text-[0.8rem] font-black text-action">
+            <span>Ahorrás</span>
+            <span>{formatPrice(pricing.savings)}</span>
+          </div>
+        ) : null}
+        <div className="flex items-end justify-between gap-3 border-t-2 border-ink pt-3">
+          <span className="text-sm font-black">Total</span>
+          <span className="text-2xl font-black tracking-tight sm:text-3xl">
+            {formatPrice(pricing.finalPrice)}
+          </span>
+        </div>
+      </div>
+
+      {showAction ? (
+        <button
+          type="button"
+          disabled={!complete || currentStep !== 4}
+          onClick={onAdd}
+          className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border-2 border-action bg-action px-4 py-2.5 text-sm font-bold text-white transition-colors hover:border-ink hover:bg-ink disabled:cursor-not-allowed disabled:border-ink/10 disabled:bg-ink/10 disabled:text-ink/45"
+        >
+          <CartIcon className="size-5" />
+          {added ? "Combo preparado" : currentStep === 4 ? "Agregar al carrito" : "Completá los pasos"}
+        </button>
+      ) : null}
+
+      {added ? (
+        <p className="mt-2 text-center text-[0.8rem] font-bold text-action" role="status">
+          Listo. El carrito real se conecta en la próxima etapa.
+        </p>
+      ) : null}
+    </div>
+  );
+}

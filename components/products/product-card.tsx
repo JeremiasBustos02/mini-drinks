@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-import { ArrowIcon } from "@/components/icons";
-import { ProductVisual } from "@/components/product-visual";
+import { ArrowIcon } from "@/components/ui/icons";
+import { ProductVisual } from "@/components/products/product-visual";
 import {
   formatPrice,
   getComboStock,

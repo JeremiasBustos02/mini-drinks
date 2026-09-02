@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Container } from "@/components/container";
+import { Container } from "@/components/ui/container";
 
 const footerLinks = [
   { label: "Instagram" },

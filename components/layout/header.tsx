@@ -1,12 +1,12 @@
 import Link from "next/link";
 
-import { CartIcon, MenuIcon, UserIcon } from "@/components/icons";
-import { Container } from "@/components/container";
+import { CartIcon, MenuIcon, UserIcon } from "@/components/ui/icons";
+import { Container } from "@/components/ui/container";
 
 const navigation = [
-  { label: "Comprar", href: "/catalogo" },
+  { label: "Comprar", href: "/productos" },
   { label: "Armá tu combo", href: "/arma-tu-combo" },
-  { label: "Packs", href: "/catalogo?categoria=packs" },
+  { label: "Packs", href: "/productos?categoria=packs" },
   { label: "Eventos", href: "/#regalos-eventos" },
   { label: "Mayoristas", href: "/#mayoristas" },
 ];

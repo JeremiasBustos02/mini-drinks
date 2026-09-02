@@ -67,3 +67,5 @@ export function calculateComboPrice(
     savings: componentsPrice - basePrice,
   };
 }
+
+export type ComboPricing = ReturnType<typeof calculateComboPrice>;

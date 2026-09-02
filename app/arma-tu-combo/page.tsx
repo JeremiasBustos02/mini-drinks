@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 
-import { ComboBuilder } from "@/components/combo-builder";
-import { Container } from "@/components/container";
-import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
+import { ComboBuilder } from "@/components/combo-builder/combo-builder";
+import { StorefrontShell } from "@/components/layout/storefront-shell";
+import { Container } from "@/components/ui/container";
 import { combos, products } from "@/data/catalog";
 
 export const metadata: Metadata = {
@@ -13,8 +12,7 @@ export const metadata: Metadata = {
 
 export default function BuildYourComboPage() {
   return (
-    <>
-      <Header />
+    <StorefrontShell>
       <main id="contenido">
         <section className="combo-page overflow-clip pt-6 pb-24 sm:pt-8 sm:pb-28 lg:py-10">
           <Container>
@@ -37,7 +35,6 @@ export default function BuildYourComboPage() {
           </Container>
         </section>
       </main>
-      <Footer />
-    </>
+    </StorefrontShell>
   );
 }

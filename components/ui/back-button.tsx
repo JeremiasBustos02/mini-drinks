@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { ArrowBackIcon } from "@/components/icons";
+import { ArrowBackIcon } from "@/components/ui/icons";
 
 type BackButtonProps = {
   fallbackHref: string;
