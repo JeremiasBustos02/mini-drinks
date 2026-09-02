@@ -4,7 +4,7 @@ import { brandBenefits } from "@/data/home";
 
 export function BrandBenefits() {
   return (
-    <section className="py-20 sm:py-28">
+    <section data-reveal="up" className="py-20 sm:py-28">
       <Container>
         <SectionHeading
           eyebrow="No es solo una mini"

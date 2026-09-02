@@ -3,7 +3,11 @@ import { Container } from "@/components/ui/container";
 
 export function WholesaleCta() {
   return (
-    <section id="mayoristas" className="wholesale-section bg-action py-20 text-white sm:py-24">
+    <section
+      id="mayoristas"
+      data-reveal="fade"
+      className="wholesale-section bg-action py-20 text-white sm:py-24"
+    >
       <Container>
         <div className="wholesale-content flex flex-col items-center gap-8 text-center lg:mx-auto lg:w-fit">
           <div>

@@ -20,7 +20,7 @@ export function Header() {
       >
         Saltar al contenido
       </Link>
-      <header className="sticky top-0 z-50 border-b border-ink/10 bg-canvas/95 backdrop-blur-sm">
+      <header className="site-header sticky top-0 z-50 border-b border-ink/10 bg-canvas/95 backdrop-blur-sm">
         <Container className="flex h-[var(--header-height)] items-center justify-between gap-4">
           <Link
             href="/"
@@ -69,15 +69,15 @@ export function Header() {
               </span>
             </span>
 
-            <details className="group relative md:hidden">
+            <details className="mobile-menu group relative md:hidden">
               <summary
                 aria-label="Abrir o cerrar menú"
-                className="grid size-11 cursor-pointer list-none place-items-center rounded-xl border border-ink/15 bg-white"
+                className="motion-button grid size-11 cursor-pointer list-none place-items-center rounded-xl border border-ink/15 bg-white"
               >
                 <MenuIcon />
               </summary>
               <nav
-                className="absolute top-14 right-0 w-[min(18rem,calc(100vw-2.5rem))] rounded-2xl border border-ink/10 bg-white p-3 shadow-xl"
+                className="mobile-menu-panel absolute top-14 right-0 w-[min(18rem,calc(100vw-2.5rem))] rounded-2xl border border-ink/10 bg-white p-3 shadow-xl"
                 aria-label="Menú móvil"
               >
                 {navigation.map((item) => (

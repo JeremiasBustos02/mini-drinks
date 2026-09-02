@@ -6,7 +6,11 @@ import { homeCategories } from "@/data/home";
 
 export function ShopCategories() {
   return (
-    <section className="buy-section bg-white py-20 sm:py-28" aria-labelledby="comprar-title">
+    <section
+      data-reveal="fade"
+      className="buy-section bg-white py-20 sm:py-28"
+      aria-labelledby="comprar-title"
+    >
       <Container>
         <div className="grid gap-10 lg:grid-cols-[0.65fr_1.35fr] lg:gap-16">
           <div className="home-sticky-title">
@@ -36,7 +40,7 @@ export function ShopCategories() {
                     {category.copy}
                   </p>
                 </div>
-                <span className="col-start-2 grid size-8 place-items-center justify-self-end rounded-full border border-ink/40 text-action transition-transform group-active:translate-x-1 sm:col-auto sm:size-12 sm:border-2 sm:text-ink sm:group-hover:bg-mint">
+                <span className="category-arrow col-start-2 grid size-8 place-items-center justify-self-end rounded-full border border-ink/40 text-action transition-transform group-active:translate-x-1 sm:col-auto sm:size-12 sm:border-2 sm:text-ink sm:group-hover:bg-mint">
                   <ArrowIcon />
                 </span>
               </Link>

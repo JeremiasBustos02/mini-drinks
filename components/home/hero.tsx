@@ -14,10 +14,10 @@ export function Hero() {
               Tu trago.
               <span className="block text-action">En mini.</span>
             </h1>
-            <p className="mt-6 max-w-md text-lg leading-relaxed text-ink/70 sm:text-xl">
+            <p className="hero-copy mt-6 max-w-md text-lg leading-relaxed text-ink/70 sm:text-xl">
               Todo lo que necesitás para hacerte uno.
             </p>
-            <div className="mt-8 flex flex-col gap-3 min-[390px]:flex-row">
+            <div className="hero-actions mt-8 flex flex-col gap-3 min-[390px]:flex-row">
               <ButtonLink href="/productos?categoria=combos" className="min-[390px]:min-w-36">
                 Ver combos
               </ButtonLink>
@@ -42,7 +42,7 @@ export function Hero() {
             <div className="absolute -top-12 -left-12 size-44 rounded-full border-[26px] border-white/45 sm:size-64" />
             <div className="absolute -right-16 -bottom-20 size-72 rounded-full bg-action/90 sm:size-96" />
 
-            <div className="absolute top-[13%] right-[7%] h-[53%] w-[47%] rotate-3 rounded-[1.25rem] border-2 border-ink bg-canvas p-4 shadow-[12px_16px_0_#0d0d0d] sm:p-6">
+            <div className="hero-float absolute top-[13%] right-[7%] h-[53%] w-[47%] rotate-3 rounded-[1.25rem] border-2 border-ink bg-canvas p-4 shadow-[12px_16px_0_#0d0d0d] sm:p-6">
               <p className="font-display text-[clamp(1.4rem,5vw,3rem)] leading-none uppercase">
                 Tu trago
                 <span className="block text-action">en mini.</span>
@@ -65,7 +65,7 @@ export function Hero() {
               </span>
             </div>
 
-            <div className="absolute right-[7%] bottom-[7%] z-30 h-[28%] w-[23%] rounded-b-3xl border-2 border-white bg-white/25 backdrop-blur-sm">
+            <div className="hero-float-reverse absolute right-[7%] bottom-[7%] z-30 h-[28%] w-[23%] rounded-b-3xl border-2 border-white bg-white/25 backdrop-blur-sm">
               <span className="absolute right-2 bottom-2 left-2 h-[46%] rounded-b-2xl bg-white/55" />
             </div>
           </div>

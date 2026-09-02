@@ -66,7 +66,10 @@ export function ComboBuilderStepPanel({
       ref={panelRef}
       className="combo-builder-panel min-w-0 scroll-mt-28 rounded-[1.25rem] bg-white p-3 sm:p-5 lg:p-6"
     >
-      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-ink/10 pb-4">
+      <div
+        key={currentStep}
+        className="combo-step-heading flex flex-wrap items-end justify-between gap-3 border-b border-ink/10 pb-4"
+      >
         <div className="min-w-0">
           <p className="text-xs font-black tracking-[0.18em] text-action uppercase">
             Paso {currentStep + 1} de 5
@@ -86,7 +89,7 @@ export function ComboBuilderStepPanel({
       </div>
 
       {currentStep === 0 ? (
-        <div className="combo-builder-options mt-5 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3">
+        <div className="combo-step-content combo-builder-options mt-5 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3">
           {miniatures.map((product) => (
             <ProductOption
               key={product.id}
@@ -99,7 +102,7 @@ export function ComboBuilderStepPanel({
       ) : null}
 
       {currentStep === 1 ? (
-        <div className="combo-builder-options mt-5 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3">
+        <div className="combo-step-content combo-builder-options mt-5 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3">
           {mixers.map((product) => (
             <ProductOption
               key={product.id}
@@ -112,7 +115,7 @@ export function ComboBuilderStepPanel({
       ) : null}
 
       {currentStep === 2 ? (
-        <div className="combo-builder-options mt-5 grid max-w-md grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        <div className="combo-step-content combo-builder-options mt-5 grid max-w-md grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
           {glasses.map((product) => (
             <ProductOption
               key={product.id}
@@ -125,7 +128,7 @@ export function ComboBuilderStepPanel({
       ) : null}
 
       {currentStep === 3 ? (
-        <div className="combo-builder-options mt-5 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+        <div className="combo-step-content combo-builder-options mt-5 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
           {extraOptions.map((option) => (
             <ProductOption
               key={option.product.id}
@@ -141,7 +144,7 @@ export function ComboBuilderStepPanel({
       ) : null}
 
       {currentStep === 4 ? (
-        <div className="mt-5">
+        <div className="combo-step-content mt-5">
           <div className="grid items-center gap-4 overflow-hidden rounded-[1.1rem] bg-action p-4 text-white sm:grid-cols-[0.85fr_1.15fr] sm:p-5">
             {miniature ? (
               <ProductVisual

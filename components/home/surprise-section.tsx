@@ -4,7 +4,7 @@ const qrPattern = [0, 2, 5, 7, 8, 11, 13, 14];
 
 export function SurpriseSection() {
   return (
-    <section className="surprise-section py-20 sm:py-28">
+    <section data-reveal="scale" className="surprise-section py-20 sm:py-28">
       <Container>
         <div className="grid overflow-hidden rounded-[1.75rem] bg-mint lg:grid-cols-2">
           <div className="p-7 sm:p-12 lg:p-16">

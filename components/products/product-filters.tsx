@@ -27,7 +27,7 @@ export function ProductFilters({
             type="button"
             aria-pressed={isActive}
             onClick={() => onFilterChange(filter.value)}
-            className={`shrink-0 rounded-full border-2 px-4 py-2.5 text-sm font-black transition-colors ${
+            className={`motion-button shrink-0 rounded-full border-2 px-4 py-2.5 text-sm font-black transition-colors ${
               isActive
                 ? "border-action bg-action text-white"
                 : "border-ink/15 bg-white text-ink hover:border-ink"

@@ -4,7 +4,7 @@ import { faqItems } from "@/data/home";
 
 export function FaqSection() {
   return (
-    <section className="py-20 sm:py-28" aria-labelledby="faq-title">
+    <section data-reveal="fade" className="py-20 sm:py-28" aria-labelledby="faq-title">
       <Container>
         <div className="grid gap-10 lg:grid-cols-[0.65fr_1.35fr] lg:gap-16">
           <div className="home-sticky-title">
@@ -20,8 +20,8 @@ export function FaqSection() {
           </div>
           <div className="border-t border-ink/20">
             {faqItems.map((item) => (
-              <details key={item.question} className="group border-b border-ink/20">
-                <summary className="flex min-h-20 cursor-pointer list-none items-center justify-between gap-5 py-5 text-base font-black sm:text-lg">
+              <details key={item.question} className="faq-item group border-b border-ink/20">
+                <summary className="faq-summary flex min-h-20 cursor-pointer list-none items-center justify-between gap-5 py-5 text-base font-black sm:text-lg">
                   {item.question}
                   <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white transition-transform group-open:rotate-45">
                     <PlusIcon />

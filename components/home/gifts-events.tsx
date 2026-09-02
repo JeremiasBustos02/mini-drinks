@@ -3,7 +3,11 @@ import { Container } from "@/components/ui/container";
 
 export function GiftsEvents() {
   return (
-    <section id="regalos-eventos" className="gifts-section pb-20 sm:pb-28">
+    <section
+      id="regalos-eventos"
+      data-reveal="up"
+      className="gifts-section pb-20 sm:pb-28"
+    >
       <Container>
         <div className="gifts-grid grid gap-5 lg:grid-cols-2">
           <article className="gift-card relative min-h-[27rem] overflow-hidden rounded-[1.75rem] bg-white p-7 sm:min-h-[34rem] sm:p-12">

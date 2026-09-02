@@ -27,19 +27,22 @@ export function PurchasePreview({ available }: PurchasePreviewProps) {
             type="button"
             onClick={() => updateQuantity(quantity - 1)}
             disabled={isOutOfStock || quantity === 1}
-            className="grid size-11 place-items-center text-xl font-black disabled:cursor-not-allowed disabled:opacity-30"
+            className="motion-button grid size-11 place-items-center text-xl font-black disabled:cursor-not-allowed disabled:opacity-30"
             aria-label="Restar una unidad"
           >
             −
           </button>
-          <output className="grid min-w-9 place-items-center text-base font-black">
+          <output
+            key={isOutOfStock ? 0 : quantity}
+            className="quantity-value grid min-w-9 place-items-center text-base font-black"
+          >
             {isOutOfStock ? 0 : quantity}
           </output>
           <button
             type="button"
             onClick={() => updateQuantity(quantity + 1)}
             disabled={isOutOfStock || quantity === available}
-            className="grid size-11 place-items-center text-xl font-black disabled:cursor-not-allowed disabled:opacity-30"
+            className="motion-button grid size-11 place-items-center text-xl font-black disabled:cursor-not-allowed disabled:opacity-30"
             aria-label="Sumar una unidad"
           >
             +
@@ -53,7 +56,7 @@ export function PurchasePreview({ available }: PurchasePreviewProps) {
         type="button"
         disabled={isOutOfStock}
         onClick={() => setIsPrepared(true)}
-        className="mt-5 inline-flex min-h-13 w-full items-center justify-center rounded-xl border-2 border-action bg-action px-6 py-3 text-base font-bold text-white transition-colors hover:border-ink hover:bg-ink disabled:cursor-not-allowed disabled:border-ink/20 disabled:bg-ink/20 sm:w-auto"
+        className="motion-button mt-5 inline-flex min-h-13 w-full items-center justify-center rounded-xl border-2 border-action bg-action px-6 py-3 text-base font-bold text-white transition-colors hover:border-ink hover:bg-ink disabled:cursor-not-allowed disabled:border-ink/20 disabled:bg-ink/20 sm:w-auto"
       >
         {isOutOfStock
           ? "Sin stock"

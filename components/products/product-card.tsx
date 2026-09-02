@@ -29,7 +29,7 @@ export function ProductCard({
 
   return (
     <article
-      className={`group flex flex-col rounded-[1.5rem] bg-white p-3 shadow-[0_1px_0_rgba(13,13,13,0.08)] ${
+      className={`product-card group flex flex-col rounded-[1.5rem] bg-white p-3 shadow-[0_1px_0_rgba(13,13,13,0.08)] ${
         isFeatured ? "featured-card" : "h-full"
       } ${className}`}
     >
@@ -86,9 +86,10 @@ export function ProductCard({
         </div>
         <Link
           href={`/productos/${item.slug}`}
-          className="mt-5 inline-flex items-center gap-2 border-b-2 border-ink pb-1 text-sm font-black transition-colors hover:text-action"
+          className="product-card-link mt-5 inline-flex items-center gap-2 border-b-2 border-ink pb-1 text-sm font-black transition-colors hover:text-action"
         >
-          {combo ? "Ver combo" : "Ver producto"} <ArrowIcon className="size-4" />
+          {combo ? "Ver combo" : "Ver producto"}{" "}
+          <ArrowIcon className="product-card-arrow size-4" />
         </Link>
       </div>
     </article>

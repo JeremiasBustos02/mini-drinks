@@ -5,7 +5,11 @@ import { packOptions } from "@/data/home";
 
 export function PacksSection() {
   return (
-    <section id="packs" className="packs-section overflow-hidden bg-ink py-20 text-white sm:py-28">
+    <section
+      id="packs"
+      data-reveal="fade"
+      className="packs-section overflow-hidden bg-ink py-20 text-white sm:py-28"
+    >
       <Container>
         <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
           <SectionHeading

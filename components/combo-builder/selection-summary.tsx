@@ -81,7 +81,10 @@ export function SelectionSummary({
               <dt className="text-[0.6rem] font-black tracking-[0.14em] text-ink/45 uppercase">
                 {row.label}
               </dt>
-              <dd className="mt-0.5 text-[0.8rem] leading-snug font-bold sm:text-sm">
+              <dd
+                key={row.value}
+                className="summary-value mt-0.5 text-[0.8rem] leading-snug font-bold sm:text-sm"
+              >
                 {row.value}
               </dd>
             </div>
@@ -89,7 +92,7 @@ export function SelectionSummary({
               type="button"
               disabled={!row.canEdit}
               onClick={() => onEdit(row.step)}
-              className="self-center text-[0.7rem] font-black text-action underline decoration-2 underline-offset-4 disabled:cursor-not-allowed disabled:text-ink/30 disabled:no-underline"
+              className="motion-button self-center text-[0.7rem] font-black text-action underline decoration-2 underline-offset-4 disabled:cursor-not-allowed disabled:text-ink/30 disabled:no-underline"
             >
               {row.canEdit ? "Cambiar" : "Pendiente"}
             </button>
@@ -98,7 +101,7 @@ export function SelectionSummary({
       </dl>
 
       {pricing.matchingCombo ? (
-        <div className="mt-3 rounded-xl bg-mint/60 p-3">
+        <div className="combo-price-match mt-3 rounded-xl bg-mint/60 p-3">
           <p className="text-[0.7rem] font-black tracking-[0.12em] text-action uppercase">
             Mejor precio activado
           </p>
@@ -112,25 +115,33 @@ export function SelectionSummary({
       <div className="mt-4 space-y-1.5">
         <div className="flex items-center justify-between gap-3 text-[0.8rem] text-ink/60">
           <span>Componentes</span>
-          <span className={pricing.savings > 0 ? "line-through" : ""}>
+          <span
+            key={pricing.componentsPrice}
+            className={`price-update ${pricing.savings > 0 ? "line-through" : ""}`}
+          >
             {formatPrice(pricing.componentsPrice)}
           </span>
         </div>
         {pricing.extrasPrice > 0 ? (
           <div className="flex items-center justify-between gap-3 text-[0.8rem] text-ink/60">
             <span>Extras</span>
-            <span>{formatPrice(pricing.extrasPrice)}</span>
+            <span key={pricing.extrasPrice} className="price-update">
+              {formatPrice(pricing.extrasPrice)}
+            </span>
           </div>
         ) : null}
         {pricing.savings > 0 ? (
-          <div className="flex items-center justify-between gap-3 text-[0.8rem] font-black text-action">
+          <div className="combo-savings flex items-center justify-between gap-3 text-[0.8rem] font-black text-action">
             <span>Ahorrás</span>
             <span>{formatPrice(pricing.savings)}</span>
           </div>
         ) : null}
         <div className="flex items-end justify-between gap-3 border-t-2 border-ink pt-3">
           <span className="text-sm font-black">Total</span>
-          <span className="text-2xl font-black tracking-tight sm:text-3xl">
+          <span
+            key={pricing.finalPrice}
+            className="price-update text-2xl font-black tracking-tight sm:text-3xl"
+          >
             {formatPrice(pricing.finalPrice)}
           </span>
         </div>
@@ -141,7 +152,7 @@ export function SelectionSummary({
           type="button"
           disabled={!complete || currentStep !== 4}
           onClick={onAdd}
-          className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border-2 border-action bg-action px-4 py-2.5 text-sm font-bold text-white transition-colors hover:border-ink hover:bg-ink disabled:cursor-not-allowed disabled:border-ink/10 disabled:bg-ink/10 disabled:text-ink/45"
+          className="motion-button mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border-2 border-action bg-action px-4 py-2.5 text-sm font-bold text-white transition-colors hover:border-ink hover:bg-ink disabled:cursor-not-allowed disabled:border-ink/10 disabled:bg-ink/10 disabled:text-ink/45"
         >
           <CartIcon className="size-5" />
           {added ? "Combo preparado" : currentStep === 4 ? "Agregar al carrito" : "Completá los pasos"}
@@ -149,7 +160,7 @@ export function SelectionSummary({
       ) : null}
 
       {added ? (
-        <p className="mt-2 text-center text-[0.8rem] font-bold text-action" role="status">
+        <p className="combo-added-status mt-2 text-center text-[0.8rem] font-bold text-action" role="status">
           Listo. El carrito real se conecta en la próxima etapa.
         </p>
       ) : null}

@@ -31,6 +31,7 @@ export function ProductDetail({ item, available }: ProductDetailProps) {
             <ProductVisual
               variant={item.image}
               volumeLabel={item.kind === "product" ? item.volume : "Combo"}
+              className="product-detail-media"
             />
           </div>
 

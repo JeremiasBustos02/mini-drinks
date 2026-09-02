@@ -419,3 +419,365 @@ summary::-webkit-details-marker {
     margin-top: 1rem;
   }
 }
+
+/* Motion stays progressive: content is visible until the client observer prepares off-screen reveals. */
+.scroll-origin-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.site-header {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+html[data-scrolled] .site-header {
+  border-color: color-mix(in srgb, var(--ink) 14%, transparent);
+  background-color: color-mix(in srgb, var(--canvas) 98%, transparent);
+  box-shadow: 0 8px 24px rgb(13 13 13 / 6%);
+}
+
+[data-reveal] {
+  opacity: 1;
+  translate: none;
+  scale: none;
+  transition:
+    opacity 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    translate 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    scale 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-reveal][data-motion-state="pending"] {
+  opacity: 0;
+  transition: none;
+}
+
+[data-reveal="up"][data-motion-state="pending"] {
+  translate: 0 0.75rem;
+}
+
+[data-reveal="scale"][data-motion-state="pending"] {
+  scale: 0.99;
+}
+
+.motion-button,
+.motion-cta {
+  transition-property: color, background-color, border-color, opacity, transform;
+  transition-duration: 160ms;
+  transition-timing-function: ease;
+}
+
+.motion-button:active:not(:disabled),
+.motion-cta:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.mobile-menu[open] > summary {
+  border-color: var(--action);
+  background-color: var(--mint);
+}
+
+.mobile-menu[open] .mobile-menu-panel {
+  animation: menu-enter 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.product-card,
+.featured-card-visual,
+.product-card-arrow,
+.category-arrow,
+.product-detail-media {
+  transition:
+    transform 200ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.product-card-link:hover .product-card-arrow {
+  transform: translateX(0.2rem);
+}
+
+.combo-progress-step,
+.combo-progress-bar {
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    scale 180ms ease;
+}
+
+.combo-progress-step[data-state="future"] .combo-progress-bar {
+  scale: 0.96 1;
+}
+
+.combo-progress-step[data-state="current"] .combo-progress-bar {
+  scale: 1 1;
+}
+
+.combo-builder-option {
+  transition-duration: 170ms;
+  transition-timing-function: ease;
+}
+
+.combo-builder-option:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.combo-builder-option[data-selected="true"] {
+  animation: option-selected 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.combo-option-status,
+.combo-price-match,
+.combo-savings,
+.combo-added-status,
+.summary-value,
+.price-update,
+.quantity-value {
+  animation: state-enter 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.combo-step-heading,
+.combo-step-content {
+  animation: step-enter 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.combo-step-content > * {
+  animation: option-enter 180ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.combo-step-content > :nth-child(2) {
+  animation-delay: 20ms;
+}
+
+.combo-step-content > :nth-child(3) {
+  animation-delay: 40ms;
+}
+
+.combo-step-content > :nth-child(4) {
+  animation-delay: 60ms;
+}
+
+.combo-step-content > :nth-child(5) {
+  animation-delay: 80ms;
+}
+
+.combo-step-content > :nth-child(6) {
+  animation-delay: 100ms;
+}
+
+.faq-summary {
+  transition: background-color 160ms ease;
+}
+
+@supports (interpolate-size: allow-keywords) {
+  .faq-item {
+    interpolate-size: allow-keywords;
+  }
+
+  .faq-item::details-content {
+    block-size: 0;
+    overflow-y: clip;
+    opacity: 0;
+    transition:
+      content-visibility 220ms allow-discrete,
+      block-size 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 160ms ease;
+  }
+
+  .faq-item[open]::details-content {
+    block-size: auto;
+    opacity: 1;
+  }
+}
+
+@keyframes menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.35rem) scale(0.99);
+  }
+}
+
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.65rem);
+  }
+}
+
+@keyframes hero-visual-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+}
+
+@keyframes fade-enter {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes hero-float {
+  from {
+    translate: 0 -1px;
+  }
+  to {
+    translate: 0 3px;
+  }
+}
+
+@keyframes hero-float-reverse {
+  from {
+    translate: 0 2px;
+  }
+  to {
+    translate: 0 -2px;
+  }
+}
+
+@keyframes step-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.35rem);
+  }
+}
+
+@keyframes option-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.2rem);
+  }
+}
+
+@keyframes option-selected {
+  50% {
+    transform: scale(1.012);
+  }
+}
+
+@keyframes state-enter {
+  from {
+    opacity: 0.35;
+    transform: translateY(0.15rem);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-title,
+  .hero-copy,
+  .hero-actions,
+  .hero-visual,
+  .combo-page-intro,
+  .combo-builder,
+  .product-detail-media,
+  .product-detail-panel,
+  .catalog-grid {
+    animation-duration: 420ms;
+    animation-fill-mode: backwards;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .hero-title,
+  .combo-page-intro,
+  .product-detail-media {
+    animation-name: hero-enter;
+  }
+
+  .hero-copy,
+  .product-detail-panel,
+  .catalog-grid {
+    animation-name: hero-enter;
+    animation-delay: 70ms;
+  }
+
+  .hero-actions {
+    animation-name: hero-enter;
+    animation-delay: 130ms;
+  }
+
+  .combo-builder {
+    animation-name: fade-enter;
+    animation-delay: 130ms;
+  }
+
+  .hero-visual {
+    animation-name: hero-visual-enter;
+    animation-delay: 60ms;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .featured-card:hover {
+    transform: translateY(-0.25rem);
+  }
+
+  .featured-card:hover .featured-card-visual {
+    transform: scale(1.012);
+  }
+
+  .category-link:hover {
+    background-color: color-mix(in srgb, var(--mint) 18%, transparent);
+  }
+
+  .category-link:hover .category-arrow {
+    transform: translateX(0.2rem);
+  }
+
+  .faq-summary:hover {
+    background-color: color-mix(in srgb, var(--mint) 14%, transparent);
+  }
+}
+
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .hero-float {
+    animation: hero-float 6.5s ease-in-out 600ms infinite alternate both;
+  }
+
+  .hero-float-reverse {
+    animation: hero-float-reverse 7.25s ease-in-out 900ms infinite alternate both;
+  }
+}
+
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  .product-detail-media:hover {
+    transform: scale(1.008);
+  }
+}
+
+@media (max-width: 767px) {
+  [data-reveal] {
+    transition-duration: 300ms;
+  }
+
+  [data-reveal="up"][data-motion-state="pending"] {
+    translate: 0 0.45rem;
+  }
+
+  .combo-step-heading,
+  .combo-step-content {
+    animation-duration: 180ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-delay: 0s !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  [data-reveal][data-motion-state="pending"] {
+    opacity: 1;
+    translate: none;
+    scale: none;
+  }
+}

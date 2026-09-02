@@ -5,7 +5,11 @@ import { combos } from "@/data/combos";
 
 export function FeaturedCombos() {
   return (
-    <section id="destacados" className="featured-section py-20 sm:py-28 lg:py-36">
+    <section
+      id="destacados"
+      data-reveal="up"
+      className="featured-section py-20 sm:py-28 lg:py-36"
+    >
       <Container>
         <SectionHeading
           eyebrow="Combos destacados"

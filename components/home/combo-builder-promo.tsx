@@ -6,7 +6,11 @@ import { comboPreviewOptions } from "@/data/home";
 
 export function ComboBuilderPromo() {
   return (
-    <section id="arma-tu-combo" className="build-section bg-action py-20 text-white sm:py-28 lg:py-32">
+    <section
+      id="arma-tu-combo"
+      data-reveal="up"
+      className="build-section bg-action py-20 text-white sm:py-28 lg:py-32"
+    >
       <Container>
         <div className="grid items-center gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
           <div>

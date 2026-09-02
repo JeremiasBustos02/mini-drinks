@@ -25,6 +25,7 @@ export function ProductOption({
     <button
       type="button"
       aria-pressed={selected}
+      data-selected={selected}
       disabled={unavailable}
       onClick={onSelect}
       className={`combo-builder-option group relative flex h-full min-w-0 flex-col rounded-[1.1rem] border-2 p-1.5 text-left transition-[border-color,background-color,box-shadow,transform] disabled:cursor-not-allowed disabled:opacity-50 sm:p-2 ${
@@ -54,7 +55,7 @@ export function ProductOption({
         </span>
       </span>
       {selected ? (
-        <span className="absolute top-3 right-3 rounded-full bg-action px-2 py-0.5 text-[0.55rem] font-black tracking-wide text-white uppercase shadow-sm">
+        <span className="combo-option-status absolute top-3 right-3 rounded-full bg-action px-2 py-0.5 text-[0.55rem] font-black tracking-wide text-white uppercase shadow-sm">
           {multi ? "Sumado" : "Elegido"}
         </span>
       ) : null}
