@@ -1,9 +1,9 @@
 import { ProductVisual } from "@/components/products/product-visual";
-import { formatPrice } from "@/lib/catalog";
-import type { Product } from "@/types/catalog";
+import type { ComboBuilderProduct } from "@/components/combo-builder/types";
+import { formatArsCents as formatPrice } from "@/lib/money";
 
 type ProductOptionProps = {
-  product: Product;
+  product: ComboBuilderProduct;
   selected: boolean;
   onSelect: () => void;
   displayName?: string;
@@ -19,7 +19,7 @@ export function ProductOption({
   caption,
   multi = false,
 }: ProductOptionProps) {
-  const unavailable = product.stock === 0;
+  const unavailable = product.stock <= 0;
 
   return (
     <button
@@ -36,6 +36,7 @@ export function ProductOption({
     >
       <ProductVisual
         variant={product.image}
+        imageUrl={product.imageUrl}
         volumeLabel={product.volume ?? (multi ? "Extra" : "Mini")}
         productType={product.productType}
         compact

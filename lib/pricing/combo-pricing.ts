@@ -1,5 +1,11 @@
 import type { Combo, ComboItem, Product } from "@/types/catalog";
 
+export type ComboPricingProduct = Pick<Product, "id" | "price">;
+export type ComboPricingCombo = Pick<
+  Combo,
+  "id" | "name" | "price" | "active" | "published" | "available" | "components"
+>;
+
 export type ComboPricingError =
   | { code: "unknown_product"; productId: string }
   | { code: "invalid_quantity"; productId: string }
@@ -11,7 +17,7 @@ export type ValidComboPricing = {
   componentsPrice: number;
   extrasPrice: number;
   finalPrice: number;
-  matchingCombo: Combo | undefined;
+  matchingCombo: ComboPricingCombo | undefined;
   savings: number;
 };
 
@@ -48,13 +54,13 @@ export function haveExactComponents(selection: ComboItem[], comboComponents: Com
   return true;
 }
 
-export function findBestMatchingCombo(selection: ComboItem[], combos: Combo[]) {
+export function findBestMatchingCombo(selection: ComboItem[], combos: ComboPricingCombo[]) {
   if (selection.length === 0) return undefined;
 
   return combos
-    .filter((combo) => combo.active && combo.published)
+    .filter((combo) => combo.active && combo.published && combo.available > 0)
     .filter((combo) => haveExactComponents(selection, combo.components))
-    .reduce<Combo | undefined>(
+    .reduce<ComboPricingCombo | undefined>(
       (best, combo) => (!best || combo.price < best.price ? combo : best),
       undefined,
     );
@@ -62,7 +68,7 @@ export function findBestMatchingCombo(selection: ComboItem[], combos: Combo[]) {
 
 function getComponentsPrice(
   components: ComboItem[],
-  productsById: ReadonlyMap<string, Product>,
+  productsById: ReadonlyMap<string, ComboPricingProduct>,
 ): { ok: true; price: number } | InvalidComboPricing {
   let price = 0;
 
@@ -100,9 +106,9 @@ function getComponentsPrice(
 export function calculateComboPrice(
   baseComponents: ComboItem[],
   extraComponents: ComboItem[],
-  products: Product[],
-  combos: Combo[],
-) : ComboPricing {
+  products: ComboPricingProduct[],
+  combos: ComboPricingCombo[],
+): ComboPricing {
   const productsById = new Map(products.map((product) => [product.id, product]));
   const componentsResult = getComponentsPrice(baseComponents, productsById);
 

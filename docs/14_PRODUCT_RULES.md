@@ -405,6 +405,10 @@ Ejemplos:
 
 Un extra seleccionable agrega su precio salvo promoción explícita.
 
+Decisión inicial del constructor: se muestran productos publicados y disponibles de tipo `extra` y
+`accessory`. Los productos `supply` quedan excluidos por defecto hasta definir cuáles son insumos
+operativos implícitos y cuáles pueden ser elegidos por el consumidor.
+
 ---
 
 # 20. Carrito

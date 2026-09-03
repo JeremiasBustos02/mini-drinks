@@ -65,7 +65,11 @@ export const useCartStore = create<CartStore>()(
               isOpen: true,
               items: state.items.map((candidate) =>
                 candidate.lineId === matchingItem.lineId
-                  ? { ...candidate, quantity: candidate.quantity + amount }
+                  ? {
+                      ...item,
+                      lineId: candidate.lineId,
+                      quantity: candidate.quantity + amount,
+                    }
                   : candidate,
               ),
             };

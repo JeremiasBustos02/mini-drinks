@@ -4,6 +4,7 @@ type QuantityControlProps = {
   quantity: number;
   onChange: (quantity: number) => void;
   onRemove?: () => void;
+  maximum?: number;
   size?: "compact" | "default";
 };
 
@@ -11,6 +12,7 @@ export function QuantityControl({
   quantity,
   onChange,
   onRemove,
+  maximum,
   size = "default",
 }: QuantityControlProps) {
   const buttonSize = size === "compact" ? "size-8 text-base" : "size-10 text-lg";
@@ -30,8 +32,9 @@ export function QuantityControl({
       </output>
       <button
         type="button"
+        disabled={maximum !== undefined && quantity >= maximum}
         onClick={() => onChange(quantity + 1)}
-        className={`motion-button grid place-items-center font-black ${buttonSize}`}
+        className={`motion-button grid place-items-center font-black disabled:cursor-not-allowed disabled:opacity-30 ${buttonSize}`}
         aria-label="Sumar una unidad"
       >
         +

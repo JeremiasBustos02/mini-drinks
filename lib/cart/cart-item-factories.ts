@@ -11,13 +11,25 @@ function createLineId(prefix: string) {
   return `${prefix}-${globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`}`;
 }
 
-function createComponent(product: Product): CartComponent {
-  return {
-    productId: product.id,
-    name: product.name,
-    quantity: 1,
-    visual: product.image,
-  };
+type CartComponentInput = {
+  product: Pick<Product, "id" | "name" | "image">;
+  quantity: number;
+};
+
+function createComponents(inputs: CartComponentInput[]): CartComponent[] {
+  const components = new Map<string, CartComponent>();
+
+  for (const { product, quantity } of inputs) {
+    const current = components.get(product.id);
+    components.set(product.id, {
+      productId: product.id,
+      name: product.name,
+      quantity: (current?.quantity ?? 0) + quantity,
+      visual: product.image,
+    });
+  }
+
+  return [...components.values()];
 }
 
 export function createProductCartItem(product: Product): ProductCartItem {
@@ -53,9 +65,9 @@ export function createComboCartItem(combo: Combo): ComboCartItem {
 
 type CreateCustomComboCartItemInput = {
   configuration: CustomComboConfiguration;
-  components: Product[];
+  components: CartComponentInput[];
   unitPrice: number;
-  matchedCombo?: Combo;
+  matchedCombo?: Pick<Combo, "id" | "name">;
   savings: number;
 };
 
@@ -73,9 +85,9 @@ export function createCustomComboCartItem({
     name: matchedCombo ? `${matchedCombo.name} a tu manera` : "Combo a tu manera",
     unitPrice,
     quantity: 1,
-    visual: components[0]?.image ?? "packaging",
+    visual: components[0]?.product.image ?? "packaging",
     configuration,
-    components: components.map(createComponent),
+    components: createComponents(components),
     matchedComboId: matchedCombo?.id,
     matchedComboName: matchedCombo?.name,
     savings,

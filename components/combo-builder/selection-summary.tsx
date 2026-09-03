@@ -1,13 +1,13 @@
 import { CartIcon } from "@/components/ui/icons";
-import { formatPrice } from "@/lib/catalog";
+import { formatArsCents as formatPrice } from "@/lib/money";
 import type { ComboPricing } from "@/lib/pricing/combo-pricing";
-import type { Product } from "@/types/catalog";
 import type { ExtraOption } from "@/components/combo-builder/types";
+import type { ComboBuilderProduct } from "@/components/combo-builder/types";
 
 type SelectionSummaryProps = {
-  miniature?: Product;
-  mixer?: Product;
-  glass?: Product;
+  miniature?: ComboBuilderProduct;
+  mixer?: ComboBuilderProduct;
+  glass?: ComboBuilderProduct;
   extras: ExtraOption[];
   pricing: ComboPricing;
   currentStep: number;

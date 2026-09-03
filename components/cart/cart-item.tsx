@@ -2,7 +2,7 @@
 
 import { ProductVisual } from "@/components/products/product-visual";
 import { QuantityControl } from "@/components/cart/quantity-control";
-import { formatPrice } from "@/lib/catalog";
+import { formatArsCents as formatPrice } from "@/lib/money";
 import { getCartItemSubtotal } from "@/lib/cart/cart-utils";
 import { useCartStore } from "@/store/cart-store";
 import type { CartItem as CartItemType } from "@/types/cart";

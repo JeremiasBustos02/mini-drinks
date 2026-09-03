@@ -1,16 +1,38 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 
 import { ComboBuilder } from "@/components/combo-builder/combo-builder";
 import { StorefrontShell } from "@/components/layout/storefront-shell";
 import { Container } from "@/components/ui/container";
-import { combos, products } from "@/data/catalog";
+import { getPublishedCombosWithComponents } from "@/lib/db/queries/combos";
+import { getAvailableComboBuilderProductsWithCategories } from "@/lib/db/queries/products";
+import { mapComboBuilderCombo, mapComboBuilderProduct } from "@/lib/mappers/catalog";
 
 export const metadata: Metadata = {
   title: "Armá tu combo | MINI.",
   description: "Elegí miniatura, mixer, vaso y extras. El mejor precio se aplica automáticamente.",
 };
 
-export default function BuildYourComboPage() {
+export default async function BuildYourComboPage() {
+  await connection();
+
+  let products;
+  let combos;
+
+  try {
+    const [productRecords, comboRecords] = await Promise.all([
+      getAvailableComboBuilderProductsWithCategories(),
+      getPublishedCombosWithComponents(),
+    ]);
+    products = productRecords.map(({ product, category }) =>
+      mapComboBuilderProduct({ ...product, category }),
+    );
+    combos = comboRecords.map(mapComboBuilderCombo);
+  } catch (error) {
+    console.error("Unable to load the combo builder catalog.", error);
+    throw error;
+  }
+
   return (
     <StorefrontShell>
       <main id="contenido">

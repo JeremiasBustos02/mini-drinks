@@ -25,26 +25,3 @@ export const comboBuilderSteps = [
     description: "Revisá lo que elegiste. Si coincide con un combo, el mejor precio ya está aplicado.",
   },
 ] as const;
-
-export const extraDefinitions = [
-  {
-    productId: "golosina-extra",
-    displayName: "Golosina",
-    caption: "Un toque dulce para acompañar.",
-  },
-  {
-    productId: "sorbete-rayado",
-    displayName: "Sorbete",
-    caption: "El detalle simple que completa el vaso.",
-  },
-  {
-    productId: "vaso-mini",
-    displayName: "Segundo vaso",
-    caption: "Por si este mini se comparte.",
-  },
-  {
-    productId: "packaging-especial",
-    displayName: "Packaging especial",
-    caption: "Para regalar o hacerlo más especial.",
-  },
-] as const;

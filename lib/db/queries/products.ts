@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, eq, ne } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, ne } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { categories, products } from "@/lib/db/schema";
@@ -23,6 +23,23 @@ export function getPublishedProductsWithCategories() {
         eq(products.published, true),
         eq(products.active, true),
         eq(categories.active, true),
+      ),
+    )
+    .orderBy(asc(products.name));
+}
+
+export function getAvailableComboBuilderProductsWithCategories() {
+  return db
+    .select({ product: products, category: categories })
+    .from(products)
+    .innerJoin(categories, eq(products.categoryId, categories.id))
+    .where(
+      and(
+        eq(products.published, true),
+        eq(products.active, true),
+        gt(products.stock, 0),
+        eq(categories.active, true),
+        inArray(products.productType, ["miniature", "mixer", "glass", "extra", "accessory"]),
       ),
     )
     .orderBy(asc(products.name));

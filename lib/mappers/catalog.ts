@@ -1,5 +1,9 @@
 import type { ComboRecord, ProductRecord } from "@/lib/db/schema";
 import { getDerivedComboStock } from "@/lib/catalog/availability";
+import type {
+  ComboBuilderCombo,
+  ComboBuilderProduct,
+} from "@/components/combo-builder/types";
 import type { CatalogCategory, Category, Combo, Product, ProductType, VisualVariant } from "@/types/catalog";
 
 type ProductWithCategory = ProductRecord & {
@@ -71,6 +75,23 @@ export function mapProduct(record: ProductWithCategory): Product {
   };
 }
 
+export function mapComboBuilderProduct(record: ProductWithCategory): ComboBuilderProduct {
+  const product = mapProduct(record);
+
+  return {
+    id: product.id,
+    slug: product.slug,
+    name: product.name,
+    description: product.description,
+    price: product.price,
+    stock: product.stock,
+    productType: product.productType,
+    image: product.image,
+    imageUrl: product.imageUrl,
+    volume: product.volume,
+  };
+}
+
 export function mapCombo(record: ComboWithComponents): Combo {
   const components = record.components.map(({ quantity, product }) => ({
     productId: product.id,
@@ -106,5 +127,19 @@ export function mapCombo(record: ComboWithComponents): Combo {
     ),
     components,
     includesSurprise: true,
+  };
+}
+
+export function mapComboBuilderCombo(record: ComboWithComponents): ComboBuilderCombo {
+  const combo = mapCombo(record);
+
+  return {
+    id: combo.id,
+    name: combo.name,
+    price: combo.price,
+    published: combo.published,
+    active: combo.active,
+    available: combo.available,
+    components: combo.components,
   };
 }

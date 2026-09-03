@@ -1,4 +1,4 @@
-import { formatPrice } from "@/lib/catalog";
+import { formatArsCents as formatPrice } from "@/lib/money";
 
 type CartSummaryProps = {
   subtotal: number;

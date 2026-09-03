@@ -8,25 +8,26 @@ import { QuantityControl } from "@/components/cart/quantity-control";
 import type { ComboSelection, ExtraOption } from "@/components/combo-builder/types";
 import { ProductVisual } from "@/components/products/product-visual";
 import type { ComboPricing } from "@/lib/pricing/combo-pricing";
-import type { Product } from "@/types/catalog";
+import type { ComboBuilderProduct } from "@/components/combo-builder/types";
 
 type ComboBuilderStepPanelProps = {
   panelRef: RefObject<HTMLDivElement | null>;
   currentStep: number;
   selection: ComboSelection;
-  miniatures: Product[];
-  mixers: Product[];
-  glasses: Product[];
+  miniatures: ComboBuilderProduct[];
+  mixers: ComboBuilderProduct[];
+  glasses: ComboBuilderProduct[];
   extraOptions: ExtraOption[];
-  miniature?: Product;
-  mixer?: Product;
-  glass?: Product;
+  miniature?: ComboBuilderProduct;
+  mixer?: ComboBuilderProduct;
+  glass?: ComboBuilderProduct;
   selectedExtras: ExtraOption[];
   pricing: ComboPricing;
   complete: boolean;
   canContinue: boolean;
   added: boolean;
   quantity: number;
+  maximumQuantity: number;
   onSelectBase: (
     field: "miniatureId" | "mixerId" | "glassId",
     productId: string,
@@ -56,6 +57,7 @@ export function ComboBuilderStepPanel({
   canContinue,
   added,
   quantity,
+  maximumQuantity,
   onSelectBase,
   onToggleExtra,
   onBack,
@@ -95,6 +97,11 @@ export function ComboBuilderStepPanel({
 
       {currentStep === 0 ? (
         <div className="combo-step-content combo-builder-options mt-[1.125rem] grid grid-cols-2 gap-2.5 sm:gap-[0.6875rem] md:grid-cols-3">
+          {miniatures.length === 0 ? (
+            <p className="col-span-full rounded-xl bg-canvas p-4 text-sm font-bold text-ink/65" role="status">
+              No hay miniaturas disponibles en este momento.
+            </p>
+          ) : null}
           {miniatures.map((product) => (
             <ProductOption
               key={product.id}
@@ -108,6 +115,11 @@ export function ComboBuilderStepPanel({
 
       {currentStep === 1 ? (
         <div className="combo-step-content combo-builder-options mt-[1.125rem] grid grid-cols-2 gap-2.5 sm:gap-[0.6875rem] md:grid-cols-3">
+          {mixers.length === 0 ? (
+            <p className="col-span-full rounded-xl bg-canvas p-4 text-sm font-bold text-ink/65" role="status">
+              No hay mixers disponibles en este momento.
+            </p>
+          ) : null}
           {mixers.map((product) => (
             <ProductOption
               key={product.id}
@@ -121,6 +133,11 @@ export function ComboBuilderStepPanel({
 
       {currentStep === 2 ? (
         <div className="combo-step-content combo-builder-options mt-[1.125rem] grid max-w-md grid-cols-1 gap-[0.6875rem] sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+          {glasses.length === 0 ? (
+            <p className="col-span-full rounded-xl bg-canvas p-4 text-sm font-bold text-ink/65" role="status">
+              No hay vasos disponibles. Necesitás uno para completar el combo.
+            </p>
+          ) : null}
           {glasses.map((product) => (
             <ProductOption
               key={product.id}
@@ -134,6 +151,11 @@ export function ComboBuilderStepPanel({
 
       {currentStep === 3 ? (
         <div className="combo-step-content combo-builder-options mt-[1.125rem] grid grid-cols-2 gap-2.5 sm:gap-[0.6875rem] md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+          {extraOptions.length === 0 ? (
+            <p className="col-span-full rounded-xl bg-canvas p-4 text-sm font-bold text-ink/65" role="status">
+              No hay extras disponibles. Podés continuar sin agregar ninguno.
+            </p>
+          ) : null}
           {extraOptions.map((option) => (
             <ProductOption
               key={option.product.id}
@@ -154,6 +176,7 @@ export function ComboBuilderStepPanel({
             {miniature ? (
               <ProductVisual
                 variant={miniature.image}
+                imageUrl={miniature.imageUrl}
                 volumeLabel="Tu combo"
                 compact
                 className="!h-40 sm:!h-44"
@@ -188,7 +211,12 @@ export function ComboBuilderStepPanel({
           </div>
           <div className="mt-4 flex items-center justify-between rounded-xl bg-canvas p-3">
             <p className="text-sm font-black">Cantidad</p>
-            <QuantityControl quantity={quantity} onChange={onQuantityChange} size="compact" />
+            <QuantityControl
+              quantity={quantity}
+              maximum={maximumQuantity}
+              onChange={onQuantityChange}
+              size="compact"
+            />
           </div>
         </div>
       ) : null}
