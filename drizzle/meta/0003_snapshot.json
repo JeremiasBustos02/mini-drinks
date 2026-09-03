@@ -1,6 +1,6 @@
 {
-  "id": "3105153a-f4da-418b-bf70-8f8e71748d1d",
-  "prevId": "3267e0d6-e560-45af-91e7-0c7dc75b841b",
+  "id": "af04ce6b-09bc-428e-8596-92819678166c",
+  "prevId": "3105153a-f4da-418b-bf70-8f8e71748d1d",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -514,6 +514,24 @@
           "primaryKey": false,
           "notNull": true
         },
+        "checkout_attempt_id": {
+          "name": "checkout_attempt_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "access_token_hash": {
+          "name": "access_token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "checkout_request_hash": {
+          "name": "checkout_request_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "status": {
           "name": "status",
           "type": "order_status",
@@ -624,6 +642,36 @@
           "columns": [
             {
               "expression": "public_number",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "orders_checkout_attempt_id_unique": {
+          "name": "orders_checkout_attempt_id_unique",
+          "columns": [
+            {
+              "expression": "checkout_attempt_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "orders_access_token_hash_unique": {
+          "name": "orders_access_token_hash_unique",
+          "columns": [
+            {
+              "expression": "access_token_hash",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

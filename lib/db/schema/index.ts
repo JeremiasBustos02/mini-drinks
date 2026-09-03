@@ -21,6 +21,7 @@ import {
   paymentStatusValues,
   productTypeValues,
 } from "@/types/domain";
+import type { OrderItemConfigurationSnapshot } from "@/types/checkout";
 
 export const productTypeEnum = pgEnum("product_type", productTypeValues);
 export const orderStatusEnum = pgEnum("order_status", orderStatusValues);
@@ -141,6 +142,9 @@ export const orders = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     publicNumber: text("public_number").notNull(),
+    checkoutAttemptId: uuid("checkout_attempt_id").notNull(),
+    accessTokenHash: text("access_token_hash").notNull(),
+    checkoutRequestHash: text("checkout_request_hash").notNull(),
     status: orderStatusEnum("status").default("pending_payment").notNull(),
     customerName: text("customer_name").notNull(),
     customerLastName: text("customer_last_name").notNull(),
@@ -160,6 +164,8 @@ export const orders = pgTable(
   },
   (table) => [
     uniqueIndex("orders_public_number_unique").on(table.publicNumber),
+    uniqueIndex("orders_checkout_attempt_id_unique").on(table.checkoutAttemptId),
+    uniqueIndex("orders_access_token_hash_unique").on(table.accessTokenHash),
     index("orders_status_idx").on(table.status),
     index("orders_created_at_idx").on(table.createdAt),
     check(
@@ -190,8 +196,6 @@ export const orders = pgTable(
   ],
 ).enableRLS();
 
-export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
-
 export const orderItems = pgTable(
   "order_items",
   {
@@ -205,7 +209,7 @@ export const orderItems = pgTable(
     quantity: integer("quantity").notNull(),
     unitPrice: bigint("unit_price", { mode: "number" }).notNull(),
     subtotal: bigint("subtotal", { mode: "number" }).notNull(),
-    configurationJson: jsonb("configuration_json").$type<JsonValue>(),
+    configurationJson: jsonb("configuration_json").$type<OrderItemConfigurationSnapshot>(),
     createdAt: createdAtColumn(),
   },
   (table) => [

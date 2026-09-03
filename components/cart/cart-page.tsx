@@ -38,7 +38,7 @@ export function CartPage() {
             </div>
             <aside className="lg:sticky lg:top-28">
               <CartSummary subtotal={getCartSubtotal(items)} />
-              <button type="button" disabled className="mt-4 flex min-h-13 w-full cursor-not-allowed items-center justify-center rounded-xl border-2 border-ink/15 bg-ink/10 px-6 py-3 text-base font-bold text-ink/45">Checkout próximamente</button>
+              <Link href="/checkout" className="motion-button mt-4 flex min-h-13 w-full items-center justify-center rounded-xl bg-action px-6 py-3 text-base font-black text-white">Ir al checkout</Link>
               <Link href="/productos" className="motion-button mt-4 flex min-h-11 items-center justify-center text-sm font-bold text-action underline decoration-2 underline-offset-4">Seguir eligiendo</Link>
             </aside>
           </div>
