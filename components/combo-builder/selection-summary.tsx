@@ -155,13 +155,13 @@ export function SelectionSummary({
           className="motion-button mt-3 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border-2 border-action bg-action px-3.5 py-2 text-[0.8125rem] font-bold text-white transition-colors hover:border-ink hover:bg-ink disabled:cursor-not-allowed disabled:border-ink/10 disabled:bg-ink/10 disabled:text-ink/45"
         >
           <CartIcon className="size-5" />
-          {added ? "Combo preparado" : currentStep === 4 ? "Agregar al carrito" : "Completá los pasos"}
+          {added ? "Agregado al carrito" : currentStep === 4 ? "Agregar al carrito" : "Completá los pasos"}
         </button>
       ) : null}
 
       {added ? (
         <p className="combo-added-status mt-2 text-center text-[0.8rem] font-bold text-action" role="status">
-          Listo. El carrito real se conecta en la próxima etapa.
+          Listo. Ya está en tu carrito.
         </p>
       ) : null}
     </div>

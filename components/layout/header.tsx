@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 
+import { useCartHydration } from "@/components/cart/use-cart-hydration";
 import { CartIcon, MenuIcon, UserIcon } from "@/components/ui/icons";
 import { Container } from "@/components/ui/container";
+import { getCartTotalItems } from "@/lib/cart/cart-utils";
+import { useCartStore } from "@/store/cart-store";
 
 const navigation = [
   { label: "Comprar", href: "/productos" },
@@ -12,6 +17,11 @@ const navigation = [
 ];
 
 export function Header() {
+  const hydrated = useCartHydration();
+  const items = useCartStore((state) => state.items);
+  const openCart = useCartStore((state) => state.openCart);
+  const totalItems = hydrated ? getCartTotalItems(items) : 0;
+
   return (
     <>
       <Link
@@ -58,16 +68,17 @@ export function Header() {
             >
               <UserIcon />
             </span>
-            <span
-              role="img"
-              aria-label="Carrito, sin productos"
-              className="relative grid size-11 place-items-center rounded-xl border border-ink/15 bg-white"
+            <button
+              type="button"
+              onClick={openCart}
+              aria-label={`Abrir carrito, ${totalItems} producto${totalItems === 1 ? "" : "s"}`}
+              className="motion-button relative grid size-11 place-items-center rounded-xl border border-ink/15 bg-white"
             >
               <CartIcon />
-              <span className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-action text-[0.65rem] font-black text-white">
-                0
+              <span key={totalItems} className="quantity-value absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-action text-[0.65rem] font-black text-white">
+                {totalItems > 99 ? "99+" : totalItems}
               </span>
-            </span>
+            </button>
 
             <details className="mobile-menu group relative md:hidden">
               <summary

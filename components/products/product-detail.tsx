@@ -113,7 +113,7 @@ export function ProductDetail({ item, available }: ProductDetailProps) {
               </section>
             ) : null}
 
-            <PurchasePreview available={available} />
+            <PurchasePreview item={item} available={available} />
           </div>
         </div>
       </Container>

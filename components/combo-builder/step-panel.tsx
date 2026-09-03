@@ -4,6 +4,7 @@ import { comboBuilderSteps } from "@/components/combo-builder/config";
 import { ComboBuilderNavigation } from "@/components/combo-builder/navigation";
 import { ProductOption } from "@/components/combo-builder/product-option";
 import { SelectionSummary } from "@/components/combo-builder/selection-summary";
+import { QuantityControl } from "@/components/cart/quantity-control";
 import type { ComboSelection, ExtraOption } from "@/components/combo-builder/types";
 import { ProductVisual } from "@/components/products/product-visual";
 import type { ComboPricing } from "@/lib/pricing/combo-pricing";
@@ -25,6 +26,7 @@ type ComboBuilderStepPanelProps = {
   complete: boolean;
   canContinue: boolean;
   added: boolean;
+  quantity: number;
   onSelectBase: (
     field: "miniatureId" | "mixerId" | "glassId",
     productId: string,
@@ -34,6 +36,7 @@ type ComboBuilderStepPanelProps = {
   onContinue: () => void;
   onEdit: (step: number) => void;
   onAdd: () => void;
+  onQuantityChange: (quantity: number) => void;
 };
 
 export function ComboBuilderStepPanel({
@@ -52,12 +55,14 @@ export function ComboBuilderStepPanel({
   complete,
   canContinue,
   added,
+  quantity,
   onSelectBase,
   onToggleExtra,
   onBack,
   onContinue,
   onEdit,
   onAdd,
+  onQuantityChange,
 }: ComboBuilderStepPanelProps) {
   const step = comboBuilderSteps[currentStep];
 
@@ -180,6 +185,10 @@ export function ComboBuilderStepPanel({
               onEdit={onEdit}
               onAdd={onAdd}
             />
+          </div>
+          <div className="mt-4 flex items-center justify-between rounded-xl bg-canvas p-3">
+            <p className="text-sm font-black">Cantidad</p>
+            <QuantityControl quantity={quantity} onChange={onQuantityChange} size="compact" />
           </div>
         </div>
       ) : null}

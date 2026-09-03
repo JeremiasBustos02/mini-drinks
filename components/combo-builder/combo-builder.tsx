@@ -3,11 +3,13 @@
 import { useRef, useState } from "react";
 
 import { extraDefinitions } from "@/components/combo-builder/config";
+import { createCustomComboCartItem } from "@/lib/cart/cart-item-factories";
 import { ComboBuilderProgress } from "@/components/combo-builder/progress";
 import { SelectionSummary } from "@/components/combo-builder/selection-summary";
 import { ComboBuilderStepPanel } from "@/components/combo-builder/step-panel";
 import type { ComboSelection } from "@/components/combo-builder/types";
 import { calculateComboPrice } from "@/lib/pricing/combo-pricing";
+import { useCartStore } from "@/store/cart-store";
 import type { Combo, ComboItem, Product } from "@/types/catalog";
 
 type ComboBuilderProps = {
@@ -24,7 +26,9 @@ export function ComboBuilder({ products, combos }: ComboBuilderProps) {
     extraIds: [],
   });
   const [added, setAdded] = useState(false);
+  const [quantity, setQuantity] = useState(1);
   const stepPanelRef = useRef<HTMLDivElement>(null);
+  const addItem = useCartStore((state) => state.addItem);
 
   const miniatures = products.filter(
     (product) => product.published && product.productType === "miniature",
@@ -91,7 +95,24 @@ export function ComboBuilder({ products, combos }: ComboBuilderProps) {
   }
 
   function addCombo() {
-    if (complete && currentStep === 4) setAdded(true);
+    if (!complete || currentStep !== 4 || !miniature || !mixer || !glass) return;
+
+    addItem(
+      createCustomComboCartItem({
+        configuration: {
+          miniatureId: miniature.id,
+          mixerId: mixer.id,
+          glassId: glass.id,
+          extraIds: selection.extraIds,
+        },
+        components: [miniature, mixer, glass, ...selectedExtras.map((extra) => extra.product)],
+        unitPrice: pricing.finalPrice,
+        matchedCombo: pricing.matchingCombo,
+        savings: pricing.savings,
+      }),
+      quantity,
+    );
+    setAdded(true);
   }
 
   return (
@@ -115,12 +136,17 @@ export function ComboBuilder({ products, combos }: ComboBuilderProps) {
           complete={complete}
           canContinue={canContinue}
           added={added}
+          quantity={quantity}
           onSelectBase={selectBase}
           onToggleExtra={toggleExtra}
           onBack={() => goToStep(currentStep - 1)}
           onContinue={() => goToStep(currentStep + 1)}
           onEdit={goToStep}
           onAdd={addCombo}
+          onQuantityChange={(nextQuantity) => {
+            setQuantity(Math.max(1, nextQuantity));
+            setAdded(false);
+          }}
         />
 
         <aside

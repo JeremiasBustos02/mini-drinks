@@ -2,18 +2,30 @@
 
 import { useState } from "react";
 
+import { createComboCartItem, createProductCartItem } from "@/lib/cart/cart-item-factories";
+import { useCartStore } from "@/store/cart-store";
+import type { CatalogItem } from "@/types/catalog";
+
 type PurchasePreviewProps = {
+  item: CatalogItem;
   available: number;
 };
 
-export function PurchasePreview({ available }: PurchasePreviewProps) {
+export function PurchasePreview({ item, available }: PurchasePreviewProps) {
   const [quantity, setQuantity] = useState(1);
-  const [isPrepared, setIsPrepared] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
+  const addItem = useCartStore((state) => state.addItem);
   const isOutOfStock = available === 0;
 
   function updateQuantity(nextQuantity: number) {
     setQuantity(Math.max(1, Math.min(nextQuantity, available)));
-    setIsPrepared(false);
+    setIsAdded(false);
+  }
+
+  function addToCart() {
+    const cartItem = item.kind === "combo" ? createComboCartItem(item) : createProductCartItem(item);
+    addItem(cartItem, quantity);
+    setIsAdded(true);
   }
 
   return (
@@ -55,19 +67,17 @@ export function PurchasePreview({ available }: PurchasePreviewProps) {
       <button
         type="button"
         disabled={isOutOfStock}
-        onClick={() => setIsPrepared(true)}
+        onClick={addToCart}
         className="motion-button mt-5 inline-flex min-h-13 w-full items-center justify-center rounded-xl border-2 border-action bg-action px-6 py-3 text-base font-bold text-white transition-colors hover:border-ink hover:bg-ink disabled:cursor-not-allowed disabled:border-ink/20 disabled:bg-ink/20 sm:w-auto"
       >
         {isOutOfStock
           ? "Sin stock"
-          : isPrepared
-            ? "Listo para sumar"
+          : isAdded
+            ? "Agregado al carrito"
             : `Agregar ${quantity} al carrito`}
       </button>
       <p className="mt-3 text-xs text-ink/55" aria-live="polite">
-        {isPrepared
-          ? "Vista previa: el carrito real se implementará en la próxima etapa."
-          : "Vista previa: todavía no se crea un carrito."}
+        {isAdded ? "Listo, ya está en tu carrito." : "Podés revisar tu pedido desde el ícono del carrito."}
       </p>
     </div>
   );

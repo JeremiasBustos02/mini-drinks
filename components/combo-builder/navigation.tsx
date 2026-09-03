@@ -64,7 +64,7 @@ export function ComboBuilderNavigation({
         )}
       </div>
       <span className="sr-only" aria-live="polite">
-        {added ? "Combo preparado. El carrito real se conectará en la próxima etapa." : ""}
+        {added ? "Combo agregado al carrito." : ""}
       </span>
     </div>
   );
