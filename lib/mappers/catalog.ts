@@ -109,7 +109,7 @@ export function mapCombo(record: ComboWithComponents): Combo {
     slug: record.combo.slug,
     name: record.combo.name,
     description: record.combo.description,
-    price: record.combo.promotionalPrice ?? referencePrice,
+    price: Math.min(record.combo.promotionalPrice ?? referencePrice, referencePrice),
     referencePrice,
     published: record.combo.published,
     image: components[0]?.image ?? "packaging",

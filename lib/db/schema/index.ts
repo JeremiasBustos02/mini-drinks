@@ -51,6 +51,16 @@ export const categories = pgTable(
   ],
 ).enableRLS();
 
+export const adminUsers = pgTable(
+  "admin_users",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    authUserId: uuid("auth_user_id").notNull(),
+    createdAt: createdAtColumn(),
+  },
+  (table) => [uniqueIndex("admin_users_auth_user_id_unique").on(table.authUserId)],
+).enableRLS();
+
 export const products = pgTable(
   "products",
   {
@@ -238,6 +248,7 @@ export const payments = pgTable(
 ).enableRLS();
 
 export type CategoryRecord = typeof categories.$inferSelect;
+export type AdminUserRecord = typeof adminUsers.$inferSelect;
 export type ProductRecord = typeof products.$inferSelect;
 export type ComboRecord = typeof combos.$inferSelect;
 export type ComboItemRecord = typeof comboItems.$inferSelect;

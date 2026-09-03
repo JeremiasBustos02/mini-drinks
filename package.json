@@ -8,18 +8,23 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test lib/pricing/combo-pricing.test.ts lib/catalog/availability.test.ts lib/cart/cart-utils.test.ts",
+    "test": "tsx --test lib/pricing/combo-pricing.test.ts lib/catalog/availability.test.ts lib/cart/cart-utils.test.ts lib/money.test.ts lib/admin/validation.test.ts lib/mappers/catalog.test.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx lib/db/seed.ts",
+    "db:add-admin": "tsx --conditions=react-server lib/db/add-admin.ts",
     "db:check": "drizzle-kit check"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.5",
+    "@supabase/supabase-js": "^2.114.0",
     "drizzle-orm": "^0.45.2",
     "next": "16.3.3",
     "postgres": "^3.4.9",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
+    "zod": "^4.5.4",
     "zustand": "^5.0.12"
   },
   "devDependencies": {

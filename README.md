@@ -9,6 +9,7 @@ Ecommerce mobile-first para una tienda de mini bebidas, combos y accesorios.
 - Tailwind CSS
 - PostgreSQL en Supabase
 - Drizzle ORM y Postgres.js
+- Supabase Auth SSR para acceso administrativo
 - Fuentes Bowlby One SC y Roboto mediante `next/font`
 
 ## Desarrollo local
@@ -27,13 +28,19 @@ En macOS o Linux, reemplazar `Copy-Item` por `cp`.
 
 ### Variables de entorno
 
-Las dos variables son exclusivas del servidor y nunca deben llevar un prefijo
-`NEXT_PUBLIC_`:
+Las variables de conexión PostgreSQL son exclusivas del servidor y nunca deben
+llevar un prefijo `NEXT_PUBLIC_`:
 
 - `DATABASE_URL`: URL del transaction pooler de Supabase (puerto `6543`) para
   las consultas de Next.js en Vercel/serverless.
 - `DATABASE_MIGRATION_URL`: URL directa de Supabase o URL del session pooler
   (puerto `5432`) para Drizzle Kit y migraciones.
+
+Supabase Auth requiere además dos valores públicos de configuración (no son
+secretos y no otorgan por sí mismos permisos sobre los datos):
+
+- `NEXT_PUBLIC_SUPABASE_URL`;
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 
 Crear `.env.local` a partir de `.env.example` y reemplazar sus placeholders. Las
 credenciales reales no deben versionarse.
@@ -81,8 +88,9 @@ para desarrollo y usa `DATABASE_URL`.
 
 ### Convenciones
 
-- El dinero se persiste como enteros `bigint` en centavos. Por ejemplo, `5900`
-  representa ARS 59,00. Los mocks y el carrito usan la misma unidad, y los
+- El dinero se persiste como enteros `bigint` en centavos. Por ejemplo, `590000`
+  representa ARS 5.900,00. En el admin se ingresa `5900` y el servidor lo
+  convierte a `590000`. Los mocks y el carrito usan la unidad persistida, y los
   importes quedan limitados al rango entero seguro de JavaScript. No se usan
   valores de punto flotante para cálculos monetarios.
 - Las claves primarias son UUID generados por PostgreSQL. Los slugs son claves
@@ -99,6 +107,12 @@ para desarrollo y usa `DATABASE_URL`.
   futuro deberá consultar la base y recalcular precio, promociones y stock en
   el servidor antes de crear un pedido.
 
+### Administración
+
+El setup de Supabase Auth, la estrategia `admin_users`, el bootstrap seguro de
+los dos administradores y el modelo RLS están documentados en
+`docs/20_ADMIN_AUTH.md`.
+
 ## Verificación
 
 ```bash
@@ -111,10 +125,10 @@ git diff --check
 
 ## Alcance actual
 
-La interfaz aprobada conserva mocks para Home, catálogo, fichas y constructor,
-mientras la persistencia real se incorpora de manera gradual. Ya existen el
-schema, migraciones, seed y consultas server-side; todavía no hay checkout,
-autenticación, administración ni integración de pagos.
+La Home conserva contenido editorial estático; catálogo, fichas y constructor
+leen PostgreSQL mediante Drizzle. Ya existen autenticación y administración de
+catálogo, pero todavía no hay checkout, gestión de pedidos ni integración de
+pagos.
 
 La carpeta `docs/` es la fuente de verdad del producto. Ante diferencias de
 alcance, se aplica el orden de prioridad definido por la documentación, con
