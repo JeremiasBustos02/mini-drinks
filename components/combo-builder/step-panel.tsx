@@ -64,7 +64,7 @@ export function ComboBuilderStepPanel({
   return (
     <div
       ref={panelRef}
-      className="combo-builder-panel min-w-0 scroll-mt-28 rounded-[1.25rem] bg-white p-3 sm:p-5 lg:p-6"
+      className="combo-builder-panel min-w-0 scroll-mt-28 rounded-[1.25rem] bg-white p-3 sm:p-[1.125rem] lg:p-[1.375rem]"
     >
       <div
         key={currentStep}
@@ -89,7 +89,7 @@ export function ComboBuilderStepPanel({
       </div>
 
       {currentStep === 0 ? (
-        <div className="combo-step-content combo-builder-options mt-5 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3">
+        <div className="combo-step-content combo-builder-options mt-[1.125rem] grid grid-cols-2 gap-2.5 sm:gap-[0.6875rem] md:grid-cols-3">
           {miniatures.map((product) => (
             <ProductOption
               key={product.id}
@@ -102,7 +102,7 @@ export function ComboBuilderStepPanel({
       ) : null}
 
       {currentStep === 1 ? (
-        <div className="combo-step-content combo-builder-options mt-5 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3">
+        <div className="combo-step-content combo-builder-options mt-[1.125rem] grid grid-cols-2 gap-2.5 sm:gap-[0.6875rem] md:grid-cols-3">
           {mixers.map((product) => (
             <ProductOption
               key={product.id}
@@ -115,7 +115,7 @@ export function ComboBuilderStepPanel({
       ) : null}
 
       {currentStep === 2 ? (
-        <div className="combo-step-content combo-builder-options mt-5 grid max-w-md grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        <div className="combo-step-content combo-builder-options mt-[1.125rem] grid max-w-md grid-cols-1 gap-[0.6875rem] sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
           {glasses.map((product) => (
             <ProductOption
               key={product.id}
@@ -128,7 +128,7 @@ export function ComboBuilderStepPanel({
       ) : null}
 
       {currentStep === 3 ? (
-        <div className="combo-step-content combo-builder-options mt-5 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+        <div className="combo-step-content combo-builder-options mt-[1.125rem] grid grid-cols-2 gap-2.5 sm:gap-[0.6875rem] md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
           {extraOptions.map((option) => (
             <ProductOption
               key={option.product.id}
@@ -144,29 +144,29 @@ export function ComboBuilderStepPanel({
       ) : null}
 
       {currentStep === 4 ? (
-        <div className="combo-step-content mt-5">
-          <div className="grid items-center gap-4 overflow-hidden rounded-[1.1rem] bg-action p-4 text-white sm:grid-cols-[0.85fr_1.15fr] sm:p-5">
+        <div className="combo-step-content mt-4">
+          <div className="grid items-center gap-3 overflow-hidden rounded-[1.1rem] bg-action p-3.5 text-white sm:grid-cols-[0.85fr_1.15fr] sm:p-4">
             {miniature ? (
               <ProductVisual
                 variant={miniature.image}
                 volumeLabel="Tu combo"
                 compact
-                className="!h-44 sm:!h-48"
+                className="!h-40 sm:!h-44"
               />
             ) : null}
             <div>
               <p className="text-xs font-black tracking-[0.18em] text-mint uppercase">
                 Uno. Y listo.
               </p>
-              <h3 className="mt-2 font-display text-2xl leading-none uppercase sm:text-3xl">
+              <h3 className="mt-1.5 font-display text-xl leading-none uppercase sm:text-2xl">
                 Lo armaste a tu manera.
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-white/70">
+              <p className="mt-2 text-[0.8125rem] leading-relaxed text-white/70 sm:text-sm">
                 Packaging, sticker y tarjeta sorpresa ya vienen incluidos como parte de la experiencia.
               </p>
             </div>
           </div>
-          <div className="mt-4 lg:hidden">
+          <div className="mt-3 lg:hidden">
             <SelectionSummary
               miniature={miniature}
               mixer={mixer}

@@ -23,13 +23,13 @@ export function ComboBuilderNavigation({
   onAdd,
 }: ComboBuilderNavigationProps) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 mt-5 border-t border-ink/10 bg-canvas/95 px-4 py-2.5 backdrop-blur-sm sm:px-6 lg:static lg:border-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:backdrop-blur-none">
-      <div className="mx-auto flex max-w-[90rem] items-center gap-2.5 lg:max-w-none">
+    <div className="fixed inset-x-0 bottom-0 z-40 mt-4 border-t border-ink/10 bg-canvas/95 px-4 py-2 backdrop-blur-sm sm:px-6 lg:static lg:border-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:backdrop-blur-none">
+      <div className="mx-auto flex max-w-[90rem] items-center gap-2 lg:max-w-none">
         <button
           type="button"
           disabled={currentStep === 0}
           onClick={onBack}
-          className="motion-button inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-ink px-3.5 py-2.5 text-sm font-bold transition-colors hover:bg-ink hover:text-white disabled:cursor-not-allowed disabled:border-ink/15 disabled:text-ink/30 disabled:hover:bg-transparent"
+          className="motion-button inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-ink px-3 py-2 text-[0.8125rem] font-bold transition-colors hover:bg-ink hover:text-white disabled:cursor-not-allowed disabled:border-ink/15 disabled:text-ink/30 disabled:hover:bg-transparent"
         >
           <ArrowBackIcon className="size-4" />
           Atrás
@@ -47,7 +47,7 @@ export function ComboBuilderNavigation({
             type="button"
             disabled={!canContinue}
             onClick={onContinue}
-            className="motion-button ml-auto inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-action bg-action px-3.5 py-2.5 text-sm font-bold text-white transition-colors hover:border-ink hover:bg-ink disabled:cursor-not-allowed disabled:border-ink/10 disabled:bg-ink/10 disabled:text-ink/35"
+            className="motion-button ml-auto inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-action bg-action px-3 py-2 text-[0.8125rem] font-bold text-white transition-colors hover:border-ink hover:bg-ink disabled:cursor-not-allowed disabled:border-ink/10 disabled:bg-ink/10 disabled:text-ink/35"
           >
             Continuar <ArrowIcon className="size-4" />
           </button>
@@ -56,7 +56,7 @@ export function ComboBuilderNavigation({
             type="button"
             disabled={!complete}
             onClick={onAdd}
-            className="motion-button inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-action bg-action px-3.5 py-2.5 text-sm font-bold text-white transition-colors hover:border-ink hover:bg-ink disabled:cursor-not-allowed disabled:opacity-45 lg:hidden"
+            className="motion-button inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-action bg-action px-3 py-2 text-[0.8125rem] font-bold text-white transition-colors hover:border-ink hover:bg-ink disabled:cursor-not-allowed disabled:opacity-45 lg:hidden"
           >
             <CartIcon className="size-5" />
             <span className="hidden min-[390px]:inline">{added ? "Preparado" : "Agregar"}</span>

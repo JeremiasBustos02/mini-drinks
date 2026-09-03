@@ -59,13 +59,13 @@ export function SelectionSummary({
   ];
 
   return (
-    <div className="rounded-[1.25rem] bg-white p-4 shadow-[0_1px_0_rgba(13,13,13,0.08)] sm:p-5">
+    <div className="rounded-[1.25rem] bg-white p-4 shadow-[0_1px_0_rgba(13,13,13,0.08)] sm:p-[1.125rem]">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-black tracking-[0.18em] text-action uppercase">
             Tu combo
           </p>
-          <h2 className="mt-1.5 font-display text-xl leading-none uppercase sm:text-2xl">
+          <h2 className="mt-1.5 font-display text-xl leading-none uppercase sm:text-[1.375rem]">
             Lo que elegiste
           </h2>
         </div>
@@ -74,16 +74,16 @@ export function SelectionSummary({
         </span>
       </div>
 
-      <dl className="mt-4 divide-y divide-ink/10 border-y border-ink/10">
+      <dl className="mt-3.5 divide-y divide-ink/10 border-y border-ink/10">
         {rows.map((row) => (
-          <div key={row.label} className="grid grid-cols-[1fr_auto] gap-2 py-2.5">
+          <div key={row.label} className="grid grid-cols-[1fr_auto] gap-2 py-[0.5625rem]">
             <div className="min-w-0">
               <dt className="text-[0.6rem] font-black tracking-[0.14em] text-ink/45 uppercase">
                 {row.label}
               </dt>
               <dd
                 key={row.value}
-                className="summary-value mt-0.5 text-[0.8rem] leading-snug font-bold sm:text-sm"
+                className="summary-value mt-0.5 text-[0.8rem] leading-snug font-bold sm:text-[0.84375rem]"
               >
                 {row.value}
               </dd>
@@ -101,7 +101,7 @@ export function SelectionSummary({
       </dl>
 
       {pricing.matchingCombo ? (
-        <div className="combo-price-match mt-3 rounded-xl bg-mint/60 p-3">
+        <div className="combo-price-match mt-2.5 rounded-xl bg-mint/60 p-2.5">
           <p className="text-[0.7rem] font-black tracking-[0.12em] text-action uppercase">
             Mejor precio activado
           </p>
@@ -112,7 +112,7 @@ export function SelectionSummary({
         </div>
       ) : null}
 
-      <div className="mt-4 space-y-1.5">
+      <div className="mt-3 space-y-1">
         <div className="flex items-center justify-between gap-3 text-[0.8rem] text-ink/60">
           <span>Componentes</span>
           <span
@@ -136,11 +136,11 @@ export function SelectionSummary({
             <span>{formatPrice(pricing.savings)}</span>
           </div>
         ) : null}
-        <div className="flex items-end justify-between gap-3 border-t-2 border-ink pt-3">
+        <div className="flex items-end justify-between gap-3 border-t-2 border-ink pt-2.5">
           <span className="text-sm font-black">Total</span>
           <span
             key={pricing.finalPrice}
-            className="price-update text-2xl font-black tracking-tight sm:text-3xl"
+            className="price-update text-[1.375rem] font-black tracking-tight sm:text-[1.75rem]"
           >
             {formatPrice(pricing.finalPrice)}
           </span>
@@ -152,7 +152,7 @@ export function SelectionSummary({
           type="button"
           disabled={!complete || currentStep !== 4}
           onClick={onAdd}
-          className="motion-button mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border-2 border-action bg-action px-4 py-2.5 text-sm font-bold text-white transition-colors hover:border-ink hover:bg-ink disabled:cursor-not-allowed disabled:border-ink/10 disabled:bg-ink/10 disabled:text-ink/45"
+          className="motion-button mt-3 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border-2 border-action bg-action px-3.5 py-2 text-[0.8125rem] font-bold text-white transition-colors hover:border-ink hover:bg-ink disabled:cursor-not-allowed disabled:border-ink/10 disabled:bg-ink/10 disabled:text-ink/45"
         >
           <CartIcon className="size-5" />
           {added ? "Combo preparado" : currentStep === 4 ? "Agregar al carrito" : "Completá los pasos"}
