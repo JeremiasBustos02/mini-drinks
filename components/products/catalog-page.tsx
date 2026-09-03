@@ -3,7 +3,9 @@ import type { ProductFilter } from "@/components/products/product-filters";
 import { BackButton } from "@/components/ui/back-button";
 import { Container } from "@/components/ui/container";
 import { StorefrontShell } from "@/components/layout/storefront-shell";
-import { isCatalogCategory } from "@/lib/catalog";
+import { getPublishedCombosWithComponents } from "@/lib/db/queries/combos";
+import { getActiveCategories, getPublishedProductsWithCategories } from "@/lib/db/queries/products";
+import { mapCategory, mapCombo, mapProduct } from "@/lib/mappers/catalog";
 
 export type CatalogPageProps = {
   searchParams: Promise<{ categoria?: string }>;
@@ -11,7 +13,26 @@ export type CatalogPageProps = {
 
 export async function CatalogPage({ searchParams }: CatalogPageProps) {
   const { categoria } = await searchParams;
-  const initialFilter: ProductFilter = isCatalogCategory(categoria) ? categoria : "all";
+  let items;
+  let categories;
+
+  try {
+    const [products, combos, categoryRecords] = await Promise.all([
+      getPublishedProductsWithCategories(),
+      getPublishedCombosWithComponents(),
+      getActiveCategories(),
+    ]);
+    items = [...combos.map(mapCombo), ...products.map(({ product, category }) => mapProduct({ ...product, category }))];
+    categories = categoryRecords.map(mapCategory);
+  } catch (error) {
+    console.error("Unable to load the product catalog.", error);
+    throw error;
+  }
+
+  const initialFilter: ProductFilter =
+    categoria === "combos" || categories.some((category) => category.slug === categoria)
+      ? categoria ?? "all"
+      : "all";
 
   return (
     <StorefrontShell>
@@ -31,7 +52,7 @@ export async function CatalogPage({ searchParams }: CatalogPageProps) {
 
         <section className="py-10 sm:py-14 lg:py-18">
           <Container>
-            <CatalogBrowser initialFilter={initialFilter} />
+            <CatalogBrowser initialFilter={initialFilter} items={items} categories={categories} />
           </Container>
         </section>
       </main>

@@ -13,6 +13,7 @@ export const products: Product[] = [
     category: "miniatures",
     kind: "product",
     productType: "miniature",
+    available: 18,
     volume: "50 ml",
   },
   {
@@ -27,6 +28,7 @@ export const products: Product[] = [
     category: "miniatures",
     kind: "product",
     productType: "miniature",
+    available: 9,
     volume: "50 ml",
   },
   {
@@ -41,6 +43,7 @@ export const products: Product[] = [
     category: "miniatures",
     kind: "product",
     productType: "miniature",
+    available: 12,
     volume: "50 ml",
   },
   {
@@ -55,6 +58,7 @@ export const products: Product[] = [
     category: "miniatures",
     kind: "product",
     productType: "miniature",
+    available: 6,
     volume: "50 ml",
   },
   {
@@ -69,6 +73,7 @@ export const products: Product[] = [
     category: "miniatures",
     kind: "product",
     productType: "miniature",
+    available: 0,
     volume: "50 ml",
   },
   {
@@ -83,6 +88,7 @@ export const products: Product[] = [
     category: "mixers",
     kind: "product",
     productType: "mixer",
+    available: 30,
     volume: "220 ml",
   },
   {
@@ -97,6 +103,7 @@ export const products: Product[] = [
     category: "mixers",
     kind: "product",
     productType: "mixer",
+    available: 20,
     volume: "220 ml",
   },
   {
@@ -111,6 +118,7 @@ export const products: Product[] = [
     category: "mixers",
     kind: "product",
     productType: "mixer",
+    available: 16,
     volume: "250 ml",
   },
   {
@@ -125,6 +133,7 @@ export const products: Product[] = [
     category: "mixers",
     kind: "product",
     productType: "mixer",
+    available: 22,
     volume: "220 ml",
   },
   {
@@ -139,6 +148,7 @@ export const products: Product[] = [
     category: "mixers",
     kind: "product",
     productType: "mixer",
+    available: 14,
     volume: "220 ml",
   },
   {
@@ -153,6 +163,7 @@ export const products: Product[] = [
     category: "mixers",
     kind: "product",
     productType: "mixer",
+    available: 11,
     volume: "200 ml",
   },
   {
@@ -167,6 +178,7 @@ export const products: Product[] = [
     category: "glasses",
     kind: "product",
     productType: "glass",
+    available: 50,
   },
   {
     id: "sorbete-rayado",
@@ -180,6 +192,7 @@ export const products: Product[] = [
     category: "extras",
     kind: "product",
     productType: "accessory",
+    available: 40,
   },
   {
     id: "golosina-extra",
@@ -193,6 +206,7 @@ export const products: Product[] = [
     category: "extras",
     kind: "product",
     productType: "extra",
+    available: 25,
   },
   {
     id: "packaging-base",
@@ -206,6 +220,7 @@ export const products: Product[] = [
     category: "extras",
     kind: "product",
     productType: "supply",
+    available: 100,
   },
   {
     id: "packaging-especial",
@@ -219,5 +234,6 @@ export const products: Product[] = [
     category: "extras",
     kind: "product",
     productType: "supply",
+    available: 15,
   },
 ];

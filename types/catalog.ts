@@ -2,13 +2,7 @@ export type { ProductType } from "@/types/domain";
 
 import type { ProductType } from "@/types/domain";
 
-export type CatalogCategory =
-  | "combos"
-  | "miniatures"
-  | "glasses"
-  | "mixers"
-  | "extras"
-  | "packs";
+export type CatalogCategory = string;
 
 export type VisualVariant =
   | "fernet"
@@ -40,7 +34,10 @@ type CatalogBase = {
   price: number;
   published: boolean;
   image: VisualVariant;
+  imageUrl?: string | null;
   category: CatalogCategory;
+  categoryName?: string;
+  available: number;
 };
 
 export type Product = CatalogBase & {
@@ -52,7 +49,9 @@ export type Product = CatalogBase & {
 
 export type ComboItem = {
   productId: string;
+  name?: string;
   quantity: number;
+  image?: VisualVariant;
   variant?: string;
 };
 

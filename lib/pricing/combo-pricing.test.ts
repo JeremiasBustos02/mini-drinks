@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { combos } from "@/data/combos";
 import { products } from "@/data/products";
+import { getDerivedComboStock } from "@/lib/catalog/availability";
 import { calculateComboPrice } from "@/lib/pricing/combo-pricing";
 
 test("keeps the valid promotional combo price in cents", () => {
@@ -65,4 +66,15 @@ test("rejects non-positive and fractional quantities", () => {
     assert.equal(result.ok, false);
     if (!result.ok) assert.equal(result.error.code, "invalid_quantity");
   }
+});
+
+test("derives combo stock from the limiting component and required quantity", () => {
+  assert.equal(
+    getDerivedComboStock([
+      { stock: 10, quantity: 2 },
+      { stock: 7, quantity: 1 },
+      { stock: 20, quantity: 3 },
+    ]),
+    5,
+  );
 });

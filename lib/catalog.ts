@@ -1,4 +1,6 @@
 import { catalogItems, categories, products } from "@/data/catalog";
+import { getDerivedComboStock } from "@/lib/catalog/availability";
+import { formatArsCents } from "@/lib/money";
 import type { CatalogCategory, CatalogItem, Combo, ProductType } from "@/types/catalog";
 
 const productTypeLabels: Record<ProductType, string> = {
@@ -11,11 +13,7 @@ const productTypeLabels: Record<ProductType, string> = {
 };
 
 export function formatPrice(price: number) {
-  return new Intl.NumberFormat("es-AR", {
-    currency: "ARS",
-    maximumFractionDigits: 0,
-    style: "currency",
-  }).format(price / 100);
+  return formatArsCents(price);
 }
 
 export function getCategoryName(categorySlug: CatalogItem["category"]) {
@@ -47,12 +45,10 @@ export function getProduct(productId: string) {
 }
 
 export function getComboStock(combo: Combo) {
-  const componentStock = combo.components.map((component) => {
+  return getDerivedComboStock(combo.components.map((component) => {
     const product = getProduct(component.productId);
-    return product ? Math.floor(product.stock / component.quantity) : 0;
-  });
-
-  return Math.min(...componentStock);
+    return { stock: product?.stock ?? 0, quantity: component.quantity };
+  }));
 }
 
 export function getRelatedItems(item: CatalogItem, limit = 3) {

@@ -13,6 +13,7 @@ export const combos: Combo[] = [
     category: "combos",
     kind: "combo",
     active: true,
+    available: 18,
     includesSurprise: true,
     components: [
       { productId: "fernet-branca-50ml", quantity: 1 },
@@ -33,6 +34,7 @@ export const combos: Combo[] = [
     category: "combos",
     kind: "combo",
     active: true,
+    available: 9,
     includesSurprise: true,
     components: [
       { productId: "jack-daniels-50ml", quantity: 1 },
@@ -53,6 +55,7 @@ export const combos: Combo[] = [
     category: "combos",
     kind: "combo",
     active: true,
+    available: 12,
     includesSurprise: true,
     components: [
       { productId: "gin-aviation-50ml", quantity: 1 },
@@ -73,6 +76,7 @@ export const combos: Combo[] = [
     category: "combos",
     kind: "combo",
     active: true,
+    available: 6,
     includesSurprise: true,
     components: [
       { productId: "titos-vodka-50ml", quantity: 1 },

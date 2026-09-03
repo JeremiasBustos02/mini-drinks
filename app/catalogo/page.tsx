@@ -1,15 +1,10 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import {
-  CatalogPage,
-  type CatalogPageProps,
-} from "@/components/products/catalog-page";
-
-export const metadata: Metadata = {
-  title: "Catálogo | MINI.",
-  description: "Miniaturas, mixers, vasos, extras y combos para hacerte uno.",
-};
-
-export default function LegacyCatalogPage(props: CatalogPageProps) {
-  return <CatalogPage {...props} />;
+export default async function LegacyCatalogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ categoria?: string }>;
+}) {
+  const { categoria } = await searchParams;
+  redirect(categoria ? `/productos?categoria=${encodeURIComponent(categoria)}` : "/productos");
 }

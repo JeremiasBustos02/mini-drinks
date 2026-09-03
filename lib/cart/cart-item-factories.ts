@@ -1,4 +1,3 @@
-import { getProduct } from "@/lib/catalog";
 import type {
   CartComponent,
   ComboCartItem,
@@ -43,12 +42,12 @@ export function createComboCartItem(combo: Combo): ComboCartItem {
     unitPrice: combo.price,
     quantity: 1,
     visual: combo.image,
-    components: combo.components.flatMap((component) => {
-      const product = getProduct(component.productId);
-      return product
-        ? [{ ...createComponent(product), quantity: component.quantity }]
-        : [];
-    }),
+    components: combo.components.map((component) => ({
+      productId: component.productId,
+      name: component.name ?? "Producto",
+      quantity: component.quantity,
+      visual: component.image ?? "extra",
+    })),
   };
 }
 

@@ -4,7 +4,6 @@ import { ArrowIcon } from "@/components/ui/icons";
 import { ProductVisual } from "@/components/products/product-visual";
 import {
   formatPrice,
-  getComboStock,
   getItemLabel,
   getStockStatus,
   isCombo,
@@ -23,7 +22,7 @@ export function ProductCard({
   className = "",
 }: ProductCardProps) {
   const combo = isCombo(item);
-  const stock = getStockStatus(combo ? getComboStock(item) : item.stock);
+  const stock = getStockStatus(item.available);
   const showStockStatus = stock.label !== "Disponible";
   const isFeatured = variant === "featured";
 
@@ -33,9 +32,11 @@ export function ProductCard({
         isFeatured ? "featured-card" : "h-full"
       } ${className}`}
     >
-      <ProductVisual
-        variant={item.image}
-        volumeLabel={item.kind === "product" ? item.volume : "Combo"}
+        <ProductVisual
+          variant={item.image}
+          imageUrl={item.imageUrl}
+          volumeLabel={item.kind === "product" ? item.volume : "Combo"}
+          productType={item.kind === "product" ? item.productType : undefined}
         className={isFeatured ? "featured-card-visual" : ""}
       />
       <div className={`p-3 pt-5 sm:p-4 sm:pt-5 ${isFeatured ? "" : "flex flex-1 flex-col"}`}>

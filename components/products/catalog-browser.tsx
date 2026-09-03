@@ -2,28 +2,26 @@
 
 import { useState } from "react";
 
-import { categories, catalogItems } from "@/data/catalog";
 import { ProductFilters } from "@/components/products/product-filters";
 import { ProductGrid } from "@/components/products/product-grid";
-import type { CatalogCategory } from "@/types/catalog";
+import type { CatalogCategory, CatalogItem, Category } from "@/types/catalog";
 
 type Filter = "all" | CatalogCategory;
 
 type CatalogBrowserProps = {
   initialFilter?: Filter;
+  items: CatalogItem[];
+  categories: Category[];
 };
 
-const filters: { label: string; value: Filter }[] = [
-  { label: "Todos", value: "all" },
-  ...categories.map((category) => ({
-    label: category.name,
-    value: category.slug,
-  })),
-];
-
-export function CatalogBrowser({ initialFilter = "all" }: CatalogBrowserProps) {
+export function CatalogBrowser({ initialFilter = "all", items, categories }: CatalogBrowserProps) {
   const [activeFilter, setActiveFilter] = useState<Filter>(initialFilter);
-  const visibleItems = catalogItems.filter(
+  const filters: { label: string; value: Filter }[] = [
+    { label: "Todos", value: "all" },
+    { label: "Combos", value: "combos" },
+    ...categories.map((category) => ({ label: category.name, value: category.slug })),
+  ];
+  const visibleItems = items.filter(
     (item) => activeFilter === "all" || item.category === activeFilter,
   );
 

@@ -4,9 +4,7 @@ import { BackButton } from "@/components/ui/back-button";
 import { Container } from "@/components/ui/container";
 import {
   formatPrice,
-  getCategoryName,
   getItemLabel,
-  getProduct,
   getStockStatus,
   isCombo,
 } from "@/lib/catalog";
@@ -14,12 +12,11 @@ import type { CatalogItem } from "@/types/catalog";
 
 type ProductDetailProps = {
   item: CatalogItem;
-  available: number;
 };
 
-export function ProductDetail({ item, available }: ProductDetailProps) {
+export function ProductDetail({ item }: ProductDetailProps) {
   const combo = isCombo(item);
-  const stock = getStockStatus(available);
+  const stock = getStockStatus(item.available);
 
   return (
     <section className="product-detail-section py-7 sm:py-10 lg:py-14">
@@ -30,6 +27,7 @@ export function ProductDetail({ item, available }: ProductDetailProps) {
           <div className="product-detail-visual lg:sticky lg:top-28">
             <ProductVisual
               variant={item.image}
+              imageUrl={item.imageUrl}
               volumeLabel={item.kind === "product" ? item.volume : "Combo"}
               className="product-detail-media"
             />
@@ -38,7 +36,7 @@ export function ProductDetail({ item, available }: ProductDetailProps) {
           <div className="product-detail-panel rounded-[1.5rem] bg-white p-6 sm:p-8 lg:p-10">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs font-black tracking-[0.2em] text-action uppercase">
-                {combo ? "Combo" : `${getItemLabel(item)} · ${getCategoryName(item.category)}`}
+                {combo ? "Combo" : `${getItemLabel(item)} · ${item.categoryName ?? item.category}`}
               </p>
               {stock.label !== "Disponible" ? (
                 <span className={`rounded-full px-3 py-1.5 text-xs font-black uppercase ${stock.tone}`}>
@@ -76,13 +74,10 @@ export function ProductDetail({ item, available }: ProductDetailProps) {
                 </h2>
                 <ul className="mt-5 space-y-3">
                   {item.components.map((component) => {
-                    const product = getProduct(component.productId);
-                    if (!product) return null;
-
                     return (
                       <li key={component.productId} className="text-sm font-bold sm:text-base">
                         <span className="font-bold">
-                          {component.quantity} × {product.name}
+                          {component.quantity} × {component.name ?? "Producto"}
                         </span>
                       </li>
                     );
@@ -113,7 +108,7 @@ export function ProductDetail({ item, available }: ProductDetailProps) {
               </section>
             ) : null}
 
-            <PurchasePreview item={item} available={available} />
+            <PurchasePreview item={item} available={item.available} />
           </div>
         </div>
       </Container>
