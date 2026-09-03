@@ -3,7 +3,10 @@ import Link from "next/link";
 import { getAdminDashboardStats } from "@/lib/db/queries/admin";
 
 export default async function AdminDashboardPage() {
+  console.info(`${new Date().toISOString()} [admin-page] enter`);
+  console.info(`${new Date().toISOString()} [admin-page] dashboard query start`);
   const stats = await getAdminDashboardStats();
+  console.info(`${new Date().toISOString()} [admin-page] dashboard query end`);
   const cards = [
     { label: "Productos", value: stats.products, href: "/admin/productos" },
     { label: "Publicados", value: stats.publishedProducts, href: "/admin/productos" },
@@ -11,6 +14,7 @@ export default async function AdminDashboardPage() {
     { label: "Combos activos", value: stats.activeCombos, href: "/admin/combos" },
   ];
 
+  console.info(`${new Date().toISOString()} [admin-page] render complete`);
   return (
     <div className="mx-auto max-w-6xl">
       <p className="text-xs font-black uppercase tracking-[0.16em] text-action">Resumen operativo</p>

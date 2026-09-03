@@ -79,7 +79,7 @@ export const comboComponentsSchema = z
 
 export const comboSchema = z.object({
   id: z.preprocess((value) => value || undefined, z.uuid().optional()),
-  revision: z.preprocess((value) => value || undefined, z.coerce.date().optional()),
+  expectedVersion: z.preprocess((value) => value || undefined, z.coerce.number().int().positive().optional()),
   name: requiredText,
   slug,
   description: requiredText,
@@ -123,6 +123,13 @@ export const stateChangeSchema = z.object({
 });
 
 export const categoryStateChangeSchema = stateChangeSchema.omit({ field: true });
+
+export const comboStateChangeSchema = z.object({
+  id: z.uuid(),
+  expectedVersion: z.coerce.number().int().positive(),
+  field: z.enum(["active", "published"]),
+  value: z.enum(["true", "false"]).transform((value) => value === "true"),
+});
 
 export function firstValidationError(error: z.ZodError) {
   return error.issues[0]?.message ?? "Revisá los datos ingresados.";

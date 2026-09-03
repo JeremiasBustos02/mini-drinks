@@ -105,6 +105,7 @@ export const combos = pgTable(
     imageUrl: text("image_url"),
     createdAt: createdAtColumn(),
     updatedAt: updatedAtColumn(),
+    version: integer("version").default(1).notNull(),
   },
   (table) => [
     uniqueIndex("combos_slug_unique").on(table.slug),

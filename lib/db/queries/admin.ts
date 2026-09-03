@@ -1,6 +1,6 @@
 import "server-only";
 
-import { asc, count, eq, sql } from "drizzle-orm";
+import { and, asc, count, eq, gt, lte } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 
@@ -9,38 +9,75 @@ import { db } from "@/lib/db";
 import { categories, comboItems, combos, orders, products } from "@/lib/db/schema";
 
 async function authorizeAdminRead() {
+  console.info(`${new Date().toISOString()} [admin-dashboard] DAL authorization start`);
+  const authorizationStartedAt = performance.now();
   await connection();
   const access = await getAdminAccess();
-  if (access.status === "unauthenticated") redirect("/admin/login");
-  if (access.status === "forbidden") redirect("/admin/acceso-denegado");
+  console.info(`${new Date().toISOString()} [admin-dashboard] DAL authorization end`, {
+    durationMs: Math.round(performance.now() - authorizationStartedAt),
+    status: access.status,
+  });
+  if (access.status === "unauthenticated") {
+    console.info(`${new Date().toISOString()} [admin-dashboard] redirect target`, "/admin/login");
+    redirect("/admin/login");
+  }
+  if (access.status === "forbidden") {
+    console.info(`${new Date().toISOString()} [admin-dashboard] redirect target`, "/admin/acceso-denegado");
+    redirect("/admin/acceso-denegado");
+  }
+}
+
+async function measureDashboardCount(
+  label: string,
+  query: () => Promise<Array<{ value: number }>>,
+) {
+  console.info(`${new Date().toISOString()} [admin-dashboard] ${label} start`);
+  const startedAt = performance.now();
+  const [result] = await query();
+  console.info(`${new Date().toISOString()} [admin-dashboard] ${label} end`, {
+    durationMs: Math.round(performance.now() - startedAt),
+    value: result?.value ?? 0,
+  });
+  return result?.value ?? 0;
 }
 
 export async function getAdminDashboardStats() {
   await authorizeAdminRead();
-  const [[productStats], [comboStats], [orderStats]] = await Promise.all([
-    db
-      .select({
-        total: count(products.id),
-        published: count(sql`case when ${products.published} and ${products.active} then 1 end`),
-        lowStock: count(
-          sql`case when ${products.active} and ${products.stock} > 0 and ${products.stock} <= 5 then 1 end`,
-        ),
-      })
-      .from(products),
-    db
-      .select({
-        active: count(sql`case when ${combos.active} and ${combos.published} then 1 end`),
-      })
-      .from(combos),
-    db.select({ total: count(orders.id) }).from(orders),
+  console.info(`${new Date().toISOString()} [admin-dashboard] queries start`);
+  const [productCount, publishedProductCount, lowStockProductCount, activeComboCount, orderCount] = await Promise.all([
+    measureDashboardCount("count products", async () =>
+      db.select({ value: count(products.id) }).from(products),
+    ),
+    measureDashboardCount("count published", async () =>
+      db
+        .select({ value: count(products.id) })
+        .from(products)
+        .where(and(eq(products.published, true), eq(products.active, true))),
+    ),
+    measureDashboardCount("count low stock", async () =>
+      db
+        .select({ value: count(products.id) })
+        .from(products)
+        .where(and(eq(products.active, true), gt(products.stock, 0), lte(products.stock, 5))),
+    ),
+    measureDashboardCount("count active combos", async () =>
+      db
+        .select({ value: count(combos.id) })
+        .from(combos)
+        .where(and(eq(combos.active, true), eq(combos.published, true))),
+    ),
+    measureDashboardCount("count orders", async () =>
+      db.select({ value: count(orders.id) }).from(orders),
+    ),
   ]);
+  console.info(`${new Date().toISOString()} [admin-dashboard] queries end`);
 
   return {
-    products: productStats?.total ?? 0,
-    publishedProducts: productStats?.published ?? 0,
-    lowStockProducts: productStats?.lowStock ?? 0,
-    activeCombos: comboStats?.active ?? 0,
-    orders: orderStats?.total ?? 0,
+    products: productCount,
+    publishedProducts: publishedProductCount,
+    lowStockProducts: lowStockProductCount,
+    activeCombos: activeComboCount,
+    orders: orderCount,
   };
 }
 

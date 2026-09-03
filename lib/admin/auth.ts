@@ -13,16 +13,29 @@ export type AdminAccess =
   | { status: "authorized"; userId: string; email: string | null };
 
 export const getAdminAccess = cache(async (): Promise<AdminAccess> => {
+  console.info(`${new Date().toISOString()} [admin-auth] execution start`);
   const supabase = await createClient();
+  console.info(`${new Date().toISOString()} [admin-auth] auth.getUser start`);
+  const getUserStartedAt = performance.now();
   const { data, error } = await supabase.auth.getUser();
+  console.info(`${new Date().toISOString()} [admin-auth] auth.getUser end`, {
+    durationMs: Math.round(performance.now() - getUserStartedAt),
+    status: error || !data.user ? "unauthenticated" : "authenticated",
+  });
 
   if (error || !data.user) return { status: "unauthenticated" };
 
+  console.info(`${new Date().toISOString()} [admin-auth] admin_users query start`);
+  const adminQueryStartedAt = performance.now();
   const [admin] = await db
     .select({ id: adminUsers.id })
     .from(adminUsers)
     .where(eq(adminUsers.authUserId, data.user.id))
     .limit(1);
+  console.info(`${new Date().toISOString()} [admin-auth] admin_users query end`, {
+    durationMs: Math.round(performance.now() - adminQueryStartedAt),
+    status: admin ? "authorized" : "forbidden",
+  });
 
   if (!admin) return { status: "forbidden", userId: data.user.id };
 

@@ -19,7 +19,6 @@ function createPostgresClient() {
   }
 
   return postgres(connectionString, {
-    max: 1,
     prepare: false,
     idle_timeout: 20,
     connect_timeout: 10,

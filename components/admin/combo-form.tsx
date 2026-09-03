@@ -24,7 +24,7 @@ type ComboValue = {
   active: boolean;
   published: boolean;
   imageUrl: string | null;
-  updatedAt: Date;
+  version: number;
   components: Array<{ productId: string; quantity: number }>;
 };
 
@@ -81,7 +81,7 @@ export function ComboForm({ combo, products }: { combo?: ComboValue; products: P
   return (
     <form action={saveComboAction} className="grid gap-4 md:grid-cols-2">
       {combo && <input name="id" type="hidden" value={combo.id} />}
-      {combo && <input name="revision" type="hidden" value={new Date(combo.updatedAt).toISOString()} />}
+      {combo && <input name="expectedVersion" type="hidden" value={combo.version} />}
       <input
         name="components"
         type="hidden"

@@ -47,12 +47,12 @@ export default async function AdminCombosPage({ searchParams }: CombosPageProps)
               <div className="mt-4 flex flex-wrap gap-2 border-t border-ink/10 pt-4">
                 <form action={setComboStateAction}>
                   <input name="id" type="hidden" value={combo.id} /><input name="field" type="hidden" value="published" /><input name="value" type="hidden" value={String(!combo.published)} />
-                  <input name="revision" type="hidden" value={combo.updatedAt.toISOString()} />
+                  <input name="expectedVersion" type="hidden" value={combo.version} />
                   <button className="rounded-lg border border-ink/25 px-3 py-2 text-xs font-black">{combo.published ? "Ocultar" : "Publicar"}</button>
                 </form>
                 <form action={setComboStateAction}>
                   <input name="id" type="hidden" value={combo.id} /><input name="field" type="hidden" value="active" /><input name="value" type="hidden" value={String(!combo.active)} />
-                  <input name="revision" type="hidden" value={combo.updatedAt.toISOString()} />
+                  <input name="expectedVersion" type="hidden" value={combo.version} />
                   <button className="rounded-lg border border-ink/25 px-3 py-2 text-xs font-black">{combo.active ? "Desactivar" : "Activar"}</button>
                 </form>
               </div>

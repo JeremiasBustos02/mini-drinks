@@ -5,9 +5,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getAdminAccess } from "@/lib/admin/auth";
+import { updateComboAndReplaceItems } from "@/lib/admin/combo-concurrency";
 import {
   categorySchema,
   categoryStateChangeSchema,
+  comboStateChangeSchema,
   comboSchema,
   firstValidationError,
   loginSchema,
@@ -53,19 +55,51 @@ function revalidateCatalog(slugs: string[] = []) {
 }
 
 export async function loginAction(formData: FormData) {
+  console.info(`${new Date().toISOString()} [login] start`);
   const parsed = loginSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
+    console.info(`${new Date().toISOString()} [login] redirect target`, "/admin/login");
     redirectWithNotice("/admin/login", "error", firstValidationError(parsed.error));
   }
 
+  console.info(`${new Date().toISOString()} [login] before createClient`);
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) redirectWithNotice("/admin/login", "error", "Email o contraseña incorrectos.");
+  console.info(`${new Date().toISOString()} [login] after createClient`);
+  console.info(`${new Date().toISOString()} [login] before signInWithPassword`);
+  const signInStartedAt = performance.now();
+  const result = await supabase.auth.signInWithPassword(parsed.data);
+  const signInDurationMs = Math.round(performance.now() - signInStartedAt);
+  console.info(`${new Date().toISOString()} [login] after signInWithPassword`, {
+    durationMs: signInDurationMs,
+  });
+  if (result.error) {
+    console.error(`${new Date().toISOString()} [login] auth error`, {
+      code: result.error.code,
+      durationMs: signInDurationMs,
+      status: result.error.status,
+    });
+    console.info(`${new Date().toISOString()} [login] redirect target`, "/admin/login");
+    redirectWithNotice("/admin/login", "error", "Email o contraseña incorrectos.");
+  }
 
+  console.info(
+    `${new Date().toISOString()} [login] authenticated user`,
+    result.data.user.id,
+  );
+
+  console.info(`${new Date().toISOString()} [login] before admin authorization`);
   const access = await getAdminAccess();
-  if (access.status !== "authorized") redirect("/admin/acceso-denegado");
+  console.info(`${new Date().toISOString()} [login] after admin authorization`, access.status);
+  if (access.status !== "authorized") {
+    console.info(`${new Date().toISOString()} [login] redirect target`, "/admin/acceso-denegado");
+    redirect("/admin/acceso-denegado");
+  }
 
+  console.info(`${new Date().toISOString()} [login] before revalidatePath`);
   revalidatePath("/admin", "layout");
+  console.info(`${new Date().toISOString()} [login] after revalidatePath`);
+  console.info(`${new Date().toISOString()} [login] before redirect`);
+  console.info(`${new Date().toISOString()} [login] redirect target`, "/admin");
   redirect("/admin");
 }
 
@@ -221,7 +255,7 @@ export async function saveComboAction(formData: FormData) {
     redirectWithNotice("/admin/combos", "error", firstValidationError(parsed.error));
   }
 
-  const { id, revision, components, ...values } = parsed.data;
+  const { id, expectedVersion, components, ...values } = parsed.data;
   let previousSlug: string | undefined;
   try {
     await db.transaction(async (tx) => {
@@ -259,25 +293,34 @@ export async function saveComboAction(formData: FormData) {
 
       let comboId = id;
       if (id) {
-        if (!revision) throw new AdminMutationError("La versión del combo no es válida.");
+        if (!expectedVersion) throw new AdminMutationError("La versión del combo no es válida.");
         const [existing] = await tx.select({ slug: combos.slug }).from(combos).where(eq(combos.id, id)).limit(1);
         if (!existing) throw new AdminMutationError("El combo ya no existe.");
         previousSlug = existing.slug;
-        const updated = await tx
-          .update(combos)
-          .set({ ...values, updatedAt: new Date() })
-          .where(and(eq(combos.id, id), eq(combos.updatedAt, revision)))
-          .returning({ id: combos.id });
-        if (updated.length === 0) throw new AdminMutationError("El combo cambió en otra sesión. Recargá antes de guardar.");
+        const result = await updateComboAndReplaceItems(
+          async () => {
+            const updated = await tx
+              .update(combos)
+              .set({ ...values, updatedAt: new Date(), version: sql`${combos.version} + 1` })
+              .where(and(eq(combos.id, id), eq(combos.version, expectedVersion)))
+              .returning({ id: combos.id });
+            return updated.length > 0;
+          },
+          async () => {
+            await tx.delete(comboItems).where(eq(comboItems.comboId, comboId!));
+            await tx.insert(comboItems).values(
+              components.map((component) => ({ comboId: comboId!, ...component })),
+            );
+          },
+        );
+        if (result === "conflict") throw new AdminMutationError("El combo cambió en otra sesión. Recargá antes de guardar.");
       } else {
         const [created] = await tx.insert(combos).values(values).returning({ id: combos.id });
         comboId = created.id;
+        await tx.insert(comboItems).values(
+          components.map((component) => ({ comboId: comboId!, ...component })),
+        );
       }
-
-      await tx.delete(comboItems).where(eq(comboItems.comboId, comboId!));
-      await tx.insert(comboItems).values(
-        components.map((component) => ({ comboId: comboId!, ...component })),
-      );
     });
   } catch (error) {
     redirectWithNotice("/admin/combos", "error", databaseErrorMessage(error));
@@ -291,11 +334,11 @@ export async function saveComboAction(formData: FormData) {
 
 export async function setComboStateAction(formData: FormData) {
   await authorizeMutation();
-  const parsed = stateChangeSchema.safeParse(Object.fromEntries(formData));
+  const parsed = comboStateChangeSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     redirectWithNotice("/admin/combos", "error", "Cambio de estado inválido.");
   }
-  const { id, revision, field, value } = parsed.data;
+  const { id, expectedVersion, field, value } = parsed.data;
 
   const [combo] = await db.select({ slug: combos.slug }).from(combos).where(eq(combos.id, id)).limit(1);
   if (!combo) redirectWithNotice("/admin/combos", "error", "El combo ya no existe.");
@@ -321,8 +364,8 @@ export async function setComboStateAction(formData: FormData) {
 
   const updated = await db
     .update(combos)
-    .set({ [field]: value, updatedAt: new Date() })
-    .where(and(eq(combos.id, id), eq(combos.updatedAt, revision)))
+    .set({ [field]: value, updatedAt: new Date(), version: sql`${combos.version} + 1` })
+    .where(and(eq(combos.id, id), eq(combos.version, expectedVersion)))
     .returning({ id: combos.id });
   if (updated.length === 0) redirectWithNotice("/admin/combos", "error", "El combo cambió en otra sesión. Recargá la página.");
   revalidatePath("/admin");

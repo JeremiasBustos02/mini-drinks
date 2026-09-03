@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test lib/pricing/combo-pricing.test.ts lib/catalog/availability.test.ts lib/cart/cart-utils.test.ts lib/money.test.ts lib/admin/validation.test.ts lib/mappers/catalog.test.ts",
+    "test": "tsx --test lib/pricing/combo-pricing.test.ts lib/catalog/availability.test.ts lib/cart/cart-utils.test.ts lib/money.test.ts lib/admin/combo-concurrency.test.ts lib/admin/validation.test.ts lib/mappers/catalog.test.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx lib/db/seed.ts",
