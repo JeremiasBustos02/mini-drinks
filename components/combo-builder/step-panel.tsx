@@ -198,7 +198,7 @@ export function ComboBuilderStepPanel({
         canContinue={canContinue}
         complete={complete}
         added={added}
-        total={pricing.finalPrice}
+        total={pricing.ok ? pricing.finalPrice : null}
         onBack={onBack}
         onContinue={onContinue}
         onAdd={onAdd}

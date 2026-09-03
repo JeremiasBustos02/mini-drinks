@@ -15,7 +15,7 @@ export function formatPrice(price: number) {
     currency: "ARS",
     maximumFractionDigits: 0,
     style: "currency",
-  }).format(price);
+  }).format(price / 100);
 }
 
 export function getCategoryName(categorySlug: CatalogItem["category"]) {

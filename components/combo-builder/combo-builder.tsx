@@ -64,7 +64,7 @@ export function ComboBuilder({ products, combos }: ComboBuilderProps) {
     quantity: 1,
   }));
   const pricing = calculateComboPrice(baseComponents, extraComponents, products, combos);
-  const complete = Boolean(miniature && mixer && glass);
+  const complete = Boolean(miniature && mixer && glass && pricing.ok);
   const canContinue =
     (currentStep === 0 && Boolean(miniature)) ||
     (currentStep === 1 && Boolean(mixer)) ||
@@ -95,7 +95,7 @@ export function ComboBuilder({ products, combos }: ComboBuilderProps) {
   }
 
   function addCombo() {
-    if (!complete || currentStep !== 4 || !miniature || !mixer || !glass) return;
+    if (!complete || currentStep !== 4 || !miniature || !mixer || !glass || !pricing.ok) return;
 
     addItem(
       createCustomComboCartItem({

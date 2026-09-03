@@ -23,6 +23,29 @@ type CartStore = {
   subtotal: () => number;
 };
 
+type PersistedCartState = Pick<CartStore, "items">;
+
+function migratePersistedCart(persistedState: unknown, version: number): PersistedCartState {
+  if (!persistedState || typeof persistedState !== "object") return { items: [] };
+
+  const state = persistedState as Partial<PersistedCartState>;
+
+  if (!Array.isArray(state.items)) return { items: [] };
+  if (version >= 1) return { items: state.items };
+
+  return {
+    items: state.items.flatMap((item) => {
+      if (!item || typeof item !== "object" || typeof item.unitPrice !== "number") return [];
+
+      return [
+        item.type === "custom_combo"
+          ? { ...item, unitPrice: item.unitPrice * 100, savings: item.savings * 100 }
+          : { ...item, unitPrice: item.unitPrice * 100 },
+      ];
+    }),
+  };
+}
+
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
@@ -71,6 +94,8 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: "mini-cart",
+      version: 1,
+      migrate: migratePersistedCart,
       partialize: (state) => ({ items: state.items }),
       skipHydration: true,
     },

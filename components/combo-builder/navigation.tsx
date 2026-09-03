@@ -6,7 +6,7 @@ type ComboBuilderNavigationProps = {
   canContinue: boolean;
   complete: boolean;
   added: boolean;
-  total: number;
+  total: number | null;
   onBack: () => void;
   onContinue: () => void;
   onAdd: () => void;
@@ -39,7 +39,7 @@ export function ComboBuilderNavigation({
             Total
           </span>
           <span key={total} className="price-update block truncate text-base font-black">
-            {formatPrice(total)}
+            {total === null ? "No disponible" : formatPrice(total)}
           </span>
         </div>
         {currentStep < 4 ? (

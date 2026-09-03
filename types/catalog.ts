@@ -1,10 +1,6 @@
-export type ProductType =
-  | "miniature"
-  | "mixer"
-  | "glass"
-  | "extra"
-  | "accessory"
-  | "supply";
+export type { ProductType } from "@/types/domain";
+
+import type { ProductType } from "@/types/domain";
 
 export type CatalogCategory =
   | "combos"

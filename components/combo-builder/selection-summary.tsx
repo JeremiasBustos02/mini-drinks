@@ -100,7 +100,7 @@ export function SelectionSummary({
         ))}
       </dl>
 
-      {pricing.matchingCombo ? (
+      {pricing.ok && pricing.matchingCombo ? (
         <div className="combo-price-match mt-2.5 rounded-xl bg-mint/60 p-2.5">
           <p className="text-[0.7rem] font-black tracking-[0.12em] text-action uppercase">
             Mejor precio activado
@@ -112,7 +112,7 @@ export function SelectionSummary({
         </div>
       ) : null}
 
-      <div className="mt-3 space-y-1">
+      {pricing.ok ? <div className="mt-3 space-y-1">
         <div className="flex items-center justify-between gap-3 text-[0.8rem] text-ink/60">
           <span>Componentes</span>
           <span
@@ -145,17 +145,27 @@ export function SelectionSummary({
             {formatPrice(pricing.finalPrice)}
           </span>
         </div>
-      </div>
+      </div> : (
+        <p className="mt-3 text-[0.8rem] font-bold text-action" role="alert">
+          Esta combinación no se puede cotizar. Revisá los productos elegidos.
+        </p>
+      )}
 
       {showAction ? (
         <button
           type="button"
-          disabled={!complete || currentStep !== 4}
+          disabled={!complete || currentStep !== 4 || !pricing.ok}
           onClick={onAdd}
           className="motion-button mt-3 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border-2 border-action bg-action px-3.5 py-2 text-[0.8125rem] font-bold text-white transition-colors hover:border-ink hover:bg-ink disabled:cursor-not-allowed disabled:border-ink/10 disabled:bg-ink/10 disabled:text-ink/45"
         >
           <CartIcon className="size-5" />
-          {added ? "Agregado al carrito" : currentStep === 4 ? "Agregar al carrito" : "Completá los pasos"}
+          {added
+            ? "Agregado al carrito"
+            : !pricing.ok
+              ? "Combinación no disponible"
+              : currentStep === 4
+                ? "Agregar al carrito"
+                : "Completá los pasos"}
         </button>
       ) : null}
 
