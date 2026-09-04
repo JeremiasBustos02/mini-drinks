@@ -1,16 +1,22 @@
 import "server-only";
 
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, getTableColumns } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { comboItems, combos, products } from "@/lib/db/schema";
 import type { CheckoutCatalog } from "@/lib/checkout/resolve-cart";
+import { availableStockSql } from "@/lib/stock/availability-sql";
 
 type QueryExecutor = Pick<typeof db, "select">;
 
 export async function loadCheckoutCatalog(executor: QueryExecutor = db): Promise<CheckoutCatalog> {
   const [productRows, comboRows] = await Promise.all([
-    executor.select().from(products),
+    executor
+      .select({
+        ...getTableColumns(products),
+        stock: availableStockSql(products.id, products.stock),
+      })
+      .from(products),
     executor
       .select({ combo: combos, productId: comboItems.productId, quantity: comboItems.quantity })
       .from(combos)

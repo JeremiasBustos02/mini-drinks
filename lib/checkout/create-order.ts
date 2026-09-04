@@ -2,7 +2,7 @@ import "server-only";
 
 import { randomBytes } from "node:crypto";
 
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 import { loadCheckoutCatalog } from "@/lib/checkout/catalog";
 import { hashOrderAccessToken, resolveIdempotentOrder } from "@/lib/checkout/idempotency";
@@ -14,20 +14,14 @@ import { resolveCheckout } from "@/lib/checkout/resolve-cart";
 import type { ValidCreateOrderPayload } from "@/lib/checkout/validation";
 import { db } from "@/lib/db";
 import { orderItems, orders } from "@/lib/db/schema";
+import { ensureMercadoPagoPreference } from "@/lib/mercado-pago/create-preference";
+import { getReservationExpiresAt } from "@/lib/stock/config";
+import {
+  findReservationShortage,
+  insertStockReservation,
+  lockAndReadAvailableStock,
+} from "@/lib/stock/reservations";
 import type { CheckoutCreationResult } from "@/types/checkout";
-
-function confirmationResult(
-  publicNumber: string,
-  accessToken: string,
-  alreadyCreated: boolean,
-): CheckoutCreationResult {
-  return {
-    ok: true,
-    publicNumber,
-    confirmationUrl: `/pedido/${encodeURIComponent(publicNumber)}?token=${encodeURIComponent(accessToken)}`,
-    alreadyCreated,
-  };
-}
 
 function createPublicNumber() {
   const date = new Date().toISOString().slice(0, 10).replaceAll("-", "");
@@ -48,6 +42,7 @@ function isUniqueViolation(error: unknown, constraint: string) {
 async function findByAttemptId(checkoutAttemptId: string) {
   const [existing] = await db
     .select({
+      id: orders.id,
       publicNumber: orders.publicNumber,
       accessTokenHash: orders.accessTokenHash,
       checkoutRequestHash: orders.checkoutRequestHash,
@@ -68,7 +63,11 @@ export async function createOrder(payload: ValidCreateOrderPayload): Promise<Che
   );
   if (existingResult) {
     return existingResult.ok
-      ? confirmationResult(existingResult.publicNumber, payload.accessToken, true)
+      ? ensureMercadoPagoPreference(
+          (await findByAttemptId(payload.checkoutAttemptId))!.id,
+          payload.accessToken,
+          true,
+        )
       : existingResult;
   }
 
@@ -76,6 +75,34 @@ export async function createOrder(payload: ValidCreateOrderPayload): Promise<Che
     const publicNumber = createPublicNumber();
     try {
       const result = await db.transaction(async (tx) => {
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtextextended(${payload.checkoutAttemptId}, 0))`,
+        );
+        const [existingInTransaction] = await tx
+          .select({
+            id: orders.id,
+            publicNumber: orders.publicNumber,
+            accessTokenHash: orders.accessTokenHash,
+            checkoutRequestHash: orders.checkoutRequestHash,
+          })
+          .from(orders)
+          .where(eq(orders.checkoutAttemptId, payload.checkoutAttemptId))
+          .limit(1);
+        const transactionIdempotency = resolveIdempotentOrder(
+          existingInTransaction,
+          accessTokenHash,
+          checkoutRequestHash,
+        );
+        if (transactionIdempotency) {
+          return transactionIdempotency.ok
+            ? {
+                kind: "order_existing" as const,
+                orderId: existingInTransaction!.id,
+                reservationExpiresAt: null,
+              }
+            : transactionIdempotency;
+        }
+
         const catalog = await loadCheckoutCatalog(tx);
         const resolved = resolveCheckout(payload, catalog);
         if (!resolved.ok) return resolved;
@@ -95,6 +122,23 @@ export async function createOrder(payload: ValidCreateOrderPayload): Promise<Che
             quoteHash: currentQuoteHash,
           };
         }
+
+        const lockedStock = await lockAndReadAvailableStock(
+          tx,
+          resolved.stockRequirements,
+        );
+        const shortage = findReservationShortage(
+          resolved.stockRequirements,
+          lockedStock,
+        );
+        if (shortage) {
+          return {
+            ok: false as const,
+            code: "insufficient_stock" as const,
+            message: `Stock insuficiente de ${shortage.name}: se necesitan ${shortage.quantity} y hay ${shortage.available}.`,
+          };
+        }
+        const reservationExpiresAt = getReservationExpiresAt();
 
         const deliveryAddress =
           payload.fulfillment.type === "delivery"
@@ -144,10 +188,32 @@ export async function createOrder(payload: ValidCreateOrderPayload): Promise<Che
           })),
         );
 
-        return confirmationResult(publicNumber, payload.accessToken, false);
+        await insertStockReservation(
+          tx,
+          order.id,
+          resolved.stockRequirements,
+          reservationExpiresAt,
+        );
+
+        return {
+          kind: "order_created" as const,
+          orderId: order.id,
+          reservationExpiresAt,
+        };
       });
 
-      return result;
+      if ("ok" in result) return result;
+      if (result.kind === "order_created") {
+        console.info("stock.reservation_created", {
+          orderId: result.orderId,
+          expiresAt: result.reservationExpiresAt.toISOString(),
+        });
+      }
+      return ensureMercadoPagoPreference(
+        result.orderId,
+        payload.accessToken,
+        result.kind === "order_existing",
+      );
     } catch (error) {
       if (isUniqueViolation(error, "orders_public_number_unique")) continue;
       if (isUniqueViolation(error, "orders_checkout_attempt_id_unique")) {
@@ -158,7 +224,11 @@ export async function createOrder(payload: ValidCreateOrderPayload): Promise<Che
         );
         if (racedResult) {
           return racedResult.ok
-            ? confirmationResult(racedResult.publicNumber, payload.accessToken, true)
+            ? ensureMercadoPagoPreference(
+                (await findByAttemptId(payload.checkoutAttemptId))!.id,
+                payload.accessToken,
+                true,
+              )
             : racedResult;
         }
       }

@@ -1,4 +1,5 @@
 import { config } from "dotenv";
+import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
@@ -195,6 +196,7 @@ async function seed() {
               active: true,
               published: true,
               updatedAt: new Date(),
+              version: sql`${products.version} + 1`,
             },
           })
           .returning({ id: products.id });

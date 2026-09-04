@@ -5,6 +5,7 @@ import type {
   OrderSnapshotComponent,
   ResolvedCheckout,
   ResolvedCheckoutLine,
+  ResolvedStockRequirement,
 } from "@/types/checkout";
 import type { ProductType } from "@/types/domain";
 import type { ValidCheckoutPayload } from "@/lib/checkout/validation";
@@ -39,7 +40,7 @@ export type CheckoutCatalog = {
 };
 
 export type ResolveCheckoutResult =
-  | { ok: true; checkout: ResolvedCheckout }
+  | { ok: true; checkout: ResolvedCheckout; stockRequirements: ResolvedStockRequirement[] }
   | CheckoutFailure;
 
 function failure(code: CheckoutFailure["code"], message: string): CheckoutFailure {
@@ -250,6 +251,9 @@ export function resolveCheckout(
 
   return {
     ok: true,
+    stockRequirements: [...requirements.values()]
+      .map(({ productId, name, required }) => ({ productId, name, quantity: required }))
+      .sort((left, right) => left.productId.localeCompare(right.productId)),
     checkout: {
       lines: resolvedLines,
       subtotal,

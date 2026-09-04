@@ -1,9 +1,16 @@
 import "server-only";
 
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, getTableColumns } from "drizzle-orm";
+import { unstable_noStore as noStore } from "next/cache";
 
 import { db } from "@/lib/db";
 import { comboItems, combos, products } from "@/lib/db/schema";
+import { availableStockSql } from "@/lib/stock/availability-sql";
+
+const availableProductColumns = {
+  ...getTableColumns(products),
+  stock: availableStockSql(products.id, products.stock),
+};
 
 export function getPublishedCombos() {
   return db
@@ -14,8 +21,9 @@ export function getPublishedCombos() {
 }
 
 export async function getPublishedCombosWithComponents() {
+  noStore();
   const rows = await db
-    .select({ combo: combos, quantity: comboItems.quantity, product: products })
+    .select({ combo: combos, quantity: comboItems.quantity, product: availableProductColumns })
     .from(combos)
     .leftJoin(comboItems, eq(comboItems.comboId, combos.id))
     .leftJoin(products, eq(comboItems.productId, products.id))
@@ -36,8 +44,9 @@ export async function getComboBySlug(slug: string) {
 }
 
 export async function getPublishedComboWithComponentsBySlug(slug: string) {
+  noStore();
   const rows = await db
-    .select({ combo: combos, quantity: comboItems.quantity, product: products })
+    .select({ combo: combos, quantity: comboItems.quantity, product: availableProductColumns })
     .from(combos)
     .leftJoin(comboItems, eq(comboItems.comboId, combos.id))
     .leftJoin(products, eq(comboItems.productId, products.id))
@@ -48,11 +57,12 @@ export async function getPublishedComboWithComponentsBySlug(slug: string) {
 }
 
 export function getComboComponents(comboId: string) {
+  noStore();
   return db
     .select({
       id: comboItems.id,
       quantity: comboItems.quantity,
-      product: products,
+      product: availableProductColumns,
     })
     .from(comboItems)
     .innerJoin(products, eq(comboItems.productId, products.id))

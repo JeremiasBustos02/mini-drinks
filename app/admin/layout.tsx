@@ -6,6 +6,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
-  console.info(`${new Date().toISOString()} [admin-root-layout] enter`);
   return children;
 }

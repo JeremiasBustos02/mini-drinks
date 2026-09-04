@@ -113,6 +113,12 @@ export type ResolvedCheckout = {
   hasPriceChanges: boolean;
 };
 
+export type ResolvedStockRequirement = {
+  productId: string;
+  name: string;
+  quantity: number;
+};
+
 export type CheckoutErrorCode =
   | "invalid_payload"
   | "empty_cart"
@@ -125,6 +131,7 @@ export type CheckoutErrorCode =
   | "invalid_money"
   | "price_changed"
   | "idempotency_conflict"
+  | "payment_not_ready"
   | "order_not_created";
 
 export type CheckoutFailure = {
@@ -146,5 +153,7 @@ export type CheckoutCreationResult =
       ok: true;
       publicNumber: string;
       confirmationUrl: string;
+      paymentUrl: string;
+      reservationExpiresAt: string;
       alreadyCreated: boolean;
     };

@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { isValidProductImageUrl } from "@/lib/admin/product-images";
 import { parseArsToCents } from "@/lib/money";
 import { productTypeValues } from "@/types/domain";
 
@@ -10,8 +11,15 @@ const slug = requiredText.regex(
 );
 const checkbox = z.preprocess((value) => value === "on" || value === true, z.boolean());
 const optionalUrl = z.preprocess(
-  (value) => (typeof value === "string" && value.trim() === "" ? null : value),
-  z.url("Ingresá una URL válida.").nullable(),
+  (value) => {
+    if (value === undefined || value === null) return null;
+    return typeof value === "string" && value.trim() === "" ? null : String(value).trim();
+  },
+  z
+    .string()
+    .max(2048, "La URL es demasiado larga.")
+    .refine(isValidProductImageUrl, "Ingresá una URL http:// o https:// válida.")
+    .nullable(),
 );
 const money = z.string().trim().transform((value, context) => {
   try {
@@ -42,7 +50,10 @@ export const categorySchema = z.object({
 
 export const productSchema = z.object({
   id: z.preprocess((value) => value || undefined, z.uuid().optional()),
-  revision: z.preprocess((value) => value || undefined, z.coerce.date().optional()),
+  expectedVersion: z.preprocess(
+    (value) => value || undefined,
+    z.coerce.number().int().positive().optional(),
+  ),
   name: requiredText,
   slug,
   description: requiredText,
@@ -117,12 +128,16 @@ export const comboSchema = z.object({
 
 export const stateChangeSchema = z.object({
   id: z.uuid(),
-  revision: z.coerce.date(),
+  expectedVersion: z.coerce.number().int().positive(),
   field: z.enum(["active", "published"]),
   value: z.enum(["true", "false"]).transform((value) => value === "true"),
 });
 
-export const categoryStateChangeSchema = stateChangeSchema.omit({ field: true });
+export const categoryStateChangeSchema = z.object({
+  id: z.uuid(),
+  revision: z.coerce.date(),
+  value: z.enum(["true", "false"]).transform((value) => value === "true"),
+});
 
 export const comboStateChangeSchema = z.object({
   id: z.uuid(),

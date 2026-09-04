@@ -1,7 +1,5 @@
 import { createHash } from "node:crypto";
 
-import type { CheckoutCreationResult } from "@/types/checkout";
-
 export type ExistingIdempotentOrder = {
   publicNumber: string;
   accessTokenHash: string;
@@ -16,7 +14,10 @@ export function resolveIdempotentOrder(
   existing: ExistingIdempotentOrder | undefined,
   accessTokenHash: string,
   checkoutRequestHash: string,
-): CheckoutCreationResult | null {
+):
+  | { ok: true; publicNumber: string; alreadyCreated: true }
+  | { ok: false; code: "idempotency_conflict"; message: string }
+  | null {
   if (!existing) return null;
   if (
     existing.accessTokenHash !== accessTokenHash ||
@@ -31,7 +32,6 @@ export function resolveIdempotentOrder(
   return {
     ok: true,
     publicNumber: existing.publicNumber,
-    confirmationUrl: "",
     alreadyCreated: true,
   };
 }

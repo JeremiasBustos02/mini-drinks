@@ -73,6 +73,9 @@ test("resolves an individual product from current catalog data", () => {
   assert.equal(result.ok, true);
   if (!result.ok) return;
   assert.equal(result.checkout.total, 1000);
+  assert.deepEqual(result.stockRequirements, [
+    { productId: ids.miniature, name: "Fernet", quantity: 2 },
+  ]);
   assert.equal(result.checkout.lines[0].displayName, "Fernet");
   assert.equal(result.checkout.lines[0].configurationJson, null);
 });
@@ -131,6 +134,12 @@ test("reconstructs a custom combo, applies its best exact match and adds extras"
     assert.equal(snapshot.extrasPrice, 200);
     assert.equal(snapshot.version, 1);
   }
+  assert.deepEqual(result.stockRequirements, [
+    { productId: ids.miniature, name: "Fernet", quantity: 1 },
+    { productId: ids.mixer, name: "Cola", quantity: 1 },
+    { productId: ids.glass, name: "Vaso", quantity: 1 },
+    { productId: ids.extra, name: "Gomitas", quantity: 2 },
+  ]);
 });
 
 test("rejects an unknown custom-combo component", () => {

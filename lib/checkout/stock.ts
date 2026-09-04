@@ -35,3 +35,38 @@ export function findInsufficientStock(requirements: Iterable<StockRequirement>) 
     ({ required, stock }) => !Number.isInteger(stock) || stock < 0 || required > stock,
   );
 }
+
+export function calculateAvailableStock(
+  physicalStock: number,
+  reservations: Iterable<{ quantity: number; status: "active" | "consumed" | "released"; expiresAt: Date }>,
+  now: Date,
+) {
+  if (!Number.isInteger(physicalStock) || physicalStock < 0) {
+    throw new Error("invalid_physical_stock");
+  }
+  let reserved = 0;
+  for (const reservation of reservations) {
+    if (
+      reservation.status === "active" &&
+      reservation.expiresAt.getTime() > now.getTime()
+    ) {
+      reserved += reservation.quantity;
+    }
+  }
+  return Math.max(0, physicalStock - reserved);
+}
+
+export function findReservationShortage(
+  requirements: Array<{ productId: string; name: string; quantity: number }>,
+  rows: Array<{ id: string; stock: number; reserved: number }>,
+) {
+  const rowsById = new Map(rows.map((row) => [row.id, row]));
+  for (const requirement of requirements) {
+    const row = rowsById.get(requirement.productId);
+    const available = row ? Math.max(0, row.stock - row.reserved) : 0;
+    if (available < requirement.quantity) {
+      return { ...requirement, available };
+    }
+  }
+  return null;
+}

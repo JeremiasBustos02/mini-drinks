@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 
 import { createOrderAction, quoteCheckoutAction } from "@/app/checkout/actions";
 import { useCartHydration } from "@/components/cart/use-cart-hydration";
@@ -119,7 +118,6 @@ export function CheckoutPage() {
   const hydrated = useCartHydration();
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
-  const router = useRouter();
   const [fulfillment, setFulfillment] = useState<"pickup" | "delivery">("pickup");
   const [quote, setQuote] = useState<ResolvedCheckout | null>(null);
   const [quoteHash, setQuoteHash] = useState("");
@@ -219,7 +217,7 @@ export function CheckoutPage() {
         if (result.ok) {
           localStorage.removeItem(checkoutAttemptStorageKey);
           if (JSON.stringify(useCartStore.getState().items) === cartSignature) clearCart();
-          router.push(result.confirmationUrl);
+          window.location.assign(result.paymentUrl);
         } else {
           setError(result);
           if (result.quote && result.quoteHash) {
@@ -251,7 +249,7 @@ export function CheckoutPage() {
             <fieldset className="rounded-[1.5rem] bg-white p-5 sm:p-7"><legend className="px-2 font-display text-2xl uppercase">Entrega</legend><div className="mt-2 grid gap-3 sm:grid-cols-2"><label className={`cursor-pointer rounded-xl border-2 p-4 ${fulfillment === "pickup" ? "border-action bg-mint/35" : "border-ink/15"}`}><input type="radio" name="fulfillment" value="pickup" checked={fulfillment === "pickup"} onChange={() => setFulfillment("pickup")} className="mr-2" /><span className="font-black">Retiro</span><span className="mt-1 block text-xs text-ink/60">Coordinamos el punto y horario.</span></label><label className={`cursor-pointer rounded-xl border-2 p-4 ${fulfillment === "delivery" ? "border-action bg-mint/35" : "border-ink/15"}`}><input type="radio" name="fulfillment" value="delivery" checked={fulfillment === "delivery"} onChange={() => setFulfillment("delivery")} className="mr-2" /><span className="font-black">Envío local</span><span className="mt-1 block text-xs text-ink/60">Entrega propia, sujeta a coordinación.</span></label></div>{fulfillment === "delivery" ? <div className="mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_8rem]"><label className="text-sm font-bold">Calle<input name="street" autoComplete="address-line1" required maxLength={120} className={fieldClass} /></label><label className="text-sm font-bold">Número<input name="number" required maxLength={20} className={fieldClass} /></label><label className="text-sm font-bold sm:col-span-2">Localidad<input name="locality" autoComplete="address-level2" required maxLength={100} className={fieldClass} /></label><label className="text-sm font-bold sm:col-span-2">Referencia <span className="font-normal text-ink/50">(opcional)</span><input name="reference" maxLength={240} className={fieldClass} /></label></div> : null}</fieldset>
             <label className="block rounded-[1.5rem] bg-white p-5 text-sm font-bold sm:p-7">Observaciones <span className="font-normal text-ink/50">(opcional)</span><textarea name="notes" maxLength={500} rows={3} className={fieldClass} /></label>
           </div>
-          <aside className="lg:sticky lg:top-28"><CheckoutSummary quote={activeQuote} items={items} />{activeQuote ? <div className="mt-4 rounded-xl border-2 border-action bg-mint/40 p-4 text-sm font-bold">{activeQuote.hasPriceChanges ? "El total fue actualizado. Revisalo antes de confirmar." : "Total validado. Confirmá para registrar el pedido."}</div> : null}{error ? <p role="alert" className="mt-4 rounded-xl border-2 border-red-800 bg-red-50 p-4 text-sm font-bold text-red-900">{error.message}</p> : null}<button type="submit" disabled={isPending} className="motion-button mt-4 flex min-h-13 w-full items-center justify-center rounded-xl bg-action px-6 py-3 text-base font-black text-white disabled:cursor-wait disabled:opacity-60">{isPending ? "Validando..." : activeQuote ? "Confirmar pedido" : "Validar total"}</button><Link href="/carrito" className="motion-button mt-4 flex min-h-11 items-center justify-center text-sm font-bold text-action underline decoration-2 underline-offset-4">Volver al carrito</Link></aside>
+          <aside className="lg:sticky lg:top-28"><CheckoutSummary quote={activeQuote} items={items} />{activeQuote ? <div className="mt-4 rounded-xl border-2 border-action bg-mint/40 p-4 text-sm font-bold">{activeQuote.hasPriceChanges ? "El total fue actualizado. Revisalo antes de pagar." : "Total validado. Al continuar reservamos el stock y abrimos Mercado Pago."}</div> : null}{error ? <p role="alert" className="mt-4 rounded-xl border-2 border-red-800 bg-red-50 p-4 text-sm font-bold text-red-900">{error.message}</p> : null}<button type="submit" disabled={isPending} className="motion-button mt-4 flex min-h-13 w-full items-center justify-center rounded-xl bg-action px-6 py-3 text-base font-black text-white disabled:cursor-wait disabled:opacity-60">{isPending ? "Preparando pago..." : activeQuote ? "Pagar con Mercado Pago" : "Validar total"}</button><Link href="/carrito" className="motion-button mt-4 flex min-h-11 items-center justify-center text-sm font-bold text-action underline decoration-2 underline-offset-4">Volver al carrito</Link></aside>
         </form>
       </Container>
     </section>

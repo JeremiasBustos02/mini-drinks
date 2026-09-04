@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { comboComponentsSchema, comboSchema, comboStateChangeSchema, productSchema } from "@/lib/admin/validation";
+import {
+  comboComponentsSchema,
+  comboSchema,
+  comboStateChangeSchema,
+  productSchema,
+  stateChangeSchema,
+} from "@/lib/admin/validation";
 
 const productId = "11111111-1111-4111-8111-111111111111";
 
@@ -42,6 +48,44 @@ test("valida precio y stock de producto en unidades administrativas", () => {
   });
   assert.equal(result.price, 590000);
   assert.equal(result.stock, 4);
+});
+
+test("acepta expectedVersion para editar un producto", () => {
+  const result = productSchema.parse({
+    id: productId,
+    expectedVersion: "2",
+    name: "Producto",
+    slug: "producto",
+    description: "Descripción",
+    categoryId: "33333333-3333-4333-8333-333333333333",
+    productType: "miniature",
+    price: "5900",
+    stock: "4",
+    active: "on",
+    imageUrl: "",
+  });
+  assert.equal(result.expectedVersion, 2);
+});
+
+test("los cambios rápidos de producto requieren una versión positiva", () => {
+  assert.equal(
+    stateChangeSchema.safeParse({
+      id: productId,
+      expectedVersion: "3",
+      field: "published",
+      value: "true",
+    }).success,
+    true,
+  );
+  assert.equal(
+    stateChangeSchema.safeParse({
+      id: productId,
+      expectedVersion: "0",
+      field: "active",
+      value: "false",
+    }).success,
+    false,
+  );
 });
 
 test("acepta una versión explícita para actualizar un combo", () => {

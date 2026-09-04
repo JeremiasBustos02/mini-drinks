@@ -29,6 +29,20 @@
       "when": 1788457143664,
       "tag": "0004_tough_mulholland_black",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788480602277,
+      "tag": "0005_petite_lenny_balinger",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788494515886,
+      "tag": "0006_loving_mantis",
+      "breakpoints": true
     }
   ]
 }

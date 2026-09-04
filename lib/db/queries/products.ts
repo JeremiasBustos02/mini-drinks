@@ -1,21 +1,28 @@
 import "server-only";
 
-import { and, asc, eq, gt, inArray, ne } from "drizzle-orm";
+import { and, asc, eq, getTableColumns, gt, inArray, ne } from "drizzle-orm";
+import { unstable_noStore as noStore } from "next/cache";
 
 import { db } from "@/lib/db";
 import { categories, products } from "@/lib/db/schema";
+import { availableStockSql } from "@/lib/stock/availability-sql";
+
+const availableStock = availableStockSql(products.id, products.stock);
+const availableProductColumns = { ...getTableColumns(products), stock: availableStock };
 
 export function getPublishedProducts() {
+  noStore();
   return db
-    .select()
+    .select(availableProductColumns)
     .from(products)
     .where(and(eq(products.published, true), eq(products.active, true)))
     .orderBy(asc(products.name));
 }
 
 export function getPublishedProductsWithCategories() {
+  noStore();
   return db
-    .select({ product: products, category: categories })
+    .select({ product: availableProductColumns, category: categories })
     .from(products)
     .innerJoin(categories, eq(products.categoryId, categories.id))
     .where(
@@ -29,15 +36,16 @@ export function getPublishedProductsWithCategories() {
 }
 
 export function getAvailableComboBuilderProductsWithCategories() {
+  noStore();
   return db
-    .select({ product: products, category: categories })
+    .select({ product: availableProductColumns, category: categories })
     .from(products)
     .innerJoin(categories, eq(products.categoryId, categories.id))
     .where(
       and(
         eq(products.published, true),
         eq(products.active, true),
-        gt(products.stock, 0),
+        gt(availableStock, 0),
         eq(categories.active, true),
         inArray(products.productType, ["miniature", "mixer", "glass", "extra", "accessory"]),
       ),
@@ -54,8 +62,9 @@ export function getActiveCategories() {
 }
 
 export async function getProductBySlug(slug: string) {
+  noStore();
   const [product] = await db
-    .select()
+    .select(availableProductColumns)
     .from(products)
     .where(
       and(eq(products.slug, slug), eq(products.published, true), eq(products.active, true)),
@@ -66,8 +75,9 @@ export async function getProductBySlug(slug: string) {
 }
 
 export async function getProductWithCategoryBySlug(slug: string) {
+  noStore();
   const [product] = await db
-    .select({ product: products, category: categories })
+    .select({ product: availableProductColumns, category: categories })
     .from(products)
     .innerJoin(categories, eq(products.categoryId, categories.id))
     .where(
@@ -84,8 +94,9 @@ export async function getProductWithCategoryBySlug(slug: string) {
 }
 
 export function getPublishedProductsByCategory(categoryId: string, excludedProductId: string, limit = 3) {
+  noStore();
   return db
-    .select({ product: products, category: categories })
+    .select({ product: availableProductColumns, category: categories })
     .from(products)
     .innerJoin(categories, eq(products.categoryId, categories.id))
     .where(

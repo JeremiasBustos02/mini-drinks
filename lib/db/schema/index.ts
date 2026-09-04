@@ -20,6 +20,7 @@ import {
   orderStatusValues,
   paymentStatusValues,
   productTypeValues,
+  stockReservationStatusValues,
 } from "@/types/domain";
 import type { OrderItemConfigurationSnapshot } from "@/types/checkout";
 
@@ -28,6 +29,10 @@ export const orderStatusEnum = pgEnum("order_status", orderStatusValues);
 export const orderItemTypeEnum = pgEnum("order_item_type", orderItemTypeValues);
 export const deliveryTypeEnum = pgEnum("delivery_type", deliveryTypeValues);
 export const paymentStatusEnum = pgEnum("payment_status", paymentStatusValues);
+export const stockReservationStatusEnum = pgEnum(
+  "stock_reservation_status",
+  stockReservationStatusValues,
+);
 
 const createdAtColumn = () =>
   timestamp("created_at", { withTimezone: true }).defaultNow().notNull();
@@ -80,6 +85,7 @@ export const products = pgTable(
     imageUrl: text("image_url"),
     createdAt: createdAtColumn(),
     updatedAt: updatedAtColumn(),
+    version: integer("version").default(1).notNull(),
   },
   (table) => [
     uniqueIndex("products_slug_unique").on(table.slug),
@@ -159,6 +165,22 @@ export const orders = pgTable(
     discountTotal: bigint("discount_total", { mode: "number" }).default(0).notNull(),
     deliveryTotal: bigint("delivery_total", { mode: "number" }).default(0).notNull(),
     total: bigint("total", { mode: "number" }).notNull(),
+    mercadoPagoPreferenceId: text("mercado_pago_preference_id"),
+    mercadoPagoInitPoint: text("mercado_pago_init_point"),
+    mercadoPagoPreferenceCreatedAt: timestamp("mercado_pago_preference_created_at", {
+      withTimezone: true,
+    }),
+    mercadoPagoPreferenceExpiresAt: timestamp("mercado_pago_preference_expires_at", {
+      withTimezone: true,
+    }),
+    mercadoPagoPreferenceGeneration: integer("mercado_pago_preference_generation")
+      .default(1)
+      .notNull(),
+    mercadoPagoPreferenceCreationKey: uuid("mercado_pago_preference_creation_key"),
+    mercadoPagoPreferenceCreationStartedAt: timestamp(
+      "mercado_pago_preference_creation_started_at",
+      { withTimezone: true },
+    ),
     createdAt: createdAtColumn(),
     updatedAt: updatedAtColumn(),
   },
@@ -168,6 +190,12 @@ export const orders = pgTable(
     uniqueIndex("orders_access_token_hash_unique").on(table.accessTokenHash),
     index("orders_status_idx").on(table.status),
     index("orders_created_at_idx").on(table.createdAt),
+    uniqueIndex("orders_mercado_pago_preference_id_unique").on(
+      table.mercadoPagoPreferenceId,
+    ),
+    index("orders_mercado_pago_preference_expires_at_idx").on(
+      table.mercadoPagoPreferenceExpiresAt,
+    ),
     check(
       "orders_subtotal_safe_range",
       sql`${table.subtotal} >= 0 and ${table.subtotal} <= 9007199254740991`,
@@ -236,19 +264,70 @@ export const payments = pgTable(
       .references(() => orders.id, { onDelete: "cascade" }),
     provider: text("provider").notNull(),
     providerPaymentId: text("provider_payment_id"),
+    preferenceId: text("preference_id"),
     status: paymentStatusEnum("status").default("pending").notNull(),
+    statusDetail: text("status_detail"),
     amount: bigint("amount", { mode: "number" }).notNull(),
+    currency: text("currency").default("ARS").notNull(),
+    dateApproved: timestamp("date_approved", { withTimezone: true }),
+    providerMetadata: jsonb("provider_metadata").$type<{
+      paymentMethodId?: string;
+      paymentTypeId?: string;
+      validationError?: string;
+    }>(),
     rawReference: text("raw_reference"),
     createdAt: createdAtColumn(),
     updatedAt: updatedAtColumn(),
   },
   (table) => [
     index("payments_order_id_idx").on(table.orderId),
+    index("payments_preference_id_idx").on(table.preferenceId),
     uniqueIndex("payments_provider_payment_id_unique").on(table.providerPaymentId),
     check(
       "payments_amount_safe_range",
       sql`${table.amount} >= 0 and ${table.amount} <= 9007199254740991`,
     ),
+  ],
+).enableRLS();
+
+export const stockReservations = pgTable(
+  "stock_reservations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    status: stockReservationStatusEnum("status").default("active").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: createdAtColumn(),
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    releasedAt: timestamp("released_at", { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex("stock_reservations_order_id_unique").on(table.orderId),
+    index("stock_reservations_status_expires_at_idx").on(table.status, table.expiresAt),
+  ],
+).enableRLS();
+
+export const stockReservationItems = pgTable(
+  "stock_reservation_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    reservationId: uuid("reservation_id")
+      .notNull()
+      .references(() => stockReservations.id, { onDelete: "cascade" }),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "restrict" }),
+    quantity: integer("quantity").notNull(),
+  },
+  (table) => [
+    uniqueIndex("stock_reservation_items_reservation_product_unique").on(
+      table.reservationId,
+      table.productId,
+    ),
+    index("stock_reservation_items_product_id_idx").on(table.productId),
+    check("stock_reservation_items_quantity_positive", sql`${table.quantity} > 0`),
   ],
 ).enableRLS();
 
@@ -260,3 +339,5 @@ export type ComboItemRecord = typeof comboItems.$inferSelect;
 export type OrderRecord = typeof orders.$inferSelect;
 export type OrderItemRecord = typeof orderItems.$inferSelect;
 export type PaymentRecord = typeof payments.$inferSelect;
+export type StockReservationRecord = typeof stockReservations.$inferSelect;
+export type StockReservationItemRecord = typeof stockReservationItems.$inferSelect;

@@ -35,6 +35,7 @@ const record: ComboWithComponents = {
         imageUrl: null,
         createdAt: now,
         updatedAt: now,
+        version: 1,
       },
     },
   ],

@@ -1,11 +1,22 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
+
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getAdminAccess } from "@/lib/admin/auth";
 import { updateComboAndReplaceItems } from "@/lib/admin/combo-concurrency";
+import { updateProductWithVersion } from "@/lib/admin/product-concurrency";
+import {
+  ProductImageStorageError,
+  uploadProductImage,
+} from "@/lib/admin/product-image-storage";
+import {
+  resolveProductImageReference,
+  type ProductImageMode,
+} from "@/lib/admin/product-images";
 import {
   categorySchema,
   categoryStateChangeSchema,
@@ -22,7 +33,9 @@ import { createClient } from "@/lib/supabase/server";
 
 function redirectWithNotice(path: string, type: "success" | "error", message: string): never {
   const params = new URLSearchParams({ [type]: message });
-  redirect(`${path}?${params.toString()}`);
+  const [base, hash] = path.split("#", 2);
+  const separator = base.includes("?") ? "&" : "?";
+  redirect(`${base}${separator}${params.toString()}${hash ? `#${hash}` : ""}`);
 }
 
 async function authorizeMutation() {
@@ -54,52 +67,30 @@ function revalidateCatalog(slugs: string[] = []) {
   slugs.forEach((slug) => revalidatePath(`/productos/${slug}`, "page"));
 }
 
-export async function loginAction(formData: FormData) {
-  console.info(`${new Date().toISOString()} [login] start`);
+export type LoginState = { error?: string };
+export type AdminFormState = { error?: string };
+
+export async function loginAction(
+  _previousState: LoginState,
+  formData: FormData,
+): Promise<LoginState> {
   const parsed = loginSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    console.info(`${new Date().toISOString()} [login] redirect target`, "/admin/login");
-    redirectWithNotice("/admin/login", "error", firstValidationError(parsed.error));
+    return { error: firstValidationError(parsed.error) };
   }
 
-  console.info(`${new Date().toISOString()} [login] before createClient`);
   const supabase = await createClient();
-  console.info(`${new Date().toISOString()} [login] after createClient`);
-  console.info(`${new Date().toISOString()} [login] before signInWithPassword`);
-  const signInStartedAt = performance.now();
   const result = await supabase.auth.signInWithPassword(parsed.data);
-  const signInDurationMs = Math.round(performance.now() - signInStartedAt);
-  console.info(`${new Date().toISOString()} [login] after signInWithPassword`, {
-    durationMs: signInDurationMs,
-  });
   if (result.error) {
-    console.error(`${new Date().toISOString()} [login] auth error`, {
-      code: result.error.code,
-      durationMs: signInDurationMs,
-      status: result.error.status,
-    });
-    console.info(`${new Date().toISOString()} [login] redirect target`, "/admin/login");
-    redirectWithNotice("/admin/login", "error", "Email o contraseña incorrectos.");
+    return { error: "Email o contraseña incorrectos." };
   }
 
-  console.info(
-    `${new Date().toISOString()} [login] authenticated user`,
-    result.data.user.id,
-  );
-
-  console.info(`${new Date().toISOString()} [login] before admin authorization`);
   const access = await getAdminAccess();
-  console.info(`${new Date().toISOString()} [login] after admin authorization`, access.status);
   if (access.status !== "authorized") {
-    console.info(`${new Date().toISOString()} [login] redirect target`, "/admin/acceso-denegado");
     redirect("/admin/acceso-denegado");
   }
 
-  console.info(`${new Date().toISOString()} [login] before revalidatePath`);
   revalidatePath("/admin", "layout");
-  console.info(`${new Date().toISOString()} [login] after revalidatePath`);
-  console.info(`${new Date().toISOString()} [login] before redirect`);
-  console.info(`${new Date().toISOString()} [login] redirect target`, "/admin");
   redirect("/admin");
 }
 
@@ -110,11 +101,14 @@ export async function logoutAction() {
   redirect("/admin/login");
 }
 
-export async function saveCategoryAction(formData: FormData) {
+export async function saveCategoryAction(
+  _previousState: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
   await authorizeMutation();
   const parsed = categorySchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    redirectWithNotice("/admin/categorias", "error", firstValidationError(parsed.error));
+    return { error: firstValidationError(parsed.error) };
   }
 
   const { id, revision, ...values } = parsed.data;
@@ -131,7 +125,7 @@ export async function saveCategoryAction(formData: FormData) {
       await db.insert(categories).values(values);
     }
   } catch (error) {
-    redirectWithNotice("/admin/categorias", "error", databaseErrorMessage(error));
+    return { error: databaseErrorMessage(error) };
   }
 
   revalidatePath("/admin");
@@ -173,16 +167,72 @@ export async function setCategoryActiveAction(formData: FormData) {
   redirectWithNotice("/admin/categorias", "success", active ? "Categoría activada." : "Categoría desactivada.");
 }
 
-export async function saveProductAction(formData: FormData) {
+export async function saveProductAction(
+  _previousState: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
   await authorizeMutation();
   const parsed = productSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    redirectWithNotice("/admin/productos", "error", firstValidationError(parsed.error));
+    return { error: firstValidationError(parsed.error) };
   }
 
-  const { id, revision, ...values } = parsed.data;
+  const imageModeValue = formData.get("imageMode");
+  if (imageModeValue !== "url" && imageModeValue !== "upload") {
+    return { error: "Elegí cómo querés asignar la imagen." };
+  }
+  const imageMode: ProductImageMode = imageModeValue;
+  const { id, expectedVersion, ...values } = parsed.data;
+  const targetProductId = id ?? randomUUID();
   let previousSlug: string | undefined;
+  let imageWasUploaded = false;
+
   try {
+    const [[comboWithSlug], [category], existingRows] = await Promise.all([
+      db.select({ id: combos.id }).from(combos).where(eq(combos.slug, values.slug)).limit(1),
+      db.select({ active: categories.active }).from(categories).where(eq(categories.id, values.categoryId)).limit(1),
+      id
+        ? db
+            .select({ slug: products.slug, version: products.version })
+            .from(products)
+            .where(eq(products.id, id))
+            .limit(1)
+        : Promise.resolve([]),
+    ]);
+    if (comboWithSlug) throw new AdminMutationError("Ese slug ya pertenece a un combo.");
+    if (!category) throw new AdminMutationError("La categoría ya no existe.");
+    if (values.published && !category.active) {
+      throw new AdminMutationError("No se puede publicar dentro de una categoría inactiva.");
+    }
+    if (id) {
+      if (!expectedVersion) throw new AdminMutationError("La versión del producto no es válida.");
+      const existing = existingRows[0];
+      if (!existing) throw new AdminMutationError("El producto ya no existe.");
+      if (existing.version !== expectedVersion) {
+        throw new AdminMutationError("El producto cambió en otra sesión. Recargá antes de guardar.");
+      }
+      previousSlug = existing.slug;
+    }
+
+    if (imageMode === "upload") {
+      const imageFile = formData.get("imageFile");
+      if (!(imageFile instanceof File) || imageFile.size === 0) {
+        throw new ProductImageStorageError("Elegí una imagen para subir.");
+      }
+      const uploadedImage = await uploadProductImage(targetProductId, imageFile);
+      values.imageUrl = resolveProductImageReference({
+        mode: "upload",
+        uploadedUrl: uploadedImage.publicUrl,
+        url: "",
+      });
+      imageWasUploaded = true;
+    } else {
+      values.imageUrl = resolveProductImageReference({
+        mode: "url",
+        url: typeof formData.get("imageUrl") === "string" ? String(formData.get("imageUrl")) : "",
+      });
+    }
+
     await db.transaction(async (tx) => {
       await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${values.slug}))`);
       const [comboWithSlug] = await tx.select({ id: combos.id }).from(combos).where(eq(combos.slug, values.slug)).limit(1);
@@ -193,28 +243,53 @@ export async function saveProductAction(formData: FormData) {
       if (values.published && !category.active) throw new AdminMutationError("No se puede publicar dentro de una categoría inactiva.");
 
       if (id) {
-        if (!revision) throw new AdminMutationError("La versión del producto no es válida.");
+        if (!expectedVersion) throw new AdminMutationError("La versión del producto no es válida.");
         const [existing] = await tx.select({ slug: products.slug }).from(products).where(eq(products.id, id)).limit(1);
         if (!existing) throw new AdminMutationError("El producto ya no existe.");
         previousSlug = existing.slug;
-        const updated = await tx
-          .update(products)
-          .set({ ...values, updatedAt: new Date() })
-          .where(and(eq(products.id, id), eq(products.updatedAt, revision)))
-          .returning({ id: products.id });
-        if (updated.length === 0) throw new AdminMutationError("El producto cambió en otra sesión. Recargá antes de guardar.");
+        const result = await updateProductWithVersion(async () => {
+          const updated = await tx
+            .update(products)
+            .set({
+              ...values,
+              updatedAt: new Date(),
+              version: sql`${products.version} + 1`,
+            })
+            .where(and(eq(products.id, id), eq(products.version, expectedVersion)))
+            .returning({ id: products.id });
+          return updated.length > 0;
+        });
+        if (result === "conflict") {
+          throw new AdminMutationError("El producto cambió en otra sesión. Recargá antes de guardar.");
+        }
       } else {
-        await tx.insert(products).values(values);
+        await tx.insert(products).values({ ...values, id: targetProductId });
       }
     });
   } catch (error) {
-    redirectWithNotice("/admin/productos", "error", databaseErrorMessage(error));
+    if (error instanceof ProductImageStorageError) return { error: error.message };
+    const message = databaseErrorMessage(error);
+    return {
+      error: imageWasUploaded
+        ? `${message} La imagen llegó a Storage, pero quedó sin asociar y deberá limpiarse manualmente.`
+        : message,
+    };
   }
 
   revalidatePath("/admin");
   revalidatePath("/admin/productos");
   revalidateCatalog([values.slug, ...(previousSlug ? [previousSlug] : [])]);
-  redirectWithNotice("/admin/productos", "success", id ? "Producto actualizado." : "Producto creado.");
+  redirectWithNotice(
+    "/admin/productos",
+    "success",
+    imageWasUploaded
+      ? id
+        ? "Producto actualizado e imagen subida."
+        : "Producto creado e imagen subida."
+      : id
+        ? "Producto actualizado."
+        : "Producto creado.",
+  );
 }
 
 export async function setProductStateAction(formData: FormData) {
@@ -223,7 +298,7 @@ export async function setProductStateAction(formData: FormData) {
   if (!parsed.success) {
     redirectWithNotice("/admin/productos", "error", "Cambio de estado inválido.");
   }
-  const { id, revision, field, value } = parsed.data;
+  const { id, expectedVersion, field, value } = parsed.data;
 
   const [product] = await db
     .select({ slug: products.slug, categoryActive: categories.active })
@@ -236,23 +311,33 @@ export async function setProductStateAction(formData: FormData) {
     redirectWithNotice("/admin/productos", "error", "No se puede publicar dentro de una categoría inactiva.");
   }
 
-  const updated = await db
-    .update(products)
-    .set({ [field]: value, updatedAt: new Date() })
-    .where(and(eq(products.id, id), eq(products.updatedAt, revision)))
-    .returning({ id: products.id });
-  if (updated.length === 0) redirectWithNotice("/admin/productos", "error", "El producto cambió en otra sesión. Recargá la página.");
+  const result = await updateProductWithVersion(async () => {
+    const updated = await db
+      .update(products)
+      .set({
+        [field]: value,
+        updatedAt: new Date(),
+        version: sql`${products.version} + 1`,
+      })
+      .where(and(eq(products.id, id), eq(products.version, expectedVersion)))
+      .returning({ id: products.id });
+    return updated.length > 0;
+  });
+  if (result === "conflict") redirectWithNotice("/admin/productos", "error", "El producto cambió en otra sesión. Recargá la página.");
   revalidatePath("/admin");
   revalidatePath("/admin/productos");
   revalidateCatalog([product.slug]);
   redirectWithNotice("/admin/productos", "success", "Estado actualizado.");
 }
 
-export async function saveComboAction(formData: FormData) {
+export async function saveComboAction(
+  _previousState: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
   await authorizeMutation();
   const parsed = comboSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    redirectWithNotice("/admin/combos", "error", firstValidationError(parsed.error));
+    return { error: firstValidationError(parsed.error) };
   }
 
   const { id, expectedVersion, components, ...values } = parsed.data;
@@ -323,7 +408,7 @@ export async function saveComboAction(formData: FormData) {
       }
     });
   } catch (error) {
-    redirectWithNotice("/admin/combos", "error", databaseErrorMessage(error));
+    return { error: databaseErrorMessage(error) };
   }
 
   revalidatePath("/admin");
