@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test lib/**/*.test.ts",
     "test:integration:postgres": "tsx tests/integration/postgres/concurrency.ts",
+    "db:test:migrate": "tsx tests/integration/postgres/migrate.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx lib/db/seed.ts",

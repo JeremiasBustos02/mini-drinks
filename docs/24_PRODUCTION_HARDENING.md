@@ -86,6 +86,80 @@ Estos valores evitan timeouts agresivos y limitan presión por instancia. La cap
 
 Las consultas públicas usan APIs dinámicas/no-store y admin usa `connection()`. `/api/health` declara `force-dynamic`. El import de `lib/db` valida `DATABASE_URL` sin abrir conexión; por eso `DATABASE_URL` sigue siendo una variable runtime obligatoria en el deployment y debe estar disponible para el build de Vercel cuando Next evalúa módulos. El build no debe necesitar una DB alcanzable ni ejecutar consultas.
 
+## Base PostgreSQL de integración
+
+### Requisitos actuales
+
+`npm run test:integration:postgres` no usa el schema productivo ni necesita las migraciones del proyecto. Puede ejecutarse contra una base PostgreSQL vacía si el usuario de conexión puede:
+
+- crear y eliminar schemas;
+- crear tablas e índices dentro del schema temporal;
+- abrir al menos tres conexiones simultáneas;
+- ejecutar transacciones, `SELECT ... FOR UPDATE`, `now()` e intervalos;
+- usar los tipos nativos `uuid`, `bigserial` y `timestamptz`.
+
+El script crea un schema `hardening_<uuid>` y dentro de él crea todas sus tablas: `products`, `combos`, `categories`, `reservations` y `orders`. No depende de enums, extensiones, funciones, RLS, Storage, Supabase Auth, objetos preexistentes en `public` ni migraciones anteriores. `SET LOCAL search_path` solo se usa dentro de las transacciones de reserva; el resto de las consultas califica el schema explícitamente. El schema temporal se elimina y las tres conexiones se cierran en `finally`.
+
+Este diagnóstico valida primitivas PostgreSQL reales y los patrones SQL de concurrencia. No sustituye una suite futura que ejecute las funciones productivas contra todas las migraciones.
+
+### Entorno recomendado
+
+Crear un proyecto Supabase separado, conceptualmente `mini-drinks-test`. Es la opción preferida porque reproduce el PostgreSQL administrado objetivo sin compartir datos, credenciales ni límites con producción.
+
+PostgreSQL local también funciona y evita latencia de red, pero exige mantener una versión compatible y una base dedicada. Docker PostgreSQL ofrece el mejor aislamiento desechable y es una buena opción futura para CI. Para desarrollo de este proyecto se mantiene la preferencia por Supabase separado porque valida además el método de conexión que se usará operativamente; Docker queda como alternativa reproducible, no como requisito.
+
+Orden de preferencia para la conexión:
+
+1. **Direct connection** si la red de desarrollo soporta IPv6 o el proyecto tiene IPv4 habilitado. Es la ruta más directa para DDL, conexiones persistentes, locks y migraciones.
+2. **Session Pooler** en puerto 5432 si la máquina solo tiene IPv4. Mantiene una sesión de backend durante cada conexión y es apropiado para estos tests persistentes.
+3. No usar **Transaction Pooler** en puerto 6543 para esta suite salvo necesidad concreta. Está orientado a workloads serverless y agrega una capa que no aporta al diagnóstico de sesiones y locks. Si se usa, `prepare: false` es obligatorio.
+
+El script conserva `prepare: false` con Direct y Session también: es válido, evita diferencias accidentales al cambiar de método y coincide con runtime. Cada cliente usa `max: 1`; la suite abre tres clientes.
+
+Connection string Direct del proyecto de test:
+
+```dotenv
+TEST_DATABASE_URL=postgresql://postgres:PASSWORD@db.TEST_PROJECT_REF.supabase.co:5432/postgres?sslmode=require
+```
+
+Alternativa Session Pooler para IPv4, copiando el valor exacto del panel **Connect** del proyecto de test:
+
+```dotenv
+TEST_DATABASE_URL=postgresql://postgres.TEST_PROJECT_REF:PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres?sslmode=require
+```
+
+Guardar solo `TEST_DATABASE_URL` en `.env.local` o en los secrets del job de CI. No reemplazar `DATABASE_URL` ni `DATABASE_MIGRATION_URL`, y no copiar una URL del proyecto real.
+
+### Protecciones
+
+`getTestDatabaseUrl()` exige `TEST_DATABASE_URL` y valida el protocolo PostgreSQL. Rechaza el destino si coincide con `DATABASE_URL` o `DATABASE_MIGRATION_URL`. Para Supabase compara el Project Ref, por lo que también detecta que Direct, Session Pooler y Transaction Pooler pertenecen al mismo proyecto aunque host, puerto o contraseña difieran.
+
+La protección es una última barrera, no una razón para reutilizar el proyecto real. El proyecto de test debe tener Project Ref y password propios.
+
+### Bootstrap y ejecución
+
+1. Crear el proyecto Supabase separado `mini-drinks-test`.
+2. En **Connect**, copiar Direct connection; usar Session Pooler si Direct no es alcanzable desde la red local.
+3. Agregar la URL como `TEST_DATABASE_URL` en `.env.local`.
+4. Verificar visualmente que `TEST_PROJECT_REF` no sea el del proyecto real.
+5. Ejecutar `npm run test:integration:postgres`.
+6. Confirmar `PostgreSQL concurrency diagnostics passed.`.
+7. Ante una interrupción abrupta, buscar schemas con prefijo `hardening_` únicamente en el proyecto de test y eliminarlos manualmente.
+
+No hace falta resetear la DB entre corridas: cada ejecución usa y elimina un schema único.
+
+### Migraciones opcionales del proyecto
+
+Las migraciones no son requisito para el diagnóstico actual. Para una futura suite que use las tablas reales, `npm run db:test:migrate` aplica `./drizzle` exclusivamente a `TEST_DATABASE_URL`, con las mismas verificaciones de destino y cierre garantizado de la conexión. No reutiliza `drizzle.config.ts` ni requiere cambiar `DATABASE_MIGRATION_URL`.
+
+```powershell
+npm run db:test:migrate
+```
+
+Esto aplica todas las migraciones registradas, desde `0000` hasta `0007`, sobre `public` del proyecto de test. Esas migraciones crean sus enums y tablas; no requieren datos u objetos de negocio preexistentes. No ejecutar este comando contra un proyecto compartido.
+
+Si alguna vez hace falta un reset total de las tablas migradas, la opción más segura es recrear el proyecto de test. Como alternativa, eliminar y recrear `public` desde el SQL Editor solo después de confirmar el Project Ref del proyecto de test; no se agrega un script automático destructivo.
+
 ## Health y headers
 
 `GET /api/health` no consulta Mercado Pago ni expone detalles. Hace `select 1` a DB y responde:
