@@ -12,6 +12,7 @@ import {
 } from "@/lib/db/schema";
 import { mercadoPagoAmountToCents } from "@/lib/mercado-pago/money";
 import {
+  canPaymentEventChangeOrderStatus,
   getPaymentValidationError,
   isPendingPaymentStatus,
   mapMercadoPagoPaymentStatus,
@@ -22,12 +23,14 @@ import {
   findReservationShortage,
   lockAndReadAvailableStock,
 } from "@/lib/stock/reservations";
+import { logServerEvent } from "@/lib/observability/logger";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export async function processMercadoPagoPayment(payment: MercadoPagoPayment) {
+export async function processMercadoPagoPayment(payment: MercadoPagoPayment, correlationId?: string) {
   if (!payment.externalReference || !UUID_PATTERN.test(payment.externalReference)) {
-    console.warn("mercado_pago.payment_unmatched", {
+    logServerEvent("warn", "mercado_pago.payment_unmatched", {
+      correlationId,
       paymentId: payment.id,
       reason: "invalid_external_reference",
     });
@@ -44,7 +47,8 @@ export async function processMercadoPagoPayment(payment: MercadoPagoPayment) {
       .where(eq(orders.id, payment.externalReference!))
       .limit(1);
     if (!order) {
-      console.warn("mercado_pago.payment_unmatched", {
+      logServerEvent("warn", "mercado_pago.payment_unmatched", {
+        correlationId,
         paymentId: payment.id,
         reason: "order_not_found",
       });
@@ -121,7 +125,8 @@ export async function processMercadoPagoPayment(payment: MercadoPagoPayment) {
         .update(orders)
         .set({ status: "manual_review", updatedAt: now })
         .where(eq(orders.id, order.id));
-      console.warn("mercado_pago.payment_validation_failed", {
+      logServerEvent("warn", "mercado_pago.payment_validation_failed", {
+        correlationId,
         orderId: order.id,
         paymentId: payment.id,
         reason: validationError,
@@ -159,7 +164,7 @@ export async function processMercadoPagoPayment(payment: MercadoPagoPayment) {
           await tx.update(orders).set({ status: "manual_review", updatedAt: now }).where(eq(orders.id, order.id));
           return { outcome: "manual_review" as const, reason: "multiple_approved_payments" };
         }
-        console.info("mercado_pago.payment_duplicate", { orderId: order.id, paymentId: payment.id });
+        logServerEvent("info", "mercado_pago.payment_duplicate", { correlationId, orderId: order.id, paymentId: payment.id });
         return { outcome: "duplicate" as const };
       }
 
@@ -182,7 +187,8 @@ export async function processMercadoPagoPayment(payment: MercadoPagoPayment) {
           .set({ status: "released", releasedAt: now })
           .where(eq(stockReservations.id, reservation.id));
         await tx.update(orders).set({ status: "manual_review", updatedAt: now }).where(eq(orders.id, order.id));
-        console.warn("stock.late_approved_insufficient", {
+        logServerEvent("warn", "stock.late_approved_insufficient", {
+          correlationId,
           orderId: order.id,
           paymentId: payment.id,
           productId: shortage.productId,
@@ -205,12 +211,12 @@ export async function processMercadoPagoPayment(payment: MercadoPagoPayment) {
         .set({ status: "consumed", consumedAt: now, releasedAt: null })
         .where(and(eq(stockReservations.id, reservation.id), ne(stockReservations.status, "consumed")));
       await tx.update(orders).set({ status: "paid", updatedAt: now }).where(eq(orders.id, order.id));
-      console.info("stock.reservation_consumed", { orderId: order.id, paymentId: payment.id });
+      logServerEvent("info", "stock.reservation_consumed", { correlationId, orderId: order.id, paymentId: payment.id });
       return { outcome: "approved" as const };
     }
 
     if (isPendingPaymentStatus(status)) {
-      if (order.status !== "paid") {
+      if (canPaymentEventChangeOrderStatus(order.status)) {
         await tx.update(orders).set({ status: "payment_pending", updatedAt: now }).where(eq(orders.id, order.id));
       }
       return { outcome: "pending" as const };
@@ -220,6 +226,9 @@ export async function processMercadoPagoPayment(payment: MercadoPagoPayment) {
       if (order.status === "paid" || reservation?.status === "consumed") {
         await tx.update(orders).set({ status: "manual_review", updatedAt: now }).where(eq(orders.id, order.id));
         return { outcome: "manual_review" as const, reason: "terminal_after_approved" };
+      }
+      if (!canPaymentEventChangeOrderStatus(order.status)) {
+        return { outcome: "ignored_order_state" as const };
       }
       const [otherLivePayment] = await tx
         .select({ id: payments.id })
@@ -237,7 +246,7 @@ export async function processMercadoPagoPayment(payment: MercadoPagoPayment) {
           .update(stockReservations)
           .set({ status: "released", releasedAt: now })
           .where(eq(stockReservations.id, reservation.id));
-        console.info("stock.reservation_released", { orderId: order.id, paymentId: payment.id });
+        logServerEvent("info", "stock.reservation_released", { correlationId, orderId: order.id, paymentId: payment.id });
       }
       await tx
         .update(orders)

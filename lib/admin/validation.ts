@@ -40,7 +40,10 @@ export const loginSchema = z.object({
 
 export const categorySchema = z.object({
   id: z.preprocess((value) => value || undefined, z.uuid().optional()),
-  revision: z.preprocess((value) => value || undefined, z.coerce.date().optional()),
+  expectedVersion: z.preprocess(
+    (value) => value || undefined,
+    z.coerce.number().int().positive().optional(),
+  ),
   name: requiredText,
   slug,
   description: z.string().trim(),
@@ -135,7 +138,7 @@ export const stateChangeSchema = z.object({
 
 export const categoryStateChangeSchema = z.object({
   id: z.uuid(),
-  revision: z.coerce.date(),
+  expectedVersion: z.coerce.number().int().positive(),
   value: z.enum(["true", "false"]).transform((value) => value === "true"),
 });
 

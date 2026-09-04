@@ -7,6 +7,7 @@ import { hashOrderAccessToken } from "@/lib/checkout/idempotency";
 import { parseOrderItemConfigurationSnapshot } from "@/lib/checkout/order-snapshot";
 import { db } from "@/lib/db";
 import { orderItems, orders, payments, stockReservations } from "@/lib/db/schema";
+import { getEffectiveReservationStatus } from "@/lib/stock/effective-status";
 
 export async function getPublicOrder(publicNumber: string, accessToken: string) {
   noStore();
@@ -69,9 +70,11 @@ export async function getPublicOrder(publicNumber: string, accessToken: string) 
     order: {
       ...order,
       status:
-        order.status === "pending_payment" &&
-        reservationRows[0]?.status === "active" &&
-        !reservationRows[0].isCurrent
+        (order.status === "pending_payment" || order.status === "payment_pending") &&
+        getEffectiveReservationStatus(
+          reservationRows[0]?.status,
+          reservationRows[0]?.expiresAt,
+        ) === "expired"
           ? ("expired" as const)
           : order.status,
     },

@@ -6,6 +6,7 @@ import { StorefrontShell } from "@/components/layout/storefront-shell";
 import { getPublishedCombosWithComponents } from "@/lib/db/queries/combos";
 import { getActiveCategories, getPublishedProductsWithCategories } from "@/lib/db/queries/products";
 import { mapCategory, mapCombo, mapProduct } from "@/lib/mappers/catalog";
+import { logServerEvent } from "@/lib/observability/logger";
 
 export type CatalogPageProps = {
   searchParams: Promise<{ categoria?: string }>;
@@ -25,7 +26,7 @@ export async function CatalogPage({ searchParams }: CatalogPageProps) {
     items = [...combos.map(mapCombo), ...products.map(({ product, category }) => mapProduct({ ...product, category }))];
     categories = categoryRecords.map(mapCategory);
   } catch (error) {
-    console.error("Unable to load the product catalog.", error);
+    logServerEvent("error", "storefront.catalog_load_failed", { error });
     throw error;
   }
 

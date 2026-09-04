@@ -18,7 +18,7 @@ export default async function AdminDashboardPage() {
     { label: "Productos publicados", value: stats.publishedProducts, href: "/admin/productos?status=published", tone: "green" as const },
     { label: "Productos con poco stock", value: stats.lowStockProducts, href: "/admin/productos?status=low_stock", tone: "amber" as const },
     { label: "Combos activos", value: stats.activeCombos, href: "/admin/combos", tone: "blue" as const },
-    { label: "Pedidos pendientes", value: stats.pendingOrders, href: "/admin/pedidos?status=pending_payment", tone: "amber" as const },
+    { label: "Pedidos pendientes", value: stats.pendingOrders, href: "/admin/pedidos", tone: "amber" as const },
     { label: "Pedidos pagados", value: stats.paidOrders, href: "/admin/pedidos?payment=approved", tone: "green" as const },
   ];
 

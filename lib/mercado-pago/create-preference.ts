@@ -18,13 +18,18 @@ import {
   getAppUrl,
   getMercadoPagoAccessToken,
 } from "@/lib/mercado-pago/config";
-import { buildMercadoPagoPreference, canReusePreference } from "@/lib/mercado-pago/preference";
+import {
+  buildMercadoPagoPreference,
+  canPreparePreferenceForOrder,
+  canReuseOrderPreference,
+} from "@/lib/mercado-pago/preference";
 import {
   findReservationShortage,
   lockAndReadAvailableStock,
 } from "@/lib/stock/reservations";
 import { getReservationExpiresAt } from "@/lib/stock/config";
 import type { CheckoutCreationResult, ResolvedStockRequirement } from "@/types/checkout";
+import { logServerEvent } from "@/lib/observability/logger";
 
 const CREATION_LEASE_MS = 60_000;
 
@@ -53,6 +58,7 @@ export async function ensureMercadoPagoPreference(
   orderId: string,
   accessToken: string,
   alreadyCreated: boolean,
+  correlationId?: string,
 ): Promise<CheckoutCreationResult> {
   const now = new Date();
   const creationKey = randomUUID();
@@ -60,14 +66,9 @@ export async function ensureMercadoPagoPreference(
     await tx.execute(sql`select id from orders where id = ${orderId}::uuid for update`);
     const [order] = await tx.select().from(orders).where(eq(orders.id, orderId)).limit(1);
     if (!order || order.accessTokenHash !== hashOrderAccessToken(accessToken)) return null;
+    if (order.status === "payment_pending") return { kind: "payment_pending" as const };
+    if (!canPreparePreferenceForOrder(order.status)) return { kind: "order_unavailable" as const };
 
-    if (canReusePreference({
-      id: order.mercadoPagoPreferenceId,
-      initPoint: order.mercadoPagoInitPoint,
-      expiresAt: order.mercadoPagoPreferenceExpiresAt,
-    }, now)) {
-      return { kind: "reused" as const, order };
-    }
     if (
       order.mercadoPagoPreferenceCreationStartedAt &&
       now.getTime() - order.mercadoPagoPreferenceCreationStartedAt.getTime() < CREATION_LEASE_MS
@@ -81,6 +82,19 @@ export async function ensureMercadoPagoPreference(
       .where(eq(stockReservations.orderId, order.id))
       .limit(1);
     if (!reservation || reservation.status === "consumed") return { kind: "unavailable" as const };
+
+    if (canReuseOrderPreference(
+      order.status,
+      reservation,
+      {
+        id: order.mercadoPagoPreferenceId,
+        initPoint: order.mercadoPagoInitPoint,
+        expiresAt: order.mercadoPagoPreferenceExpiresAt,
+      },
+      now,
+    )) {
+      return { kind: "reused" as const, order };
+    }
 
     let expiresAt = reservation.expiresAt;
     let generation = order.mercadoPagoPreferenceGeneration;
@@ -150,11 +164,18 @@ export async function ensureMercadoPagoPreference(
   if (prepared.kind === "busy") {
     return failure("Mercado Pago todavía se está preparando. Intentá nuevamente en unos segundos.");
   }
+  if (prepared.kind === "payment_pending") {
+    return failure("El pago está pendiente de confirmación. Revisá el estado del pedido antes de volver a pagar.");
+  }
+  if (prepared.kind === "order_unavailable") {
+    return failure("El pedido ya no admite un nuevo intento de pago.");
+  }
   if (prepared.kind === "unavailable") {
     return failure("La reserva venció y ya no hay stock suficiente para renovarla.");
   }
   if (prepared.kind === "reused") {
-    console.info("mercado_pago.preference_reused", {
+    logServerEvent("info", "mercado_pago.preference_reused", {
+      correlationId,
       orderId,
       preferenceId: prepared.order.mercadoPagoPreferenceId,
     });
@@ -218,7 +239,8 @@ export async function ensureMercadoPagoPreference(
     });
     if (!persisted) throw new Error("Preference ownership changed before persistence.");
 
-    console.info("mercado_pago.preference_created", {
+    logServerEvent("info", "mercado_pago.preference_created", {
+      correlationId,
       orderId,
       preferenceId: response.id,
       expiresAt: prepared.expiresAt.toISOString(),
@@ -231,22 +253,31 @@ export async function ensureMercadoPagoPreference(
       alreadyCreated,
     );
   } catch (error) {
-    await db
-      .update(orders)
-      .set({
-        mercadoPagoPreferenceCreationKey: null,
-        mercadoPagoPreferenceCreationStartedAt: null,
-        updatedAt: new Date(),
-      })
-      .where(
-        and(
-          eq(orders.id, orderId),
-          eq(orders.mercadoPagoPreferenceCreationKey, creationKey),
-        ),
-      );
-    console.error("mercado_pago.preference_failed", {
+    try {
+      await db
+        .update(orders)
+        .set({
+          mercadoPagoPreferenceCreationKey: null,
+          mercadoPagoPreferenceCreationStartedAt: null,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(orders.id, orderId),
+            eq(orders.mercadoPagoPreferenceCreationKey, creationKey),
+          ),
+        );
+    } catch (cleanupError) {
+      logServerEvent("error", "mercado_pago.preference_lease_cleanup_failed", {
+        correlationId,
+        orderId,
+        error: cleanupError,
+      });
+    }
+    logServerEvent("error", "mercado_pago.preference_failed", {
+      correlationId,
       orderId,
-      errorName: error instanceof Error ? error.name : "unknown",
+      error,
     });
     return failure("No pudimos iniciar Mercado Pago. Tu pedido y carrito se conservaron para reintentar.");
   }

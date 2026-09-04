@@ -1,4 +1,4 @@
-import type { PaymentStatus } from "@/types/domain";
+import type { OrderStatus, PaymentStatus } from "@/types/domain";
 
 export type MercadoPagoPayment = {
   id: string;
@@ -52,6 +52,13 @@ export function getPaymentValidationError(
 
 export function isPendingPaymentStatus(status: PaymentStatus) {
   return status === "pending" || status === "in_process" || status === "authorized";
+}
+
+export function canPaymentEventChangeOrderStatus(status: OrderStatus) {
+  return status === "pending_payment" ||
+    status === "payment_pending" ||
+    status === "payment_rejected" ||
+    status === "expired";
 }
 
 export function planApprovedReservation(

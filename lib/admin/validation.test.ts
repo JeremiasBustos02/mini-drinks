@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  categorySchema,
+  categoryStateChangeSchema,
   comboComponentsSchema,
   comboSchema,
   comboStateChangeSchema,
@@ -10,6 +12,24 @@ import {
 } from "@/lib/admin/validation";
 
 const productId = "11111111-1111-4111-8111-111111111111";
+
+test("categorías aceptan una versión positiva y rechazan toggles obsoletos", () => {
+  const category = categorySchema.parse({
+    id: productId,
+    expectedVersion: "2",
+    name: "Miniaturas",
+    slug: "miniaturas",
+    description: "",
+    sortOrder: "1",
+    active: "on",
+  });
+  assert.equal(category.expectedVersion, 2);
+  assert.equal(categoryStateChangeSchema.safeParse({
+    id: productId,
+    expectedVersion: "0",
+    value: "false",
+  }).success, false);
+});
 
 test("acepta componentes distintos con cantidades enteras positivas", () => {
   const result = comboComponentsSchema.safeParse([

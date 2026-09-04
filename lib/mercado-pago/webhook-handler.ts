@@ -4,6 +4,8 @@ import {
 } from "mercadopago";
 
 import type { MercadoPagoPayment } from "@/lib/mercado-pago/payment";
+import { logServerEvent } from "@/lib/observability/logger";
+import type { RateLimitResult } from "@/lib/rate-limit";
 
 const MAX_WEBHOOK_BYTES = 64 * 1024;
 const PAYMENT_ID_PATTERN = /^\d{1,32}$/;
@@ -11,7 +13,8 @@ const PAYMENT_ID_PATTERN = /^\d{1,32}$/;
 type WebhookDependencies = {
   secret: string;
   fetchPayment: (paymentId: string) => Promise<MercadoPagoPayment | null>;
-  processPayment: (payment: MercadoPagoPayment) => Promise<{ outcome: string }>;
+  processPayment: (payment: MercadoPagoPayment, correlationId: string) => Promise<{ outcome: string }>;
+  checkAuthenticatedRateLimit?: (paymentId: string) => Promise<RateLimitResult>;
 };
 
 export async function handleMercadoPagoWebhook(
@@ -51,7 +54,7 @@ export async function handleMercadoPagoWebhook(
     });
   } catch (error) {
     if (error instanceof InvalidWebhookSignatureError) {
-      console.warn("mercado_pago.webhook_signature_invalid", { requestId: xRequestId });
+      logServerEvent("warn", "mercado_pago.webhook_signature_invalid", { correlationId: xRequestId });
       return Response.json({ error: "invalid_signature" }, { status: 401 });
     }
     throw error;
@@ -65,24 +68,42 @@ export async function handleMercadoPagoWebhook(
     return Response.json({ error: "payment_id_mismatch" }, { status: 400 });
   }
 
-  console.info("mercado_pago.webhook_received", {
-    requestId: xRequestId,
+  const authenticatedLimit = await dependencies.checkAuthenticatedRateLimit?.(dataId);
+  if (authenticatedLimit && !authenticatedLimit.allowed) {
+    logServerEvent("warn", "mercado_pago.webhook_payment_rate_limited", {
+      correlationId: xRequestId,
+      paymentId: dataId,
+      source: authenticatedLimit.source,
+    });
+    return Response.json(
+      { error: "temporary_processing_error" },
+      {
+        status: authenticatedLimit.source === "unavailable" ? 503 : 429,
+        headers: { "Retry-After": String(authenticatedLimit.retryAfterSeconds) },
+      },
+    );
+  }
+
+  logServerEvent("info", "mercado_pago.webhook_received", {
+    correlationId: xRequestId,
     paymentId: dataId,
   });
   try {
     const payment = await dependencies.fetchPayment(dataId);
     if (!payment) {
-      console.warn("mercado_pago.payment_not_found", { paymentId: dataId });
-      return Response.json({ received: true, ignored: true });
+      logServerEvent("warn", "mercado_pago.payment_not_found", { correlationId: xRequestId, paymentId: dataId });
+      return Response.json({ error: "temporary_processing_error" }, { status: 503 });
     }
-    console.info("mercado_pago.payment_fetched", {
+    logServerEvent("info", "mercado_pago.payment_fetched", {
+      correlationId: xRequestId,
       paymentId: payment.id,
       status: payment.status,
     });
-    const result = await dependencies.processPayment(payment);
+    const result = await dependencies.processPayment(payment, xRequestId);
     return Response.json({ received: true, outcome: result.outcome });
   } catch (error) {
-    console.error("mercado_pago.webhook_processing_failed", {
+    logServerEvent("error", "mercado_pago.webhook_processing_failed", {
+      correlationId: xRequestId,
       paymentId: dataId,
       errorName: error instanceof Error ? error.name : "unknown",
     });

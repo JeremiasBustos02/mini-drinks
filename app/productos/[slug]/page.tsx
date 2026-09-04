@@ -14,6 +14,7 @@ import {
   getPublishedProductsByCategory,
 } from "@/lib/db/queries/products";
 import { mapCombo, mapProduct } from "@/lib/mappers/catalog";
+import { logServerEvent } from "@/lib/observability/logger";
 
 type ProductPageProps = {
   params: Promise<{ slug: string }>;
@@ -44,7 +45,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       getPublishedComboWithComponentsBySlug(slug),
     ]);
   } catch (error) {
-    console.error("Unable to load the product detail.", error);
+    logServerEvent("error", "storefront.product_detail_load_failed", { error });
     throw error;
   }
 

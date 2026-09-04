@@ -50,6 +50,7 @@ export const categories = pgTable(
     sortOrder: integer("sort_order").default(0).notNull(),
     createdAt: createdAtColumn(),
     updatedAt: updatedAtColumn(),
+    version: integer("version").default(1).notNull(),
   },
   (table) => [
     uniqueIndex("categories_slug_unique").on(table.slug),

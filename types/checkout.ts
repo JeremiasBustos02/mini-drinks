@@ -132,6 +132,7 @@ export type CheckoutErrorCode =
   | "price_changed"
   | "idempotency_conflict"
   | "payment_not_ready"
+  | "rate_limited"
   | "order_not_created";
 
 export type CheckoutFailure = {
@@ -141,6 +142,8 @@ export type CheckoutFailure = {
   fieldErrors?: Record<string, string[]>;
   quote?: ResolvedCheckout;
   quoteHash?: string;
+  correlationId?: string;
+  retryAfterSeconds?: number;
 };
 
 export type CheckoutQuoteResult =

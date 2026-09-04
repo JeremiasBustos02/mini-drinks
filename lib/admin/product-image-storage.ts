@@ -10,9 +10,10 @@ import {
   validateProductImageFile,
 } from "@/lib/admin/product-images";
 import { createClient } from "@/lib/supabase/server";
+import { logServerEvent } from "@/lib/observability/logger";
 
 export class ProductImageStorageError extends Error {
-  constructor(message: string) {
+  constructor(message: string, readonly orphanedPath?: string) {
     super(message);
     this.name = "ProductImageStorageError";
   }
@@ -32,6 +33,10 @@ export async function uploadProductImage(productId: string, file: File) {
   });
 
   if (error) {
+    logServerEvent("error", "admin.product_image_upload_failed", {
+      productId,
+      errorName: error.name,
+    });
     throw new ProductImageStorageError(
       "No se pudo subir la imagen. Revisá el bucket y sus policies e intentá nuevamente.",
     );
@@ -39,7 +44,8 @@ export async function uploadProductImage(productId: string, file: File) {
 
   const { data } = supabase.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(path);
   if (!isValidProductImageUrl(data.publicUrl)) {
-    throw new ProductImageStorageError("Storage no devolvió una URL pública válida.");
+    logServerEvent("error", "admin.product_image_orphaned", { productId, storagePath: path });
+    throw new ProductImageStorageError("Storage no devolvió una URL pública válida. El archivo deberá limpiarse manualmente.", path);
   }
 
   return { path, publicUrl: data.publicUrl };

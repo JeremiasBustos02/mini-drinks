@@ -9,13 +9,14 @@ import {
   mercadoPagoAmountToCents,
 } from "@/lib/mercado-pago/money";
 import {
+  canPaymentEventChangeOrderStatus,
   getPaymentValidationError,
   isPendingPaymentStatus,
   mapMercadoPagoPaymentStatus,
   planApprovedReservation,
   type MercadoPagoPayment,
 } from "@/lib/mercado-pago/payment";
-import { buildMercadoPagoPreference, canReusePreference } from "@/lib/mercado-pago/preference";
+import { buildMercadoPagoPreference, canPreparePreferenceForOrder, canReuseOrderPreference, canReusePreference } from "@/lib/mercado-pago/preference";
 import { handleMercadoPagoWebhook } from "@/lib/mercado-pago/webhook-handler";
 
 const orderId = "11111111-1111-4111-8111-111111111111";
@@ -82,6 +83,32 @@ test("reuses only a complete and non-expired preference", () => {
   assert.equal(canReusePreference({ id: "pref-1", initPoint: "https://mp.test", expiresAt: new Date("2026-09-03T12:15:00Z") }, now), true);
   assert.equal(canReusePreference({ id: "pref-1", initPoint: "https://mp.test", expiresAt: now }, now), false);
   assert.equal(canReusePreference({ id: null, initPoint: null, expiresAt: null }, now), false);
+});
+
+test("no reutiliza una preference si la reserva fue liberada o el pedido no espera pago", () => {
+  const now = new Date("2026-09-04T12:00:00.000Z");
+  const future = new Date("2026-09-04T12:15:00.000Z");
+  const preference = { id: "pref-1", initPoint: "https://mp.example", expiresAt: future };
+  assert.equal(canReuseOrderPreference("pending_payment", { status: "active", expiresAt: future }, preference, now), true);
+  assert.equal(canReuseOrderPreference("pending_payment", { status: "released", expiresAt: future }, preference, now), false);
+  assert.equal(canReuseOrderPreference("paid", { status: "active", expiresAt: future }, preference, now), false);
+});
+
+test("eventos tardíos no regresan estados operativos o de revisión", () => {
+  assert.equal(canPaymentEventChangeOrderStatus("pending_payment"), true);
+  assert.equal(canPaymentEventChangeOrderStatus("payment_rejected"), true);
+  assert.equal(canPaymentEventChangeOrderStatus("manual_review"), false);
+  assert.equal(canPaymentEventChangeOrderStatus("preparing"), false);
+  assert.equal(canPaymentEventChangeOrderStatus("completed"), false);
+});
+
+test("solo pedidos reintentables pueden preparar otra preference", () => {
+  assert.equal(canPreparePreferenceForOrder("pending_payment"), true);
+  assert.equal(canPreparePreferenceForOrder("payment_rejected"), true);
+  assert.equal(canPreparePreferenceForOrder("expired"), true);
+  assert.equal(canPreparePreferenceForOrder("payment_pending"), false);
+  assert.equal(canPreparePreferenceForOrder("manual_review"), false);
+  assert.equal(canPreparePreferenceForOrder("cancelled"), false);
 });
 
 test("maps all supported payment states explicitly", () => {
@@ -162,14 +189,14 @@ test("webhook rejects an invalid signature before fetching the payment", async (
   assert.equal(fetched, false);
 });
 
-test("webhook acknowledges a payment that does not exist", async () => {
+test("webhook requests retry when a signed payment is not available yet", async () => {
   const response = await handleMercadoPagoWebhook(signedWebhook(), {
     secret: "test-secret",
     fetchPayment: async () => null,
     processPayment: async () => { throw new Error("must not run"); },
   });
-  assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), { received: true, ignored: true });
+  assert.equal(response.status, 503);
+  assert.deepEqual(await response.json(), { error: "temporary_processing_error" });
 });
 
 test("webhook fetches and forwards authoritative pending, approved and rejected states", async () => {

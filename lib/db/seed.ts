@@ -157,6 +157,7 @@ async function seed() {
               active: true,
               sortOrder: category.sortOrder,
               updatedAt: new Date(),
+              version: sql`${categories.version} + 1`,
             },
           })
           .returning({ id: categories.id });

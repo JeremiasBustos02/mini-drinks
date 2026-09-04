@@ -25,6 +25,24 @@ export function canReusePreference(
   );
 }
 
+export function canReuseOrderPreference(
+  orderStatus: string,
+  reservation: { status: string; expiresAt: Date },
+  preference: { id: string | null; initPoint: string | null; expiresAt: Date | null },
+  now: Date,
+) {
+  return orderStatus === "pending_payment" &&
+    reservation.status === "active" &&
+    reservation.expiresAt.getTime() > now.getTime() &&
+    canReusePreference(preference, now);
+}
+
+export function canPreparePreferenceForOrder(orderStatus: string) {
+  return orderStatus === "pending_payment" ||
+    orderStatus === "payment_rejected" ||
+    orderStatus === "expired";
+}
+
 export function buildMercadoPagoPreference(
   order: PreferenceOrder,
   appUrl: string,

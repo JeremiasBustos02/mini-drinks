@@ -7,6 +7,7 @@ import { Container } from "@/components/ui/container";
 import { getPublishedCombosWithComponents } from "@/lib/db/queries/combos";
 import { getAvailableComboBuilderProductsWithCategories } from "@/lib/db/queries/products";
 import { mapComboBuilderCombo, mapComboBuilderProduct } from "@/lib/mappers/catalog";
+import { logServerEvent } from "@/lib/observability/logger";
 
 export const metadata: Metadata = {
   title: "Armá tu combo | MINI.",
@@ -29,7 +30,7 @@ export default async function BuildYourComboPage() {
     );
     combos = comboRecords.map(mapComboBuilderCombo);
   } catch (error) {
-    console.error("Unable to load the combo builder catalog.", error);
+    logServerEvent("error", "storefront.combo_builder_load_failed", { error });
     throw error;
   }
 

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { calculateAvailableStock, findReservationShortage } from "@/lib/checkout/stock";
+import { getEffectiveReservationStatus } from "@/lib/stock/effective-status";
 
 const now = new Date("2026-09-03T12:00:00.000Z");
 
@@ -43,4 +44,11 @@ test("two sequential intents for the last unit admit only the first", () => {
     { quantity: 1, status: "active", expiresAt: new Date("2026-09-03T12:15:00.000Z") },
   ], now);
   assert.equal(afterFirst >= 1, false);
+});
+
+test("una reserva active vencida se presenta como expired sin mutarla", () => {
+  assert.equal(getEffectiveReservationStatus("active", now, now), "expired");
+  assert.equal(getEffectiveReservationStatus("active", new Date(now.getTime() + 1), now), "active");
+  assert.equal(getEffectiveReservationStatus("released", now, now), "released");
+  assert.equal(getEffectiveReservationStatus(null, null, now), "none");
 });

@@ -10,6 +10,7 @@ import {
   ilike,
   inArray,
   lte,
+  sql,
   type SQL,
 } from "drizzle-orm";
 import { redirect } from "next/navigation";
@@ -29,6 +30,7 @@ import {
   stockReservations,
 } from "@/lib/db/schema";
 import { availableStockSql } from "@/lib/stock/availability-sql";
+import { getEffectiveReservationStatus } from "@/lib/stock/effective-status";
 import type { OrderStatus, PaymentStatus, ProductType } from "@/types/domain";
 
 const availableStock = availableStockSql(products.id, products.stock);
@@ -66,7 +68,11 @@ export async function getAdminDashboardStats() {
     db
       .select({ value: count(orders.id) })
       .from(orders)
-      .where(inArray(orders.status, ["pending_payment", "payment_pending"])),
+      .leftJoin(stockReservations, eq(stockReservations.orderId, orders.id))
+      .where(and(
+        inArray(orders.status, ["pending_payment", "payment_pending"]),
+        sql`not coalesce(${stockReservations.status} = 'active' and ${stockReservations.expiresAt} <= now(), false)`,
+      )),
     db
       .select({ value: countDistinct(payments.orderId) })
       .from(payments)
@@ -255,7 +261,12 @@ export async function getAdminOrders(filters: AdminOrderFilters = {}, limit = 10
 
   const conditions: SQL[] = [];
   if (filters.search?.trim()) conditions.push(ilike(orders.publicNumber, `%${filters.search.trim()}%`));
-  if (filters.orderStatus) conditions.push(eq(orders.status, filters.orderStatus));
+  if (filters.orderStatus === "expired") {
+    conditions.push(sql`(${orders.status} = 'expired' or (${orders.status} in ('pending_payment', 'payment_pending') and ${stockReservations.status} = 'active' and ${stockReservations.expiresAt} <= now()))`);
+  } else if (filters.orderStatus) conditions.push(eq(orders.status, filters.orderStatus));
+  if (filters.orderStatus === "pending_payment" || filters.orderStatus === "payment_pending") {
+    conditions.push(sql`not coalesce(${stockReservations.status} = 'active' and ${stockReservations.expiresAt} <= now(), false)`);
+  }
   if (filters.paymentStatus) conditions.push(eq(latestPayment.status, filters.paymentStatus));
 
   const rows = await db
@@ -277,15 +288,19 @@ export async function getAdminOrders(filters: AdminOrderFilters = {}, limit = 10
     .orderBy(desc(orders.createdAt), desc(orders.id))
     .limit(limit);
 
-  const now = Date.now();
+  const now = new Date();
   return rows.map((order) => ({
     ...order,
-    effectiveReservationStatus:
-      order.reservationStatus === "active" &&
-      order.reservationExpiresAt !== null &&
-      order.reservationExpiresAt.getTime() <= now
+    status:
+      (order.status === "pending_payment" || order.status === "payment_pending") &&
+      getEffectiveReservationStatus(order.reservationStatus, order.reservationExpiresAt, now) === "expired"
         ? ("expired" as const)
-        : (order.reservationStatus ?? ("none" as const)),
+        : order.status,
+    effectiveReservationStatus: getEffectiveReservationStatus(
+      order.reservationStatus,
+      order.reservationExpiresAt,
+      now,
+    ),
   }));
 }
 
@@ -362,14 +377,21 @@ export async function getAdminOrderDetail(id: string) {
   ]);
 
   const reservation = reservationRows[0] ?? null;
-  const effectiveReservationStatus = reservation
-    ? reservation.status === "active" && reservation.expiresAt.getTime() <= Date.now()
-      ? ("expired" as const)
-      : reservation.status
-    : ("none" as const);
+  const effectiveReservationStatus = getEffectiveReservationStatus(
+    reservation?.status,
+    reservation?.expiresAt,
+  );
+  const effectiveOrder = {
+    ...order,
+    status:
+      (order.status === "pending_payment" || order.status === "payment_pending") &&
+      effectiveReservationStatus === "expired"
+        ? ("expired" as const)
+        : order.status,
+  };
 
   return {
-    order,
+    order: effectiveOrder,
     items: itemRows.map((item) => {
       const configuration = parseOrderItemConfigurationSnapshot(item.configurationJson);
       return {

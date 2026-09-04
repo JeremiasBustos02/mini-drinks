@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getAdminAccess } from "@/lib/admin/auth";
+import { updateCategoryWithVersion } from "@/lib/admin/category-concurrency";
 import { updateComboAndReplaceItems } from "@/lib/admin/combo-concurrency";
 import { updateProductWithVersion } from "@/lib/admin/product-concurrency";
 import {
@@ -29,6 +30,7 @@ import {
 } from "@/lib/admin/validation";
 import { db } from "@/lib/db";
 import { categories, comboItems, combos, products } from "@/lib/db/schema";
+import { logServerEvent } from "@/lib/observability/logger";
 import { createClient } from "@/lib/supabase/server";
 
 function redirectWithNotice(path: string, type: "success" | "error", message: string): never {
@@ -55,6 +57,7 @@ function databaseErrorMessage(error: unknown) {
   if (code === "23505") return "Ese slug ya está en uso.";
   if (code === "23503") return "La operación referencia datos que ya no existen.";
   if (code === "23514") return "Los datos no cumplen las reglas de integridad.";
+  logServerEvent("error", "admin.mutation_failed", { code });
   return "No se pudo guardar el cambio. Intentá nuevamente.";
 }
 
@@ -111,16 +114,33 @@ export async function saveCategoryAction(
     return { error: firstValidationError(parsed.error) };
   }
 
-  const { id, revision, ...values } = parsed.data;
+  const { id, expectedVersion, ...values } = parsed.data;
   try {
     if (id) {
-      if (!revision) throw new AdminMutationError("La versión de la categoría no es válida.");
-      const updated = await db
-        .update(categories)
-        .set({ ...values, updatedAt: new Date() })
-        .where(and(eq(categories.id, id), eq(categories.updatedAt, revision)))
-        .returning({ id: categories.id });
-      if (updated.length === 0) throw new AdminMutationError("La categoría cambió en otra sesión. Recargá antes de guardar.");
+      if (!expectedVersion) throw new AdminMutationError("La versión de la categoría no es válida.");
+      if (!values.active) {
+        const [visibleProduct] = await db
+          .select({ id: products.id })
+          .from(products)
+          .where(and(eq(products.categoryId, id), eq(products.active, true), eq(products.published, true)))
+          .limit(1);
+        if (visibleProduct) {
+          throw new AdminMutationError("Ocultá o desactivá los productos publicados antes de desactivar la categoría.");
+        }
+      }
+      const result = await updateCategoryWithVersion(async () => {
+        const updated = await db
+          .update(categories)
+          .set({
+            ...values,
+            updatedAt: new Date(),
+            version: sql`${categories.version} + 1`,
+          })
+          .where(and(eq(categories.id, id), eq(categories.version, expectedVersion)))
+          .returning({ id: categories.id });
+        return updated.length > 0;
+      });
+      if (result === "conflict") throw new AdminMutationError("La categoría cambió en otra sesión. Recargá antes de guardar.");
     } else {
       await db.insert(categories).values(values);
     }
@@ -140,7 +160,7 @@ export async function setCategoryActiveAction(formData: FormData) {
   if (!parsed.success) {
     redirectWithNotice("/admin/categorias", "error", "Cambio de estado inválido.");
   }
-  const { id, revision, value: active } = parsed.data;
+  const { id, expectedVersion, value: active } = parsed.data;
 
   try {
     if (!active) {
@@ -153,12 +173,19 @@ export async function setCategoryActiveAction(formData: FormData) {
         throw new AdminMutationError("Ocultá o desactivá los productos publicados antes de desactivar la categoría.");
       }
     }
-    const updated = await db
-      .update(categories)
-      .set({ active, updatedAt: new Date() })
-      .where(and(eq(categories.id, id), eq(categories.updatedAt, revision)))
-      .returning({ id: categories.id });
-    if (updated.length === 0) throw new AdminMutationError("La categoría cambió en otra sesión. Recargá la página.");
+    const result = await updateCategoryWithVersion(async () => {
+      const updated = await db
+        .update(categories)
+        .set({
+          active,
+          updatedAt: new Date(),
+          version: sql`${categories.version} + 1`,
+        })
+        .where(and(eq(categories.id, id), eq(categories.version, expectedVersion)))
+        .returning({ id: categories.id });
+      return updated.length > 0;
+    });
+    if (result === "conflict") throw new AdminMutationError("La categoría cambió en otra sesión. Recargá la página.");
   } catch (error) {
     redirectWithNotice("/admin/categorias", "error", databaseErrorMessage(error));
   }
@@ -268,6 +295,12 @@ export async function saveProductAction(
     });
   } catch (error) {
     if (error instanceof ProductImageStorageError) return { error: error.message };
+    if (imageWasUploaded) {
+      logServerEvent("error", "admin.product_image_orphaned", {
+        productId: targetProductId,
+        reason: "database_mutation_failed",
+      });
+    }
     const message = databaseErrorMessage(error);
     return {
       error: imageWasUploaded

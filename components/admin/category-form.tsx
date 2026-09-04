@@ -13,7 +13,7 @@ export function CategoryForm({ category }: { category?: CategoryRecord }) {
   return (
     <form action={formAction} className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(16rem,0.5fr)]">
       {category && <input name="id" type="hidden" value={category.id} />}
-      {category && <input name="revision" type="hidden" value={category.updatedAt.toISOString()} />}
+      {category && <input name="expectedVersion" type="hidden" value={category.version} />}
       <FormSection description="Nombre, URL y texto descriptivo de la sección." title="Información">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-sm font-bold">Nombre<input className={adminInputClass} defaultValue={category?.name} name="name" required /></label>

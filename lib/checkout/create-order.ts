@@ -22,6 +22,7 @@ import {
   lockAndReadAvailableStock,
 } from "@/lib/stock/reservations";
 import type { CheckoutCreationResult } from "@/types/checkout";
+import { logServerEvent } from "@/lib/observability/logger";
 
 function createPublicNumber() {
   const date = new Date().toISOString().slice(0, 10).replaceAll("-", "");
@@ -53,7 +54,10 @@ async function findByAttemptId(checkoutAttemptId: string) {
   return existing;
 }
 
-export async function createOrder(payload: ValidCreateOrderPayload): Promise<CheckoutCreationResult> {
+export async function createOrder(
+  payload: ValidCreateOrderPayload,
+  correlationId?: string,
+): Promise<CheckoutCreationResult> {
   const accessTokenHash = hashOrderAccessToken(payload.accessToken);
   const checkoutRequestHash = createCheckoutRequestHash(payload);
   const existingResult = resolveIdempotentOrder(
@@ -67,6 +71,7 @@ export async function createOrder(payload: ValidCreateOrderPayload): Promise<Che
           (await findByAttemptId(payload.checkoutAttemptId))!.id,
           payload.accessToken,
           true,
+          correlationId,
         )
       : existingResult;
   }
@@ -204,7 +209,9 @@ export async function createOrder(payload: ValidCreateOrderPayload): Promise<Che
 
       if ("ok" in result) return result;
       if (result.kind === "order_created") {
-        console.info("stock.reservation_created", {
+        logServerEvent("info", "stock.reservation_created", {
+          correlationId,
+          checkoutAttemptId: payload.checkoutAttemptId,
           orderId: result.orderId,
           expiresAt: result.reservationExpiresAt.toISOString(),
         });
@@ -213,6 +220,7 @@ export async function createOrder(payload: ValidCreateOrderPayload): Promise<Che
         result.orderId,
         payload.accessToken,
         result.kind === "order_existing",
+        correlationId,
       );
     } catch (error) {
       if (isUniqueViolation(error, "orders_public_number_unique")) continue;
@@ -228,12 +236,15 @@ export async function createOrder(payload: ValidCreateOrderPayload): Promise<Che
                 (await findByAttemptId(payload.checkoutAttemptId))!.id,
                 payload.accessToken,
                 true,
+                correlationId,
               )
             : racedResult;
         }
       }
       const databaseError = error as { code?: unknown; constraint_name?: unknown };
-      console.error("Checkout order creation failed", {
+      logServerEvent("error", "checkout.order_creation_failed", {
+        correlationId,
+        checkoutAttemptId: payload.checkoutAttemptId,
         code: databaseError?.code,
         constraint: databaseError?.constraint_name,
       });
