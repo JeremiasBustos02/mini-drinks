@@ -3,12 +3,11 @@ import Link from "next/link";
 import { Container } from "@/components/ui/container";
 
 const footerLinks = [
-  { label: "Instagram" },
-  { label: "WhatsApp" },
-  { label: "Contacto" },
+  { label: "Comprar", href: "/productos" },
+  { label: "Armá tu combo", href: "/arma-tu-combo" },
+  { label: "Packs", href: "/#packs" },
   { label: "Mayoristas", href: "/#mayoristas" },
   { label: "Eventos", href: "/#regalos-eventos" },
-  { label: "Legales" },
 ];
 
 export function Footer() {
@@ -28,21 +27,15 @@ export function Footer() {
             className="grid grid-cols-2 gap-x-6 gap-y-4 self-end text-sm font-bold sm:text-base"
             aria-label="Pie de página"
           >
-            {footerLinks.map((item) =>
-              item.href ? (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="text-white/75 transition-colors hover:text-mint"
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <span key={item.label} className="text-white/60">
-                  {item.label}
-                </span>
-              ),
-            )}
+            {footerLinks.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="text-white/75 transition-colors hover:text-mint"
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
         </div>
         <div className="flex flex-col gap-3 pt-6 text-xs font-medium text-white/60 sm:flex-row sm:items-center sm:justify-between">

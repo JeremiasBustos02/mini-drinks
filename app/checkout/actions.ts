@@ -65,7 +65,7 @@ export async function quoteCheckoutAction(input: unknown): Promise<CheckoutQuote
     return response;
   } catch (error) {
     logServerEvent("error", "checkout.quote_failed", { correlationId: request.correlationId, checkoutAttemptId: parsed.data.checkoutAttemptId, durationMs: Date.now() - startedAt, error });
-    return checkoutFailure("order_not_created", { correlationId: request.correlationId, message: "No pudimos validar el carrito. Intentá nuevamente sin volver a completar tus datos." });
+    return checkoutFailure("order_not_created", { correlationId: request.correlationId, message: "No pudimos actualizar tu pedido. Intentá nuevamente." });
   }
 }
 

@@ -1,4 +1,3 @@
-import { ButtonLink } from "@/components/ui/button-link";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { packOptions } from "@/data/home";
@@ -18,9 +17,7 @@ export function PacksSection() {
             description="Desde un duo hasta doce combinaciones para regalar, compartir o resolver un evento."
             inverted
           />
-          <ButtonLink href="#packs" variant="light" className="sm:mb-1">
-            Ver packs
-          </ButtonLink>
+          <p className="text-sm font-bold text-white/70 sm:mb-1">Próximamente</p>
         </div>
         <div className="packs-grid mt-12 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-5">
           {packOptions.map((pack, index) => (

@@ -18,9 +18,41 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "MINI. | Tu trago, en mini",
+  metadataBase: process.env.APP_URL ? new URL(process.env.APP_URL) : undefined,
+  title: {
+    default: "MINI. | Tu trago, en mini",
+    template: "%s | MINI.",
+  },
   description:
     "Miniaturas, combos y packs con todo lo que necesitás para hacerte un trago.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "es_AR",
+    siteName: "MINI.",
+    title: "MINI. | Tu trago, en mini",
+    description:
+      "Miniaturas, combos y packs con todo lo que necesitás para hacerte un trago.",
+  },
+  twitter: {
+    card: "summary",
+    title: "MINI. | Tu trago, en mini",
+    description:
+      "Miniaturas, combos y packs con todo lo que necesitás para hacerte un trago.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
 };
 
 export default function RootLayout({

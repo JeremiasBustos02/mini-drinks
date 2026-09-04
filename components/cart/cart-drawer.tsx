@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { CartEmpty } from "@/components/cart/cart-empty";
 import { CartItem } from "@/components/cart/cart-item";
@@ -15,34 +15,64 @@ export function CartDrawer() {
   const isOpen = useCartStore((state) => state.isOpen);
   const closeCart = useCartStore((state) => state.closeCart);
   const items = useCartStore((state) => state.items);
+  const panelRef = useRef<HTMLElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
 
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    panelRef.current?.focus();
+
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") closeCart();
+      if (event.key === "Escape") {
+        closeCart();
+        return;
+      }
+      if (event.key !== "Tab" || !panelRef.current) return;
+
+      const controls = Array.from(panelRef.current.querySelectorAll<HTMLElement>(
+        "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])",
+      ));
+      const first = controls[0];
+      const last = controls.at(-1);
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     }
 
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = originalOverflow;
+      previousFocusRef.current?.focus();
+    };
   }, [closeCart, isOpen]);
 
-  if (!hydrated) return null;
+  if (!hydrated || !isOpen) return null;
 
   return (
-    <div className={`cart-drawer fixed inset-0 z-[70] ${isOpen ? "pointer-events-auto" : "pointer-events-none"}`} aria-hidden={!isOpen}>
+    <div className="cart-drawer fixed inset-0 z-[70]">
       <button
         type="button"
-        tabIndex={isOpen ? 0 : -1}
         onClick={closeCart}
-        className={`absolute inset-0 bg-ink/35 transition-opacity duration-200 ${isOpen ? "opacity-100" : "opacity-0"}`}
-        aria-label="Cerrar carrito"
+        className="absolute inset-0 bg-ink/35 transition-opacity duration-200"
+        aria-label="Cerrar carrito al hacer clic fuera"
       />
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Carrito"
-        className={`absolute right-0 flex h-full w-full max-w-md flex-col bg-canvas shadow-2xl transition-transform duration-200 ease-out sm:w-[28rem] ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+        ref={panelRef}
+        tabIndex={-1}
+        className="absolute right-0 flex h-full w-full max-w-md flex-col bg-canvas shadow-2xl transition-transform duration-200 ease-out sm:w-[28rem]"
       >
         <div className="flex items-center justify-between border-b border-ink/10 px-5 py-5 sm:px-6">
           <div>

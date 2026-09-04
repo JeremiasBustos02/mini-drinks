@@ -23,7 +23,7 @@ export function ComboBuilderNavigation({
   onAdd,
 }: ComboBuilderNavigationProps) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 mt-4 border-t border-ink/10 bg-canvas/95 px-4 py-2 backdrop-blur-sm sm:px-6 lg:static lg:border-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:backdrop-blur-none">
+    <div className="fixed inset-x-0 bottom-0 z-40 mt-4 border-t border-ink/10 bg-canvas/95 px-4 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:px-6 lg:static lg:border-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:backdrop-blur-none">
       <div className="mx-auto flex max-w-[90rem] items-center gap-2 lg:max-w-none">
         <button
           type="button"

@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #0d0d0d;
-  --canvas: #f5f3f0;
-  --paper: #ffffff;
-  --action: #024018;
-  --mint: #a5c7b7;
+  --ink: #0D0D0D;
+  --canvas: #F5F3F0;
+  --paper: #FFFFFF;
+  --action: #116B4E;
+  --mint: #A5C7B7;
   --header-height: 4.5rem;
 }
 

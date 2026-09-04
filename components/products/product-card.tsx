@@ -87,7 +87,7 @@ export function ProductCard({
         </div>
         <Link
           href={`/productos/${item.slug}`}
-          className="product-card-link mt-5 inline-flex items-center gap-2 border-b-2 border-ink pb-1 text-sm font-black transition-colors hover:text-action"
+          className="product-card-link motion-cta mt-5 inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-action bg-action px-4 py-2 text-sm font-black text-white shadow-[0_3px_0_#0D0D0D] hover:border-ink hover:bg-ink hover:shadow-[0_5px_0_#0D0D0D]"
         >
           {combo ? "Ver combo" : "Ver producto"}{" "}
           <ArrowIcon className="product-card-arrow size-4" />

@@ -53,7 +53,7 @@ export async function CatalogPage({ searchParams }: CatalogPageProps) {
 
         <section className="py-10 sm:py-14 lg:py-18">
           <Container>
-            <CatalogBrowser initialFilter={initialFilter} items={items} categories={categories} />
+            <CatalogBrowser key={initialFilter} initialFilter={initialFilter} items={items} categories={categories} />
           </Container>
         </section>
       </main>

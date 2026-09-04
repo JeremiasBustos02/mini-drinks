@@ -12,7 +12,7 @@ export const comboBuilderSteps = [
   {
     short: "Vaso",
     title: "Elegí tu vaso",
-    description: "Hoy hay un modelo. El paso queda listo para sumar nuevas ediciones.",
+    description: "Elegí el vaso disponible para completar tu combo.",
   },
   {
     short: "Extras",

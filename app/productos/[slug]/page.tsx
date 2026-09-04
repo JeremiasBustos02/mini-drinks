@@ -29,8 +29,14 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const item = product ? mapProduct({ ...product.product, category: product.category }) : combo ? mapCombo(combo) : null;
 
   return {
-    title: item ? `${item.name} | MINI.` : "Producto no encontrado | MINI.",
+    title: item?.name ?? "Producto no encontrado",
     description: item?.description,
+    alternates: { canonical: `/productos/${slug}` },
+    openGraph: item?.imageUrl
+      ? {
+          images: [{ url: item.imageUrl, alt: item.name }],
+        }
+      : undefined,
   };
 }
 

@@ -1,4 +1,3 @@
-import { ArrowIcon } from "@/components/ui/icons";
 import { Container } from "@/components/ui/container";
 
 export function GiftsEvents() {
@@ -20,9 +19,11 @@ export function GiftsEvents() {
             <p className="mt-5 max-w-sm text-base leading-relaxed text-ink/65">
               Boxes, packs temáticos y una presentación que no pasa desapercibida.
             </p>
-            <span className="gift-sticker absolute right-8 bottom-8 grid size-32 rotate-8 place-items-center rounded-2xl bg-mint font-display text-2xl uppercase shadow-[7px_8px_0_#0d0d0d] sm:size-44 sm:text-3xl">
-              Para vos
-            </span>
+            <div className="absolute right-7 bottom-7 left-7 grid place-items-center sm:right-12 sm:bottom-12 sm:left-12">
+              <span className="gift-sticker grid size-32 rotate-8 place-items-center rounded-2xl bg-mint font-display text-2xl uppercase shadow-[7px_8px_0_#0d0d0d] sm:size-44 sm:text-3xl">
+                Para vos
+              </span>
+            </div>
           </article>
 
           <article className="gift-card relative min-h-[27rem] overflow-hidden rounded-[1.75rem] bg-mint p-7 sm:min-h-[34rem] sm:p-12">
@@ -35,9 +36,9 @@ export function GiftsEvents() {
             <p className="mt-5 max-w-sm text-base leading-relaxed text-ink/65">
               Packs, souvenirs y opciones personalizadas para celebraciones.
             </p>
-            <span className="absolute right-7 bottom-7 inline-flex items-center gap-2 border-b-2 border-ink pb-2 text-sm font-black sm:right-12 sm:bottom-12">
-              Consultar eventos <ArrowIcon className="size-4" />
-            </span>
+            <p className="absolute right-7 bottom-7 border-b-2 border-ink pb-2 text-sm font-black sm:right-12 sm:bottom-12">
+              Consultas para eventos, próximamente
+            </p>
           </article>
         </div>
       </Container>

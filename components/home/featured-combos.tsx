@@ -1,9 +1,14 @@
 import { ProductCard } from "@/components/products/product-card";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { combos } from "@/data/combos";
+import { getPublishedCombosWithComponents } from "@/lib/db/queries/combos";
+import { mapCombo } from "@/lib/mappers/catalog";
 
-export function FeaturedCombos() {
+export async function FeaturedCombos() {
+  const combos = (await getPublishedCombosWithComponents()).map(mapCombo).slice(0, 4);
+
+  if (combos.length === 0) return null;
+
   return (
     <section
       id="destacados"
@@ -27,7 +32,7 @@ export function FeaturedCombos() {
           ))}
         </div>
         <p className="mt-6 text-xs font-medium text-ink/60">
-          Imágenes y precios finales pendientes. Las composiciones son placeholders visuales.
+          El precio y la disponibilidad se vuelven a validar al avanzar al checkout.
         </p>
       </Container>
     </section>

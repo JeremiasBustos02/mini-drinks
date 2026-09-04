@@ -5,7 +5,7 @@ export function Hero() {
   return (
     <section
       id="inicio"
-      className="hero-section overflow-hidden border-b border-ink/10 py-10 sm:py-14 lg:py-20"
+      className="hero-section bg-paper overflow-hidden border-b border-ink/10 py-10 sm:py-14 lg:py-20"
     >
       <Container>
         <div className="hero-layout grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">

@@ -61,7 +61,7 @@ export function PurchasePreview({ item, available }: PurchasePreviewProps) {
           </button>
         </div>
         <span className="text-sm font-medium text-ink/55">
-          {isOutOfStock ? "No disponible" : `Máximo mock: ${available}`}
+          {isOutOfStock ? "No disponible" : `Máximo disponible: ${available}`}
         </span>
       </div>
       <button

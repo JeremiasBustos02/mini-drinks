@@ -44,7 +44,7 @@ export default async function PaymentReturnPage({
           <section className="mx-auto max-w-2xl rounded-[1.75rem] bg-mint/55 p-7 sm:p-10">
             <p className="text-xs font-black tracking-[0.2em] text-action uppercase">{resultLabels[resultado as keyof typeof resultLabels]}</p>
             <h1 className="mt-3 font-display text-[clamp(2.5rem,8vw,4.5rem)] leading-[0.9] uppercase">{confirmed ? "Pago confirmado" : "Estamos confirmando"}</h1>
-            <p className="mt-5 text-ink/65">El regreso desde Mercado Pago no confirma por sí solo la compra. Mostramos únicamente el estado persistido que actualiza nuestro webhook.</p>
+            <p className="mt-5 text-ink/65">Estamos actualizando el estado de tu pago. Si todavía figura pendiente, no hace falta que hagas nada: revisalo de nuevo en unos minutos.</p>
             <Link href={orderUrl} className="motion-button mt-7 inline-flex min-h-12 items-center rounded-xl bg-action px-6 py-3 font-black text-white">Ver estado del pedido</Link>
           </section>
         </Container>

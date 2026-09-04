@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 import { useCartHydration } from "@/components/cart/use-cart-hydration";
-import { CartIcon, MenuIcon, UserIcon } from "@/components/ui/icons";
+import { CartIcon, MenuIcon } from "@/components/ui/icons";
 import { Container } from "@/components/ui/container";
 import { getCartTotalItems } from "@/lib/cart/cart-utils";
 import { useCartStore } from "@/store/cart-store";
@@ -11,7 +11,7 @@ import { useCartStore } from "@/store/cart-store";
 const navigation = [
   { label: "Comprar", href: "/productos" },
   { label: "Armá tu combo", href: "/arma-tu-combo" },
-  { label: "Packs", href: "/productos?categoria=packs" },
+  { label: "Packs", href: "/#packs" },
   { label: "Eventos", href: "/#regalos-eventos" },
   { label: "Mayoristas", href: "/#mayoristas" },
 ];
@@ -30,7 +30,7 @@ export function Header() {
       >
         Saltar al contenido
       </Link>
-      <header className="site-header sticky top-0 z-50 border-b border-ink/10 bg-canvas/95 backdrop-blur-sm">
+      <header className="site-header sticky top-0 z-50 border-b border-ink/10 bg-paper/75 backdrop-blur-xl">
         <Container className="flex h-[var(--header-height)] items-center justify-between gap-4">
           <Link
             href="/"
@@ -50,8 +50,8 @@ export function Header() {
                 href={item.href}
                 className={`text-sm font-bold transition-colors ${
                   item.label === "Mayoristas"
-                    ? "text-mint hover:text-action"
-                    : "hover:text-action"
+                    ? "text-action hover:text-ink"
+                    : "text-ink/75 hover:text-action"
                 }`}
               >
                 {item.label}
@@ -60,19 +60,11 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <span
-              role="img"
-              aria-label="Acceso a cuenta, próximamente"
-              title="Iniciar sesión próximamente"
-              className="grid size-11 place-items-center rounded-xl border border-ink/15 bg-white"
-            >
-              <UserIcon />
-            </span>
             <button
               type="button"
               onClick={openCart}
               aria-label={`Abrir carrito, ${totalItems} producto${totalItems === 1 ? "" : "s"}`}
-              className="motion-button relative grid size-11 place-items-center rounded-xl border border-ink/15 bg-white"
+              className="motion-button relative grid size-11 cursor-pointer place-items-center rounded-xl border border-ink/15 bg-white shadow-[0_2px_0_rgb(13_13_13_/_12%)]"
             >
               <CartIcon />
               <span key={totalItems} className="quantity-value absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-action text-[0.65rem] font-black text-white">
@@ -83,7 +75,7 @@ export function Header() {
             <details className="mobile-menu group relative md:hidden">
               <summary
                 aria-label="Abrir o cerrar menú"
-                className="motion-button grid size-11 cursor-pointer list-none place-items-center rounded-xl border border-ink/15 bg-white"
+                className="motion-button grid size-11 cursor-pointer list-none place-items-center rounded-xl border border-ink/15 bg-white shadow-[0_2px_0_rgb(13_13_13_/_12%)]"
               >
                 <MenuIcon />
               </summary>

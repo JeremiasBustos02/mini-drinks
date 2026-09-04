@@ -22,7 +22,8 @@ export function QuantityControl({
       <button
         type="button"
         onClick={() => (quantity === 1 && onRemove ? onRemove() : onChange(quantity - 1))}
-        className={`motion-button grid place-items-center font-black ${buttonSize}`}
+        disabled={quantity === 1 && !onRemove}
+        className={`motion-button grid place-items-center font-black disabled:cursor-not-allowed disabled:opacity-30 ${buttonSize}`}
         aria-label={quantity === 1 && onRemove ? "Eliminar item" : "Restar una unidad"}
       >
         −

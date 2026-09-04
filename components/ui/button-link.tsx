@@ -10,11 +10,11 @@ type ButtonLinkProps = {
 
 const variants = {
   primary:
-    "bg-action text-white border-action hover:bg-ink hover:border-ink",
+    "bg-action text-white border-action shadow-[0_4px_0_#0D0D0D] hover:bg-ink hover:border-ink hover:shadow-[0_6px_0_#0D0D0D]",
   secondary:
-    "bg-transparent text-ink border-ink hover:bg-ink hover:text-white",
-  light: "bg-white text-action border-white hover:bg-mint hover:border-mint",
-  lightdark: "bg-white text-action border-white hover:bg-ink hover:border-ink hover:text-white",
+    "bg-white text-ink border-ink shadow-[0_4px_0_#0D0D0D] hover:bg-ink hover:text-white hover:shadow-[0_6px_0_#0D0D0D]",
+  light: "bg-white text-action border-white shadow-[0_4px_0_rgb(13_13_13_/_30%)] hover:bg-mint hover:border-mint hover:shadow-[0_6px_0_rgb(13_13_13_/_36%)]",
+  lightdark: "bg-white text-action border-white shadow-[0_4px_0_rgb(13_13_13_/_30%)] hover:bg-ink hover:border-ink hover:text-white hover:shadow-[0_6px_0_rgb(13_13_13_/_36%)]",
 };
 
 export function ButtonLink({
@@ -26,7 +26,7 @@ export function ButtonLink({
   return (
     <Link
       href={href}
-      className={`motion-cta inline-flex min-h-12 items-center justify-center rounded-xl border-2 px-6 py-3 text-base font-bold transition-colors ${variants[variant]} ${className}`}
+      className={`motion-cta inline-flex min-h-12 cursor-pointer items-center justify-center rounded-xl border-2 px-6 py-3 text-base font-bold ${variants[variant]} ${className}`}
     >
       {children}
     </Link>
