@@ -177,6 +177,7 @@ export function ComboBuilderStepPanel({
               <ProductVisual
                 variant={miniature.image}
                 imageUrl={miniature.imageUrl}
+                imageClassName="rotate-[20deg] scale-[0.9]"
                 volumeLabel="Tu combo"
                 compact
                 className="!h-40 sm:!h-44"

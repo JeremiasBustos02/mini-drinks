@@ -37,7 +37,7 @@ export function ProductCard({
           imageUrl={item.imageUrl}
           volumeLabel={item.kind === "product" ? item.volume : "Combo"}
           productType={item.kind === "product" ? item.productType : undefined}
-        className={isFeatured ? "featured-card-visual" : ""}
+        className={isFeatured ? "featured-card-visual" : "aspect-[3/4] !h-auto"}
       />
       <div className={`p-3 pt-5 sm:p-4 sm:pt-5 ${isFeatured ? "" : "flex flex-1 flex-col"}`}>
         <div className="mb-3 flex flex-wrap items-center gap-2">

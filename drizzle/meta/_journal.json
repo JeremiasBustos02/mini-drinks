@@ -50,6 +50,13 @@
       "when": 1788544091284,
       "tag": "0007_exotic_sabra",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1788563663386,
+      "tag": "0008_even_kylun",
+      "breakpoints": true
     }
   ]
 }

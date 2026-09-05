@@ -3,8 +3,9 @@ import { Container } from "@/components/ui/container";
 import { PlusIcon } from "@/components/ui/icons";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { comboPreviewOptions } from "@/data/home";
+import type { StorefrontAsset } from "@/lib/storefront/assets";
 
-export function ComboBuilderPromo() {
+export function ComboBuilderPromo({ asset }: { asset: StorefrontAsset | null }) {
   return (
     <section
       id="arma-tu-combo"
@@ -26,9 +27,12 @@ export function ComboBuilderPromo() {
           </div>
 
           <div
-            aria-hidden="true"
+            aria-hidden={asset ? undefined : "true"}
             className="build-preview relative rounded-[1.75rem] bg-canvas p-4 text-ink sm:p-7"
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {asset ? <img alt={asset.alt} className="aspect-[4/3] w-full rounded-[1.25rem] bg-white object-contain p-5" decoding="async" loading="lazy" src={asset.imageUrl} /> : null}
+            {!asset ? <>
             <div className="mb-7 flex items-center gap-2" aria-hidden="true">
               {[1, 2, 3, 4, 5].map((step) => (
                 <span
@@ -72,6 +76,7 @@ export function ComboBuilderPromo() {
               <span>Miniatura + mixer + vaso + extras</span>
               <PlusIcon className="size-5 text-action" />
             </div>
+            </> : null}
           </div>
         </div>
       </Container>

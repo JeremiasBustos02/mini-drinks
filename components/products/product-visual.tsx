@@ -8,6 +8,7 @@ type ProductVisualProps = {
   compact?: boolean;
   productType?: ProductType;
   className?: string;
+  imageClassName?: string;
 };
 
 export function ProductVisual({
@@ -17,6 +18,7 @@ export function ProductVisual({
   compact = false,
   productType,
   className = "",
+  imageClassName = "",
 }: ProductVisualProps) {
   const style = productVisualStyles[variant];
   const isExtra = productType === "extra" || productType === "accessory" || productType === "supply";
@@ -33,7 +35,7 @@ export function ProductVisual({
       </span>
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={imageUrl} alt="" className="absolute inset-0 z-10 size-full object-cover" />
+        <img src={imageUrl} alt="" className={`absolute inset-0 z-10 size-full object-contain p-4 sm:p-5 ${imageClassName}`} />
       ) : null}
       {!imageUrl ? <div className="absolute -right-5 -bottom-12 size-40 rounded-full border-[24px] border-white/40 sm:size-48" /> : null}
       {!imageUrl && (!productType || productType === "miniature") ? (

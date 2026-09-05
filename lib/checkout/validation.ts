@@ -1,12 +1,15 @@
 import { z } from "zod";
 
+import {
+  CHECKOUT_MAX_COMPONENT_QUANTITY,
+  CHECKOUT_MAX_LINE_QUANTITY,
+} from "@/lib/checkout/limits";
+
 const MAX_LINES = 30;
-const MAX_LINE_QUANTITY = 24;
 const MAX_COMPONENTS = 15;
-const MAX_COMPONENT_QUANTITY = 12;
 
 const uuidSchema = z.uuid({ error: "El identificador no es válido." });
-const quantitySchema = z.int().positive().max(MAX_LINE_QUANTITY);
+const quantitySchema = z.int().positive().max(CHECKOUT_MAX_LINE_QUANTITY);
 const displayedUnitPriceSchema = z.int().nonnegative().optional();
 const requiredText = (max: number) => z.string().trim().min(1).max(max);
 
@@ -47,7 +50,7 @@ const comboLineSchema = z.strictObject({
 const customComboComponentSchema = z.strictObject({
   role: z.enum(["miniature", "mixer", "glass", "extra"]),
   productId: uuidSchema,
-  quantity: z.int().positive().max(MAX_COMPONENT_QUANTITY),
+  quantity: z.int().positive().max(CHECKOUT_MAX_COMPONENT_QUANTITY),
 });
 
 export const customComboConfigurationSchema = z

@@ -1,17 +1,15 @@
-import { sql, type AnyColumn } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
-import { stockReservationItems, stockReservations } from "@/lib/db/schema";
-
-export function availableStockSql(productId: AnyColumn, physicalStock: AnyColumn) {
+export function availableStockSql() {
   return sql<number>`greatest(
-    ${physicalStock} - coalesce((
-      select sum(${stockReservationItems.quantity})::integer
-      from ${stockReservationItems}
-      inner join ${stockReservations}
-        on ${stockReservations.id} = ${stockReservationItems.reservationId}
-      where ${stockReservationItems.productId} = ${productId}
-        and ${stockReservations.status} = 'active'
-        and ${stockReservations.expiresAt} > now()
+    "products"."stock" - coalesce((
+      select sum("stock_reservation_items"."quantity")::integer
+      from "stock_reservation_items"
+      inner join "stock_reservations"
+        on "stock_reservations"."id" = "stock_reservation_items"."reservation_id"
+      where "stock_reservation_items"."product_id" = "products"."id"
+        and "stock_reservations"."status" = 'active'
+        and "stock_reservations"."expires_at" > now()
     ), 0),
     0
   )::integer`.mapWith(Number);

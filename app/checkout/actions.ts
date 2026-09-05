@@ -27,17 +27,24 @@ function isEmptyCart(value: unknown) {
 
 export async function quoteCheckoutAction(input: unknown): Promise<CheckoutQuoteResult> {
   const startedAt = Date.now();
+  let stage = "rate_limit";
   const request = await getRequestContext();
   const ipLimit = await checkRateLimit(rateLimitPolicies.quoteIp, request.clientIdentifier);
   if (!ipLimit.allowed) {
-    logServerEvent("warn", "checkout.quote_rate_limited", { correlationId: request.correlationId, source: ipLimit.source });
+    logServerEvent("warn", "checkout.quote_rate_limited", { correlationId: request.correlationId, stage, source: ipLimit.source });
     return checkoutFailure("rate_limited", { correlationId: request.correlationId, retryAfterSeconds: ipLimit.retryAfterSeconds });
   }
   if (isEmptyCart(input)) {
+    logServerEvent("info", "checkout.quote_rejected", { correlationId: request.correlationId, stage: "validation", code: "empty_cart" });
     return { ok: false, code: "empty_cart", message: "El carrito está vacío." };
   }
+  stage = "validation";
   const parsed = checkoutSchema.safeParse(input);
   if (!parsed.success) {
+    stage = parsed.error.issues.some((issue) => issue.path[0] === "fulfillment")
+      ? "fulfillment"
+      : stage;
+    logServerEvent("info", "checkout.quote_rejected", { correlationId: request.correlationId, stage, code: "invalid_payload" });
     return {
       ok: false,
       code: "invalid_payload",
@@ -46,14 +53,32 @@ export async function quoteCheckoutAction(input: unknown): Promise<CheckoutQuote
     };
   }
 
+  stage = "rate_limit";
   const attemptLimit = await checkRateLimit(rateLimitPolicies.quoteAttempt, parsed.data.checkoutAttemptId);
   if (!attemptLimit.allowed) {
-    logServerEvent("warn", "checkout.quote_rate_limited", { correlationId: request.correlationId, checkoutAttemptId: parsed.data.checkoutAttemptId, source: attemptLimit.source });
+    logServerEvent("warn", "checkout.quote_rate_limited", { correlationId: request.correlationId, checkoutAttemptId: parsed.data.checkoutAttemptId, stage, source: attemptLimit.source });
     return checkoutFailure("rate_limited", { correlationId: request.correlationId, retryAfterSeconds: attemptLimit.retryAfterSeconds });
   }
 
   try {
-    const result = resolveCheckout(parsed.data, await loadCheckoutCatalog());
+    stage = "catalog_load";
+    const catalog = await loadCheckoutCatalog();
+    stage = "resolve_cart";
+    const result = resolveCheckout(parsed.data, catalog);
+    if (!result.ok) {
+      const resultStage = result.code === "insufficient_stock"
+        ? "stock"
+        : result.code === "invalid_money"
+          ? "pricing"
+          : stage;
+      logServerEvent("info", "checkout.quote_rejected", {
+        correlationId: request.correlationId,
+        checkoutAttemptId: parsed.data.checkoutAttemptId,
+        stage: resultStage,
+        code: result.code,
+      });
+    }
+    stage = "quote_hash";
     const response: CheckoutQuoteResult = result.ok
       ? {
           ok: true,
@@ -61,10 +86,11 @@ export async function quoteCheckoutAction(input: unknown): Promise<CheckoutQuote
           quoteHash: createCheckoutQuoteHash(result.checkout, parsed.data.fulfillment),
         }
       : result;
-    logServerEvent("info", "checkout.quote_completed", { correlationId: request.correlationId, checkoutAttemptId: parsed.data.checkoutAttemptId, status: response.ok ? "ok" : response.code, durationMs: Date.now() - startedAt });
+    stage = "response";
+    logServerEvent("info", "checkout.quote_completed", { correlationId: request.correlationId, checkoutAttemptId: parsed.data.checkoutAttemptId, stage, status: response.ok ? "ok" : response.code, durationMs: Date.now() - startedAt });
     return response;
   } catch (error) {
-    logServerEvent("error", "checkout.quote_failed", { correlationId: request.correlationId, checkoutAttemptId: parsed.data.checkoutAttemptId, durationMs: Date.now() - startedAt, error });
+    logServerEvent("error", "checkout.quote_failed", { correlationId: request.correlationId, checkoutAttemptId: parsed.data.checkoutAttemptId, stage, durationMs: Date.now() - startedAt, error });
     return checkoutFailure("order_not_created", { correlationId: request.correlationId, message: "No pudimos actualizar tu pedido. Intentá nuevamente." });
   }
 }

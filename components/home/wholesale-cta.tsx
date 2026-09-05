@@ -1,7 +1,8 @@
 import { ButtonLink } from "@/components/ui/button-link";
 import { Container } from "@/components/ui/container";
+import type { StorefrontAsset } from "@/lib/storefront/assets";
 
-export function WholesaleCta() {
+export function WholesaleCta({ asset }: { asset: StorefrontAsset | null }) {
   return (
     <section
       id="mayoristas"
@@ -22,12 +23,16 @@ export function WholesaleCta() {
               Quiero venderlos
             </ButtonLink>
           </div>
-          <div className="wholesale-visual relative mx-auto aspect-[4/3] w-full max-w-md overflow-hidden rounded-[1.5rem] border border-white/25 bg-mint text-ink shadow-[10px_12px_0_rgb(13_13_13_/_28%)]" role="img" aria-label="Espacio preparado para una futura foto de productos para reventa">
+          <div className="wholesale-visual relative mx-auto aspect-[4/3] w-full max-w-md overflow-hidden rounded-[1.5rem] border border-white/25 bg-mint text-ink shadow-[10px_12px_0_rgb(13_13_13_/_28%)]" role={asset ? undefined : "img"} aria-label={asset ? undefined : "Espacio preparado para una futura foto de productos para reventa"}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {asset ? <img alt={asset.alt} className="size-full object-cover" decoding="async" loading="lazy" src={asset.imageUrl} /> : null}
+            {!asset ? <>
             <div className="absolute -top-10 -left-10 size-40 rounded-full border-[1.5rem] border-white/55" aria-hidden="true" />
             <div className="absolute right-[18%] bottom-[16%] h-[58%] w-[24%] rotate-[-9deg] rounded-t-[1.5rem] rounded-b-lg bg-action shadow-[8px_8px_0_rgb(13_13_13_/_18%)]" aria-hidden="true" />
             <div className="absolute right-[37%] bottom-[12%] h-[44%] w-[19%] rotate-[7deg] rounded-t-xl rounded-b-lg bg-white shadow-[7px_7px_0_rgb(13_13_13_/_14%)]" aria-hidden="true" />
             <p className="absolute top-5 left-5 rounded-full bg-white px-3 py-1.5 text-[0.65rem] font-black tracking-[0.15em] uppercase">Foto de producto</p>
             <p className="absolute right-5 bottom-5 max-w-36 text-right font-display text-2xl leading-none uppercase">Tu vidriera, en mini.</p>
+            </> : null}
           </div>
         </div>
       </Container>

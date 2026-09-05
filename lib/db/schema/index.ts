@@ -144,6 +144,41 @@ export const comboItems = pgTable(
   ],
 ).enableRLS();
 
+export const comboImages = pgTable(
+  "combo_images",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    comboId: uuid("combo_id")
+      .notNull()
+      .references(() => combos.id, { onDelete: "cascade" }),
+    imageUrl: text("image_url").notNull(),
+    storagePath: text("storage_path"),
+    alt: text("alt").default("").notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    isPrimary: boolean("is_primary").default(false).notNull(),
+    createdAt: createdAtColumn(),
+  },
+  (table) => [
+    index("combo_images_combo_sort_idx").on(table.comboId, table.sortOrder),
+    uniqueIndex("combo_images_one_primary_per_combo")
+      .on(table.comboId)
+      .where(sql`${table.isPrimary} = true`),
+    check("combo_images_sort_order_non_negative", sql`${table.sortOrder} >= 0`),
+  ],
+).enableRLS();
+
+export const storefrontAssets = pgTable(
+  "storefront_assets",
+  {
+    key: text("key").primaryKey(),
+    imageUrl: text("image_url").notNull(),
+    storagePath: text("storage_path"),
+    alt: text("alt").default("").notNull(),
+    createdAt: createdAtColumn(),
+    updatedAt: updatedAtColumn(),
+  },
+).enableRLS();
+
 export const orders = pgTable(
   "orders",
   {
@@ -337,6 +372,8 @@ export type AdminUserRecord = typeof adminUsers.$inferSelect;
 export type ProductRecord = typeof products.$inferSelect;
 export type ComboRecord = typeof combos.$inferSelect;
 export type ComboItemRecord = typeof comboItems.$inferSelect;
+export type ComboImageRecord = typeof comboImages.$inferSelect;
+export type StorefrontAssetRecord = typeof storefrontAssets.$inferSelect;
 export type OrderRecord = typeof orders.$inferSelect;
 export type OrderItemRecord = typeof orderItems.$inferSelect;
 export type PaymentRecord = typeof payments.$inferSelect;

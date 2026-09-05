@@ -1,4 +1,4 @@
-import type { ComboRecord, ProductRecord } from "@/lib/db/schema";
+import type { ComboImageRecord, ComboRecord, ProductRecord } from "@/lib/db/schema";
 import { getDerivedComboStock } from "@/lib/catalog/availability";
 import type {
   ComboBuilderCombo,
@@ -13,6 +13,7 @@ type ProductWithCategory = ProductRecord & {
 export type ComboWithComponents = {
   combo: ComboRecord;
   components: { quantity: number; product: ProductRecord }[];
+  images?: ComboImageRecord[];
 };
 
 const productTypeVisuals: Record<ProductType, VisualVariant> = {
@@ -65,6 +66,9 @@ export function mapProduct(record: ProductWithCategory): Product {
     published: record.published,
     image: getVisual(record.slug, record.productType),
     imageUrl: record.imageUrl,
+    images: record.imageUrl
+      ? [{ id: record.id, imageUrl: record.imageUrl, alt: record.name }]
+      : [],
     category: record.category.slug,
     categoryName: record.category.name,
     kind: "product",
@@ -103,6 +107,11 @@ export function mapCombo(record: ComboWithComponents): Combo {
     (total, { product, quantity }) => total + product.price * quantity,
     0,
   );
+  const images = (record.images ?? []).map((image) => ({
+    id: image.id,
+    imageUrl: image.imageUrl,
+    alt: image.alt || record.combo.name,
+  }));
 
   return {
     id: record.combo.id,
@@ -113,7 +122,12 @@ export function mapCombo(record: ComboWithComponents): Combo {
     referencePrice,
     published: record.combo.published,
     image: components[0]?.image ?? "packaging",
-    imageUrl: record.combo.imageUrl,
+    imageUrl: images[0]?.imageUrl ?? record.combo.imageUrl,
+    images: images.length > 0
+      ? images
+      : record.combo.imageUrl
+        ? [{ id: record.combo.id, imageUrl: record.combo.imageUrl, alt: record.combo.name }]
+        : [],
     category: "combos" as CatalogCategory,
     categoryName: "Combos",
     kind: "combo",

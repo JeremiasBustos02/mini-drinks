@@ -4,6 +4,12 @@ import type { ProductType } from "@/types/domain";
 
 export type CatalogCategory = string;
 
+export type CatalogImage = {
+  id: string;
+  imageUrl: string;
+  alt: string;
+};
+
 export type VisualVariant =
   | "fernet"
   | "jack"
@@ -35,6 +41,7 @@ type CatalogBase = {
   published: boolean;
   image: VisualVariant;
   imageUrl?: string | null;
+  images?: CatalogImage[];
   category: CatalogCategory;
   categoryName?: string;
   available: number;

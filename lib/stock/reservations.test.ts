@@ -1,10 +1,18 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { PgDialect } from "drizzle-orm/pg-core";
 
 import { calculateAvailableStock, findReservationShortage } from "@/lib/checkout/stock";
+import { availableStockSql } from "@/lib/stock/availability-sql";
 import { getEffectiveReservationStatus } from "@/lib/stock/effective-status";
 
 const now = new Date("2026-09-03T12:00:00.000Z");
+
+test("availability SQL qualifies correlated reservation columns", () => {
+  const query = new PgDialect().sqlToQuery(availableStockSql()).sql;
+  assert.match(query, /"stock_reservations"\."id" = "stock_reservation_items"\."reservation_id"/);
+  assert.match(query, /"stock_reservation_items"\."product_id" = "products"\."id"/);
+});
 
 test("physical stock subtracts only active non-expired reservations", () => {
   const reservations = [

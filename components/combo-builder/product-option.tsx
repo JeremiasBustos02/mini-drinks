@@ -41,6 +41,7 @@ export function ProductOption({
         productType={product.productType}
         compact
         className="combo-builder-option-visual !h-26 w-full sm:!h-30"
+        imageClassName="rotate-[20deg] scale-[0.9]"
       />
       <span className="combo-builder-option-content flex min-h-[4.75rem] w-full flex-1 flex-col px-1.5 pt-2 pb-1.5 sm:min-h-20 sm:px-2 sm:pt-2.5">
         <span className="font-display text-sm leading-[1.05] uppercase sm:text-[0.9375rem]">

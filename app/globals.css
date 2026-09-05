@@ -4,8 +4,8 @@
   --ink: #0D0D0D;
   --canvas: #F5F3F0;
   --paper: #FFFFFF;
-  --action: #116B4E;
-  --mint: #A5C7B7;
+  --action: #3F4933;
+  --mint: #A3AF76;
   --header-height: 4.5rem;
 }
 
@@ -77,21 +77,8 @@ summary::-webkit-details-marker {
 
 /* Keeps the first viewport balanced on shorter desktop displays without shrinking the 1080p composition. */
 @media (min-width: 1024px) and (max-height: 850px) {
-  .hero-section {
-    padding-top: 2.5rem;
-    padding-bottom: 2.5rem;
-  }
-
-  .hero-layout {
-    gap: 2.5rem;
-  }
-
   .hero-title {
     font-size: clamp(3.75rem, 7.25vw, 6.25rem);
-  }
-
-  .hero-visual {
-    min-height: 28rem;
   }
 
   .product-detail-grid {
@@ -236,14 +223,8 @@ summary::-webkit-details-marker {
 }
 
 @media (min-width: 1024px) {
-  .featured-combos > :nth-child(1) .featured-card-visual,
-  .featured-combos > :nth-child(4) .featured-card-visual {
-    height: 20rem;
-  }
-
-  .featured-combos > :nth-child(2) .featured-card-visual,
-  .featured-combos > :nth-child(3) .featured-card-visual {
-    height: 16.5rem;
+  .featured-combos .featured-card-visual {
+    height: 18rem;
   }
 }
 
@@ -263,12 +244,8 @@ summary::-webkit-details-marker {
     gap: 1rem;
   }
 
-  .featured-combos > :nth-child(odd) .featured-card-visual {
-    height: 16rem;
-  }
-
-  .featured-combos > :nth-child(even) .featured-card-visual {
-    height: 13.5rem;
+  .featured-combos .featured-card-visual {
+    height: 15rem;
   }
 
   .featured-card {
@@ -395,8 +372,6 @@ summary::-webkit-details-marker {
   }
 
   .gift-sticker {
-    right: 2rem;
-    bottom: 2rem;
     width: 7rem;
     height: 7rem;
     font-size: 1.5rem;
@@ -408,7 +383,7 @@ summary::-webkit-details-marker {
   }
 
   .wholesale-content {
-    gap: 0rem;
+    gap: 2.5rem;
   }
 
   .wholesale-content h2 {
@@ -417,6 +392,10 @@ summary::-webkit-details-marker {
 
   .wholesale-content p {
     margin-top: 1rem;
+  }
+
+  .wholesale-visual {
+    max-width: 24rem;
   }
 }
 

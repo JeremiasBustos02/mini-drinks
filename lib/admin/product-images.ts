@@ -3,8 +3,10 @@ export const PRODUCT_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
 export const PRODUCT_IMAGE_ACCEPT = "image/webp,image/png,image/jpeg";
 
 export const productImageMimeTypes = ["image/webp", "image/png", "image/jpeg"] as const;
+export const managedImageScopes = ["products", "combos", "storefront"] as const;
 export type ProductImageMimeType = (typeof productImageMimeTypes)[number];
 export type ProductImageMode = "url" | "upload";
+export type ManagedImageScope = (typeof managedImageScopes)[number];
 
 const extensionByMimeType: Record<ProductImageMimeType, "webp" | "png" | "jpg"> = {
   "image/webp": "webp",
@@ -38,13 +40,66 @@ export function validateProductImageFile(file: { size: number; type: string }):
   return { ok: true, extension };
 }
 
+export function detectProductImageMimeType(bytes: Uint8Array): ProductImageMimeType | null {
+  if (
+    bytes.length >= 8 &&
+    bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 &&
+    bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a
+  ) return "image/png";
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return "image/jpeg";
+  }
+  if (
+    bytes.length >= 12 &&
+    bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+    bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50
+  ) return "image/webp";
+  return null;
+}
+
+export async function validateProductImageFileContents(file: {
+  size: number;
+  type: string;
+  arrayBuffer(): Promise<ArrayBuffer>;
+}): Promise<
+  | { ok: true; extension: "webp" | "png" | "jpg"; mimeType: ProductImageMimeType }
+  | { ok: false; error: string }
+> {
+  const metadata = validateProductImageFile(file);
+  if (!metadata.ok) return metadata;
+  try {
+    const mimeType = detectProductImageMimeType(new Uint8Array(await file.arrayBuffer()));
+    if (!mimeType || mimeType !== file.type) {
+      return { ok: false, error: "El contenido del archivo no coincide con una imagen WebP, PNG o JPG válida." };
+    }
+    return { ok: true, mimeType, extension: extensionByMimeType[mimeType] };
+  } catch {
+    return { ok: false, error: "No se pudo leer el contenido de la imagen." };
+  }
+}
+
 export function buildProductImagePath(productId: string, objectId: string, mimeType: string) {
-  if (!uuidPattern.test(productId) || !uuidPattern.test(objectId)) {
+  return buildManagedImagePath("products", productId, objectId, mimeType);
+}
+
+export function buildManagedImagePath(
+  scope: ManagedImageScope,
+  ownerId: string,
+  objectId: string,
+  mimeType: string,
+) {
+  if (!managedImageScopes.includes(scope)) {
+    throw new Error("La carpeta de la imagen no es válida.");
+  }
+  const ownerIsValid = scope === "storefront"
+    ? /^[a-z][a-z0-9_]{1,63}$/.test(ownerId)
+    : uuidPattern.test(ownerId);
+  if (!ownerIsValid || !uuidPattern.test(objectId)) {
     throw new Error("Los identificadores de la imagen no son válidos.");
   }
   const extension = getProductImageExtension(mimeType);
   if (!extension) throw new Error("El tipo de imagen no es válido.");
-  return `products/${productId}/${objectId}.${extension}`;
+  return `${scope}/${ownerId}/${objectId}.${extension}`;
 }
 
 export function isValidProductImageUrl(value: string) {
@@ -64,6 +119,9 @@ export function isValidProductImageUrl(value: string) {
 export function normalizeProductImageUrl(value: string) {
   const normalized = value.trim();
   if (!normalized) return null;
+  if (normalized.length > 2048) {
+    throw new Error("La URL es demasiado larga.");
+  }
   if (!isValidProductImageUrl(normalized)) {
     throw new Error("Ingresá una URL http:// o https:// válida.");
   }

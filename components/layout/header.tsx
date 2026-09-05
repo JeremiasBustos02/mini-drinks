@@ -30,7 +30,7 @@ export function Header() {
       >
         Saltar al contenido
       </Link>
-      <header className="site-header sticky top-0 z-50 border-b border-ink/10 bg-paper/75 backdrop-blur-xl">
+      <header className="site-header sticky top-0 z-50 border-b border-ink/10 bg-paper/80 backdrop-blur-xl">
         <Container className="flex h-[var(--header-height)] items-center justify-between gap-4">
           <Link
             href="/"

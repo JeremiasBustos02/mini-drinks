@@ -9,20 +9,22 @@ import { ShopCategories } from "@/components/home/shop-categories";
 import { SurpriseSection } from "@/components/home/surprise-section";
 import { WholesaleCta } from "@/components/home/wholesale-cta";
 import { StorefrontShell } from "@/components/layout/storefront-shell";
+import { getStorefrontAssets } from "@/lib/db/queries/storefront-assets";
 
-export default function Home() {
+export default async function Home() {
+  const assets = await getStorefrontAssets();
   return (
     <StorefrontShell>
       <main id="contenido">
-        <Hero />
+        <Hero asset={assets.hero} />
         <FeaturedCombos />
         <ShopCategories />
-        <ComboBuilderPromo />
+        <ComboBuilderPromo asset={assets.combo_builder_promo} />
         <BrandBenefits />
-        <PacksSection />
+        <PacksSection asset={assets.packs} />
         <SurpriseSection />
-        <GiftsEvents />
-        <WholesaleCta />
+        <GiftsEvents asset={assets.gifts_events} />
+        <WholesaleCta asset={assets.wholesale} />
         <FaqSection />
       </main>
     </StorefrontShell>

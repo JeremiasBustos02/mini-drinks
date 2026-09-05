@@ -21,6 +21,7 @@ import { parseOrderItemConfigurationSnapshot } from "@/lib/checkout/order-snapsh
 import { db } from "@/lib/db";
 import {
   categories,
+  comboImages,
   comboItems,
   combos,
   orderItems,
@@ -33,7 +34,7 @@ import { availableStockSql } from "@/lib/stock/availability-sql";
 import { getEffectiveReservationStatus } from "@/lib/stock/effective-status";
 import type { OrderStatus, PaymentStatus, ProductType } from "@/types/domain";
 
-const availableStock = availableStockSql(products.id, products.stock);
+const availableStock = availableStockSql();
 
 async function authorizeAdminRead() {
   await connection();
@@ -208,6 +209,7 @@ export async function getAdminCombos(filters: { search?: string } = {}) {
       }>;
       referencePrice: number;
       availability: number;
+      images: (typeof comboImages.$inferSelect)[];
     }
   >();
 
@@ -217,6 +219,7 @@ export async function getAdminCombos(filters: { search?: string } = {}) {
       components: [],
       referencePrice: 0,
       availability: Number.POSITIVE_INFINITY,
+      images: [],
     };
 
     if (row.item && row.product?.id && row.product.name && row.product.price !== null && row.product.productType && row.product.stock !== null) {
@@ -235,8 +238,21 @@ export async function getAdminCombos(filters: { search?: string } = {}) {
     grouped.set(row.combo.id, entry);
   }
 
+  const imageRows = grouped.size > 0
+    ? await db
+        .select()
+        .from(comboImages)
+        .where(inArray(comboImages.comboId, [...grouped.keys()]))
+        .orderBy(asc(comboImages.comboId), desc(comboImages.isPrimary), asc(comboImages.sortOrder), asc(comboImages.createdAt), asc(comboImages.id))
+    : [];
+  for (const image of imageRows) grouped.get(image.comboId)?.images.push(image);
+
   return [...grouped.values()].map((entry) => ({
     ...entry,
+    combo: {
+      ...entry.combo,
+      imageUrl: entry.images[0]?.imageUrl ?? entry.combo.imageUrl,
+    },
     availability: Number.isFinite(entry.availability) ? entry.availability : 0,
   }));
 }

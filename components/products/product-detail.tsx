@@ -1,4 +1,4 @@
-import { ProductVisual } from "@/components/products/product-visual";
+import { ProductGallery } from "@/components/products/product-gallery";
 import { PurchasePreview } from "@/components/products/purchase-preview";
 import { BackButton } from "@/components/ui/back-button";
 import { Container } from "@/components/ui/container";
@@ -25,11 +25,12 @@ export function ProductDetail({ item }: ProductDetailProps) {
 
         <div className="product-detail-grid mt-6 grid gap-8 lg:mt-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:gap-14">
           <div className="product-detail-visual lg:sticky lg:top-28">
-            <ProductVisual
+            <ProductGallery
               variant={item.image}
-              imageUrl={item.imageUrl}
+              images={item.images ?? (item.imageUrl ? [{ id: item.id, imageUrl: item.imageUrl, alt: item.name }] : [])}
+              name={item.name}
+              productType={item.kind === "product" ? item.productType : undefined}
               volumeLabel={item.kind === "product" ? item.volume : "Combo"}
-              className="product-detail-media"
             />
           </div>
 

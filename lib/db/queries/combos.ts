@@ -1,15 +1,15 @@
 import "server-only";
 
-import { and, asc, eq, getTableColumns } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, inArray } from "drizzle-orm";
 import { unstable_noStore as noStore } from "next/cache";
 
 import { db } from "@/lib/db";
-import { comboItems, combos, products } from "@/lib/db/schema";
+import { comboImages, comboItems, combos, products } from "@/lib/db/schema";
 import { availableStockSql } from "@/lib/stock/availability-sql";
 
 const availableProductColumns = {
   ...getTableColumns(products),
-  stock: availableStockSql(products.id, products.stock),
+  stock: availableStockSql(),
 };
 
 export function getPublishedCombos() {
@@ -30,7 +30,7 @@ export async function getPublishedCombosWithComponents() {
     .where(and(eq(combos.published, true), eq(combos.active, true)))
     .orderBy(asc(combos.name), asc(products.name));
 
-  return groupComboComponents(rows);
+  return attachComboImages(groupComboComponents(rows));
 }
 
 export async function getComboBySlug(slug: string) {
@@ -53,7 +53,9 @@ export async function getPublishedComboWithComponentsBySlug(slug: string) {
     .where(and(eq(combos.slug, slug), eq(combos.published, true), eq(combos.active, true)))
     .orderBy(asc(products.name));
 
-  return groupComboComponents(rows)[0] ?? null;
+  const grouped = groupComboComponents(rows);
+  if (grouped.length === 0) return null;
+  return (await attachComboImages(grouped))[0] ?? null;
 }
 
 export function getComboComponents(comboId: string) {
@@ -85,4 +87,25 @@ function groupComboComponents(
   }
 
   return [...grouped.values()];
+}
+
+async function attachComboImages(
+  records: Array<{
+    combo: typeof combos.$inferSelect;
+    components: { quantity: number; product: typeof products.$inferSelect }[];
+  }>,
+) {
+  if (records.length === 0) return [];
+  const images = await db
+    .select()
+    .from(comboImages)
+    .where(inArray(comboImages.comboId, records.map(({ combo }) => combo.id)))
+    .orderBy(asc(comboImages.comboId), desc(comboImages.isPrimary), asc(comboImages.sortOrder), asc(comboImages.createdAt), asc(comboImages.id));
+  const byCombo = new Map<string, typeof images>();
+  for (const image of images) {
+    const combo = byCombo.get(image.comboId);
+    if (combo) combo.push(image);
+    else byCombo.set(image.comboId, [image]);
+  }
+  return records.map((record) => ({ ...record, images: byCombo.get(record.combo.id) ?? [] }));
 }

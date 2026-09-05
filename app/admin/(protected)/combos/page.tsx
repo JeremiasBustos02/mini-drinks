@@ -10,6 +10,7 @@ import {
   ProductThumbnail,
 } from "@/components/admin/admin-ui";
 import { ComboForm } from "@/components/admin/combo-form";
+import { ComboImageManager } from "@/components/admin/combo-image-manager";
 import { AdminSubmitButton } from "@/components/admin/form-submit-button";
 import { AdminNotice } from "@/components/admin/notice";
 import { getAdminCombos, getAdminProductOptions } from "@/lib/db/queries/admin";
@@ -53,6 +54,7 @@ export default async function AdminCombosPage({ searchParams }: { searchParams: 
           {products.length === 0 ? <EmptyState description="Cargá al menos un producto antes de crear un combo." title="No hay productos disponibles" /> : (
             <ComboForm combo={editedRow ? { ...editedRow.combo, components: editedRow.components.map(({ productId, quantity }) => ({ productId, quantity })) } : undefined} products={products} />
           )}
+          {editedRow ? <div className="mt-6 border-t border-ink/10 pt-6"><ComboImageManager comboId={editedRow.combo.id} comboName={editedRow.combo.name} images={editedRow.images} /></div> : null}
         </section>
       )}
 

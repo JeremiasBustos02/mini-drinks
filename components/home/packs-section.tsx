@@ -1,8 +1,9 @@
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { packOptions } from "@/data/home";
+import type { StorefrontAsset } from "@/lib/storefront/assets";
 
-export function PacksSection() {
+export function PacksSection({ asset }: { asset: StorefrontAsset | null }) {
   return (
     <section
       id="packs"
@@ -19,6 +20,8 @@ export function PacksSection() {
           />
           <p className="text-sm font-bold text-white/70 sm:mb-1">Próximamente</p>
         </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {asset ? <img alt={asset.alt} className="mt-10 aspect-[16/7] w-full rounded-[1.5rem] bg-white object-contain p-4 sm:p-6" decoding="async" loading="lazy" src={asset.imageUrl} /> : null}
         <div className="packs-grid mt-12 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-5">
           {packOptions.map((pack, index) => (
             <article

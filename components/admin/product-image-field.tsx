@@ -31,7 +31,17 @@ function ImagePreview({ alt, src }: { alt: string; src: string | null }) {
   );
 }
 
-export function ProductImageField({ initialImageUrl, productName }: { initialImageUrl: string | null; productName: string }) {
+export function ProductImageField({
+  fieldId = "product-image",
+  initialImageUrl,
+  productName,
+  recommendation = "Recomendado: 1200 × 1600 px · proporción 3:4 · WebP, PNG o JPG · máximo 2 MB",
+}: {
+  fieldId?: string;
+  initialImageUrl: string | null;
+  productName: string;
+  recommendation?: string;
+}) {
   const { pending } = useFormStatus();
   const [mode, setMode] = useState<ProductImageMode>("url");
   const [imageUrl, setImageUrl] = useState(initialImageUrl ?? "");
@@ -113,25 +123,25 @@ export function ProductImageField({ initialImageUrl, productName }: { initialIma
 
         <div className="min-w-0">
           <div className="rounded-xl border border-mint/60 bg-mint/15 p-3.5">
-            <p className="text-xs font-black text-action">Recomendado: 1200 × 1600 px · proporción 3:4 · WebP, PNG o JPG · máximo 2 MB</p>
+            <p className="text-xs font-black text-action">{recommendation}</p>
             <p className="mt-1.5 text-xs leading-5 text-ink/50">Usá fondo transparente o limpio, producto centrado, márgenes moderados y buena iluminación.</p>
           </div>
 
           {mode === "url" ? (
             <div className="mt-4">
-              <label className="block text-sm font-bold" htmlFor="product-image-url">URL de imagen<input aria-describedby="product-image-url-help product-image-url-error" aria-invalid={!urlIsValid} className={adminInputClass} id="product-image-url" name="imageUrl" onChange={(event) => setImageUrl(event.target.value)} pattern="https?://.+" placeholder="https://..." type="url" value={imageUrl} /></label>
-              <p className="mt-1.5 text-xs leading-5 text-ink/45" id="product-image-url-help">Puede ser una URL externa o una URL pública existente de Storage.</p>
-              {!urlIsValid && <p className="mt-2 text-xs font-bold text-red-700" id="product-image-url-error" role="alert">Ingresá una URL completa que comience con http:// o https://.</p>}
+              <label className="block text-sm font-bold" htmlFor={`${fieldId}-url`}>URL de imagen<input aria-describedby={`${fieldId}-url-help ${fieldId}-url-error`} aria-invalid={!urlIsValid} className={adminInputClass} id={`${fieldId}-url`} maxLength={2048} name="imageUrl" onChange={(event) => setImageUrl(event.target.value)} pattern="https?://.+" placeholder="https://..." type="url" value={imageUrl} /></label>
+              <p className="mt-1.5 text-xs leading-5 text-ink/45" id={`${fieldId}-url-help`}>Puede ser una URL externa o una URL pública existente de Storage.</p>
+              {!urlIsValid && <p className="mt-2 text-xs font-bold text-red-700" id={`${fieldId}-url-error`} role="alert">Ingresá una URL completa que comience con http:// o https://.</p>}
               {urlWarning && <p className="mt-2 text-xs font-bold text-amber-700" role="status">{urlWarning}</p>}
               {trimmedUrl && <button className={`${adminSecondaryButtonClass} mt-3`} onClick={() => setImageUrl("")} type="button">Quitar imagen</button>}
             </div>
           ) : (
             <div className="mt-4">
-              <label className="block text-sm font-bold" htmlFor="product-image-file">Archivo de imagen</label>
-              <input accept={PRODUCT_IMAGE_ACCEPT} aria-describedby="product-image-file-help product-image-file-error" className="mt-1.5 block min-h-11 w-full min-w-0 rounded-xl border border-ink/15 bg-white text-sm text-ink file:mr-3 file:min-h-11 file:border-0 file:border-r file:border-ink/10 file:bg-canvas file:px-3 file:text-sm file:font-black file:text-action hover:file:bg-mint/20" id="product-image-file" name="imageFile" onChange={(event) => handleFile(event.target.files?.[0])} ref={fileInputRef} required type="file" />
-              <p className="mt-1.5 text-xs leading-5 text-ink/45" id="product-image-file-help">La imagen se subirá al guardar el producto.</p>
+              <label className="block text-sm font-bold" htmlFor={`${fieldId}-file`}>Archivo de imagen</label>
+              <input accept={PRODUCT_IMAGE_ACCEPT} aria-describedby={`${fieldId}-file-help ${fieldId}-file-error`} className="mt-1.5 block min-h-11 w-full min-w-0 rounded-xl border border-ink/15 bg-white text-sm text-ink file:mr-3 file:min-h-11 file:border-0 file:border-r file:border-ink/10 file:bg-canvas file:px-3 file:text-sm file:font-black file:text-action hover:file:bg-mint/20" id={`${fieldId}-file`} name="imageFile" onChange={(event) => handleFile(event.target.files?.[0])} ref={fileInputRef} required type="file" />
+              <p className="mt-1.5 text-xs leading-5 text-ink/45" id={`${fieldId}-file-help`}>La imagen se subirá al guardar.</p>
               {selectedFile && <div className="mt-3 flex min-w-0 items-center justify-between gap-3 rounded-xl border border-ink/10 bg-white p-3"><div className="min-w-0"><p className="truncate text-sm font-black">{selectedFile.name}</p><p className="mt-0.5 text-xs text-ink/45">{Math.ceil(selectedFile.size / 1024)} KB · Lista para subir</p></div><button className="shrink-0 text-xs font-black text-red-700 hover:underline" onClick={() => clearSelectedFile()} type="button">Cancelar</button></div>}
-              {fileError && <p className="mt-2 text-xs font-bold text-red-700" id="product-image-file-error" role="alert">{fileError}</p>}
+              {fileError && <p className="mt-2 text-xs font-bold text-red-700" id={`${fieldId}-file-error`} role="alert">{fileError}</p>}
               {dimensionWarning && <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold leading-5 text-amber-800" role="status">{dimensionWarning}</p>}
             </div>
           )}

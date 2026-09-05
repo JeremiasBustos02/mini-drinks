@@ -3,11 +3,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { migratePersistedCart } from "@/lib/cart/persisted-cart";
 import { getCartItemMergeKey, getCartSubtotal, getCartTotalItems } from "@/lib/cart/cart-utils";
+import { CHECKOUT_MAX_LINE_QUANTITY } from "@/lib/checkout/limits";
 import type { CartItem } from "@/types/cart";
 
 function toValidQuantity(quantity: number) {
-  return Number.isFinite(quantity) ? Math.max(1, Math.floor(quantity)) : 1;
+  return Number.isFinite(quantity)
+    ? Math.min(CHECKOUT_MAX_LINE_QUANTITY, Math.max(1, Math.floor(quantity)))
+    : 1;
 }
 
 type CartStore = {
@@ -22,29 +26,6 @@ type CartStore = {
   totalItems: () => number;
   subtotal: () => number;
 };
-
-type PersistedCartState = Pick<CartStore, "items">;
-
-function migratePersistedCart(persistedState: unknown, version: number): PersistedCartState {
-  if (!persistedState || typeof persistedState !== "object") return { items: [] };
-
-  const state = persistedState as Partial<PersistedCartState>;
-
-  if (!Array.isArray(state.items)) return { items: [] };
-  if (version >= 1) return { items: state.items };
-
-  return {
-    items: state.items.flatMap((item) => {
-      if (!item || typeof item !== "object" || typeof item.unitPrice !== "number") return [];
-
-      return [
-        item.type === "custom_combo"
-          ? { ...item, unitPrice: item.unitPrice * 100, savings: item.savings * 100 }
-          : { ...item, unitPrice: item.unitPrice * 100 },
-      ];
-    }),
-  };
-}
 
 export const useCartStore = create<CartStore>()(
   persist(
@@ -68,7 +49,7 @@ export const useCartStore = create<CartStore>()(
                   ? {
                       ...item,
                       lineId: candidate.lineId,
-                      quantity: candidate.quantity + amount,
+                      quantity: toValidQuantity(candidate.quantity + amount),
                     }
                   : candidate,
               ),
@@ -98,7 +79,7 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: "mini-cart",
-      version: 1,
+      version: 2,
       migrate: migratePersistedCart,
       partialize: (state) => ({ items: state.items }),
       skipHydration: true,

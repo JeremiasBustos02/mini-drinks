@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { categories, products } from "@/lib/db/schema";
 import { availableStockSql } from "@/lib/stock/availability-sql";
 
-const availableStock = availableStockSql(products.id, products.stock);
+const availableStock = availableStockSql();
 const availableProductColumns = { ...getTableColumns(products), stock: availableStock };
 
 export function getPublishedProducts() {

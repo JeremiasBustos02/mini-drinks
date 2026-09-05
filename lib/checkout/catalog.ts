@@ -14,7 +14,7 @@ export async function loadCheckoutCatalog(executor: QueryExecutor = db): Promise
     executor
       .select({
         ...getTableColumns(products),
-        stock: availableStockSql(products.id, products.stock),
+        stock: availableStockSql(),
       })
       .from(products),
     executor

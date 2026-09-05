@@ -10,6 +10,7 @@ import {
   ProductThumbnail,
 } from "@/components/admin/admin-ui";
 import { AdminSubmitButton } from "@/components/admin/form-submit-button";
+import { ProductImageField } from "@/components/admin/product-image-field";
 import { ProductPicker, type ProductOption } from "@/components/admin/product-picker";
 import { productTypeLabels } from "@/lib/admin/presentation";
 import { formatArsCents, formatArsInput, parseArsToCents } from "@/lib/money";
@@ -38,7 +39,6 @@ export function ComboForm({ combo, products }: { combo?: ComboValue; products: P
   const [promotionalPrice, setPromotionalPrice] = useState(
     combo?.promotionalPrice === null || combo?.promotionalPrice === undefined ? "" : formatArsInput(combo.promotionalPrice),
   );
-  const [imageUrl, setImageUrl] = useState(combo?.imageUrl ?? "");
 
   const productById = new Map(products.map((product) => [product.id, product]));
   const selectedIds = new Set(lines.map((line) => line.productId));
@@ -147,15 +147,11 @@ export function ComboForm({ combo, products }: { combo?: ComboValue; products: P
         {hasInvalidLine && <p className="mt-3 text-xs font-bold text-red-700" role="alert">Agregá al menos un producto y usá cantidades mayores a cero.</p>}
       </FormSection>
 
-      <FormSection description="Se mantiene la URL externa; no se suben archivos desde el panel." title="Imagen">
-        <div className="grid gap-4 sm:grid-cols-[7rem_1fr] sm:items-start">
-          <ProductThumbnail imageUrl={imageUrl.trim() || null} name={combo?.name ?? "Combo"} size="lg" />
-          <label className="text-sm font-bold">
-            URL de imagen
-            <input className={adminInputClass} name="imageUrl" onChange={(event) => setImageUrl(event.target.value)} placeholder="https://..." type="url" value={imageUrl} />
-          </label>
-        </div>
-      </FormSection>
+      {!combo ? (
+        <FormSection description="Podés empezar con una URL o subir un archivo. Después de crear el combo podrás sumar y ordenar más imágenes." title="Imagen inicial">
+          <ProductImageField fieldId="new-combo-image" initialImageUrl={null} productName="Nuevo combo" />
+        </FormSection>
+      ) : null}
 
       <section className="rounded-2xl bg-action p-5 text-white" aria-label="Resumen del combo">
         <p className="text-xs font-black uppercase tracking-[0.12em] text-mint">Resumen</p>

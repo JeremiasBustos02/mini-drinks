@@ -2,6 +2,7 @@
 
 import { ProductVisual } from "@/components/products/product-visual";
 import { QuantityControl } from "@/components/cart/quantity-control";
+import { CHECKOUT_MAX_LINE_QUANTITY } from "@/lib/checkout/limits";
 import { formatArsCents as formatPrice } from "@/lib/money";
 import { getCartItemSubtotal } from "@/lib/cart/cart-utils";
 import { useCartStore } from "@/store/cart-store";
@@ -52,6 +53,7 @@ export function CartItem({ item, compact = false }: CartItemProps) {
         <div className="mt-3 flex items-center justify-between gap-3">
           <QuantityControl
             quantity={item.quantity}
+            maximum={CHECKOUT_MAX_LINE_QUANTITY}
             onChange={(quantity) => updateQuantity(item.lineId, quantity)}
             onRemove={() => removeItem(item.lineId)}
             size={compact ? "compact" : "default"}

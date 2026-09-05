@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 
 import { createCustomComboCartItem } from "@/lib/cart/cart-item-factories";
+import { CHECKOUT_MAX_LINE_QUANTITY } from "@/lib/checkout/limits";
 import { ComboBuilderProgress } from "@/components/combo-builder/progress";
 import { SelectionSummary } from "@/components/combo-builder/selection-summary";
 import { ComboBuilderStepPanel } from "@/components/combo-builder/step-panel";
@@ -152,7 +153,7 @@ export function ComboBuilder({ products, combos }: ComboBuilderProps) {
           canContinue={canContinue}
           added={added}
           quantity={quantity}
-          maximumQuantity={availableQuantity}
+          maximumQuantity={Math.min(availableQuantity, CHECKOUT_MAX_LINE_QUANTITY)}
           onSelectBase={selectBase}
           onToggleExtra={toggleExtra}
           onBack={() => goToStep(currentStep - 1)}
@@ -160,7 +161,7 @@ export function ComboBuilder({ products, combos }: ComboBuilderProps) {
           onEdit={goToStep}
           onAdd={addCombo}
           onQuantityChange={(nextQuantity) => {
-            setQuantity(Math.min(availableQuantity, Math.max(1, nextQuantity)));
+            setQuantity(Math.min(availableQuantity, CHECKOUT_MAX_LINE_QUANTITY, Math.max(1, nextQuantity)));
             setAdded(false);
           }}
         />

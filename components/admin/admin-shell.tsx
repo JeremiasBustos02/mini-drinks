@@ -12,6 +12,7 @@ const links = [
   { href: "/admin/productos", label: "Productos", icon: "box" },
   { href: "/admin/categorias", label: "Categorías", icon: "tag" },
   { href: "/admin/combos", label: "Combos", icon: "layers" },
+  { href: "/admin/contenido", label: "Contenido", icon: "image" },
   { href: "/admin/pedidos", label: "Pedidos", icon: "receipt" },
 ] as const;
 
@@ -21,6 +22,7 @@ function NavIcon({ name }: { name: (typeof links)[number]["icon"] }) {
     box: <><path d="m21 8-9 5-9-5" /><path d="M3 8l9-5 9 5v8l-9 5-9-5Z" /><path d="M12 13v8" /></>,
     tag: <><path d="M20 13 13 20a2 2 0 0 1-3 0l-6-6a2 2 0 0 1 0-3l7-7h7l2 2Z" /><path d="M15 8h.01" /></>,
     layers: <><path d="m12 2 9 5-9 5-9-5Z" /><path d="m3 12 9 5 9-5" /><path d="m3 17 9 5 9-5" /></>,
+    image: <><rect height="16" rx="2" width="18" x="3" y="4" /><circle cx="9" cy="10" r="2" /><path d="m21 15-5-5L5 21" /></>,
     receipt: <><path d="M6 2h12v20l-3-2-3 2-3-2-3 2Z" /><path d="M9 7h6M9 11h6M9 15h3" /></>,
   };
   return <svg aria-hidden="true" className="size-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24">{paths[name]}</svg>;

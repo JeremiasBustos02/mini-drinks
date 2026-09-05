@@ -21,7 +21,7 @@ export function ShopCategories() {
               id="comprar-title"
               className="buy-title font-display text-[clamp(2.5rem,9vw,5.4rem)] leading-[0.95] tracking-[-0.04em] uppercase"
             >
-              ¿Qué podés comprar?
+              ¿Que podes comprar?
             </h2>
           </div>
           <div className="divide-y divide-ink/15 border-y border-ink/15">

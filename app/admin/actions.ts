@@ -12,6 +12,8 @@ import { updateComboAndReplaceItems } from "@/lib/admin/combo-concurrency";
 import { updateProductWithVersion } from "@/lib/admin/product-concurrency";
 import {
   ProductImageStorageError,
+  cleanupUploadedImage,
+  uploadComboImage,
   uploadProductImage,
 } from "@/lib/admin/product-image-storage";
 import {
@@ -29,7 +31,7 @@ import {
   stateChangeSchema,
 } from "@/lib/admin/validation";
 import { db } from "@/lib/db";
-import { categories, comboItems, combos, products } from "@/lib/db/schema";
+import { categories, comboImages, comboItems, combos, products } from "@/lib/db/schema";
 import { logServerEvent } from "@/lib/observability/logger";
 import { createClient } from "@/lib/supabase/server";
 
@@ -212,7 +214,7 @@ export async function saveProductAction(
   const { id, expectedVersion, ...values } = parsed.data;
   const targetProductId = id ?? randomUUID();
   let previousSlug: string | undefined;
-  let imageWasUploaded = false;
+  let uploadedImagePath: string | null = null;
 
   try {
     const [[comboWithSlug], [category], existingRows] = await Promise.all([
@@ -252,7 +254,7 @@ export async function saveProductAction(
         uploadedUrl: uploadedImage.publicUrl,
         url: "",
       });
-      imageWasUploaded = true;
+      uploadedImagePath = uploadedImage.path;
     } else {
       values.imageUrl = resolveProductImageReference({
         mode: "url",
@@ -295,18 +297,9 @@ export async function saveProductAction(
     });
   } catch (error) {
     if (error instanceof ProductImageStorageError) return { error: error.message };
-    if (imageWasUploaded) {
-      logServerEvent("error", "admin.product_image_orphaned", {
-        productId: targetProductId,
-        reason: "database_mutation_failed",
-      });
-    }
+    if (uploadedImagePath) await cleanupUploadedImage(uploadedImagePath, "products");
     const message = databaseErrorMessage(error);
-    return {
-      error: imageWasUploaded
-        ? `${message} La imagen llegó a Storage, pero quedó sin asociar y deberá limpiarse manualmente.`
-        : message,
-    };
+    return { error: message };
   }
 
   revalidatePath("/admin");
@@ -315,7 +308,7 @@ export async function saveProductAction(
   redirectWithNotice(
     "/admin/productos",
     "success",
-    imageWasUploaded
+    uploadedImagePath
       ? id
         ? "Producto actualizado e imagen subida."
         : "Producto creado e imagen subida."
@@ -373,9 +366,23 @@ export async function saveComboAction(
     return { error: firstValidationError(parsed.error) };
   }
 
-  const { id, expectedVersion, components, ...values } = parsed.data;
+  const { id, expectedVersion, components, imageUrl, ...values } = parsed.data;
+  let initialImageUrl = imageUrl;
+  const targetComboId = id ?? randomUUID();
+  const imageModeValue = formData.get("imageMode");
+  let uploadedImagePath: string | null = null;
+  if (!id && imageModeValue !== "url" && imageModeValue !== "upload") {
+    return { error: "Elegí cómo querés asignar la imagen inicial." };
+  }
   let previousSlug: string | undefined;
   try {
+    if (!id && imageModeValue === "upload") {
+      const imageFile = formData.get("imageFile");
+      if (!(imageFile instanceof File) || imageFile.size === 0) throw new ProductImageStorageError("Elegí una imagen para subir.");
+      const uploaded = await uploadComboImage(targetComboId, imageFile);
+      uploadedImagePath = uploaded.path;
+      initialImageUrl = uploaded.publicUrl;
+    }
     await db.transaction(async (tx) => {
       await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${values.slug}))`);
       const [productWithSlug] = await tx.select({ id: products.id }).from(products).where(eq(products.slug, values.slug)).limit(1);
@@ -433,21 +440,33 @@ export async function saveComboAction(
         );
         if (result === "conflict") throw new AdminMutationError("El combo cambió en otra sesión. Recargá antes de guardar.");
       } else {
-        const [created] = await tx.insert(combos).values(values).returning({ id: combos.id });
+        const [created] = await tx.insert(combos).values({ ...values, id: targetComboId, imageUrl: initialImageUrl }).returning({ id: combos.id });
         comboId = created.id;
         await tx.insert(comboItems).values(
           components.map((component) => ({ comboId: comboId!, ...component })),
         );
+        if (initialImageUrl) {
+          await tx.insert(comboImages).values({
+            comboId,
+            imageUrl: initialImageUrl,
+            storagePath: uploadedImagePath,
+            alt: values.name,
+            sortOrder: 0,
+            isPrimary: true,
+          });
+        }
       }
     });
   } catch (error) {
+    if (error instanceof ProductImageStorageError) return { error: error.message };
+    if (uploadedImagePath) await cleanupUploadedImage(uploadedImagePath, "combos");
     return { error: databaseErrorMessage(error) };
   }
 
   revalidatePath("/admin");
   revalidatePath("/admin/combos");
   revalidateCatalog([values.slug, ...(previousSlug ? [previousSlug] : [])]);
-  redirectWithNotice("/admin/combos", "success", id ? "Combo actualizado." : "Combo creado.");
+  redirectWithNotice("/admin/combos", "success", id ? "Combo actualizado." : "Combo creado. Ya podés agregar más imágenes desde Editar.");
 }
 
 export async function setComboStateAction(formData: FormData) {

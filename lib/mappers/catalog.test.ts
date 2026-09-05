@@ -46,3 +46,37 @@ test("un combo predeterminado nunca cuesta más que sus componentes", () => {
   assert.equal(combo.referencePrice, 600000);
   assert.equal(combo.price, 600000);
 });
+
+test("prioriza la galería normalizada y completa el alt vacío", () => {
+  const combo = mapCombo({
+    ...record,
+    combo: { ...record.combo, imageUrl: "https://example.com/legacy.webp" },
+    images: [{
+      id: "44444444-4444-4444-8444-444444444444",
+      comboId: record.combo.id,
+      imageUrl: "https://example.com/primary.webp",
+      storagePath: null,
+      alt: "",
+      sortOrder: 0,
+      isPrimary: true,
+      createdAt: now,
+    }],
+  });
+
+  assert.equal(combo.imageUrl, "https://example.com/primary.webp");
+  assert.deepEqual(combo.images, [{
+    id: "44444444-4444-4444-8444-444444444444",
+    imageUrl: "https://example.com/primary.webp",
+    alt: "Combo",
+  }]);
+});
+
+test("usa imageUrl como galería de transición cuando no hay filas normalizadas", () => {
+  const combo = mapCombo({
+    ...record,
+    combo: { ...record.combo, imageUrl: "https://example.com/legacy.webp" },
+  });
+
+  assert.equal(combo.imageUrl, "https://example.com/legacy.webp");
+  assert.equal(combo.images?.[0]?.imageUrl, "https://example.com/legacy.webp");
+});
