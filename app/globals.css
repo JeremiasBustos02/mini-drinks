@@ -181,7 +181,7 @@ summary::-webkit-details-marker {
   }
 
   .combo-builder-option .combo-builder-option-visual {
-    height: 5.25rem !important;
+    --builder-option-frame-height: 5.25rem;
   }
 
   .combo-builder-option .combo-builder-option-content {
@@ -434,20 +434,61 @@ summary::-webkit-details-marker {
   padding: 0.5rem;
 }
 
+.catalog-card-visual > img {
+  padding: 0.5rem;
+}
+
+.combo-builder-option-visual {
+  /* Builder frame height defines the crop; ProductVisual keeps overflow hidden. */
+  --builder-option-frame-height: 8rem;
+  /* Builder image controls: scale changes size, rotate inclines, x/y move it, object-position anchors its source. */
+  --builder-image-scale: 1.55;
+  --builder-image-rotate: 12deg;
+  --builder-image-x: 0%;
+  --builder-image-y: 0%;
+  --builder-image-object-position: center;
+  border-radius: 0.75rem;
+  height: var(--builder-option-frame-height) !important;
+}
+
 .combo-builder-option-visual > img {
   padding: 0;
+  object-position: var(--builder-image-object-position);
 }
 
 .combo-builder-option-image {
-  transform: rotate(12deg) scale(1.55);
+  transform: translate(var(--builder-image-x), var(--builder-image-y)) rotate(var(--builder-image-rotate)) scale(var(--builder-image-scale));
+}
+
+.combo-builder-feature-visual {
+  --builder-feature-scale: 1.4;
+  --builder-feature-rotate: 12deg;
+  --builder-feature-x: 0%;
+  --builder-feature-y: 0%;
+  --builder-feature-object-position: center;
 }
 
 .combo-builder-feature-visual > img {
   padding: 0;
+  object-position: var(--builder-feature-object-position);
 }
 
 .combo-builder-feature-image {
-  transform: rotate(12deg) scale(1.4);
+  transform: translate(var(--builder-feature-x), var(--builder-feature-y)) rotate(var(--builder-feature-rotate)) scale(var(--builder-feature-scale));
+}
+
+.wholesale-section {
+  /* CTA image controls: scale changes size, rotate inclines, x/y move it, object-position anchors its source. */
+  --cta-fernet-scale: 2.1;
+  --cta-fernet-rotate: -7deg;
+  --cta-fernet-x: 0%;
+  --cta-fernet-y: 8%;
+  --cta-fernet-object-position: 50% 72%;
+  --cta-coke-scale: 1.85;
+  --cta-coke-rotate: 7deg;
+  --cta-coke-x: 0%;
+  --cta-coke-y: 5%;
+  --cta-coke-object-position: 50% 58%;
 }
 
 .wholesale-product {
@@ -457,16 +498,17 @@ summary::-webkit-details-marker {
   bottom: 0;
   width: 38%;
   overflow: hidden;
+  background: transparent;
   pointer-events: none;
 }
 
 .wholesale-product img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: transparent;
   mix-blend-mode: multiply;
   opacity: 0.82;
-  transform: scale(2.05);
 }
 
 .wholesale-product-fernet {
@@ -474,8 +516,8 @@ summary::-webkit-details-marker {
 }
 
 .wholesale-product-fernet img {
-  object-position: 50% 72%;
-  transform: translateY(8%) rotate(-7deg) scale(2.1);
+  object-position: var(--cta-fernet-object-position);
+  transform: translate(var(--cta-fernet-x), var(--cta-fernet-y)) rotate(var(--cta-fernet-rotate)) scale(var(--cta-fernet-scale));
 }
 
 .wholesale-product-coke {
@@ -483,8 +525,28 @@ summary::-webkit-details-marker {
 }
 
 .wholesale-product-coke img {
-  object-position: 50% 58%;
-  transform: translateY(5%) rotate(7deg) scale(1.85);
+  object-position: var(--cta-coke-object-position);
+  transform: translate(var(--cta-coke-x), var(--cta-coke-y)) rotate(var(--cta-coke-rotate)) scale(var(--cta-coke-scale));
+}
+
+.build-preview-products img {
+  align-self: end;
+  max-height: 115%;
+  width: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.build-preview-fernet {
+  transform: rotate(-7deg) scale(1.18) translateY(8%);
+}
+
+.build-preview-coke {
+  transform: rotate(5deg) scale(1.1) translateY(4%);
+}
+
+.build-preview-glass {
+  transform: scale(1.25) translateY(10%);
 }
 
 @media (max-width: 639px) {

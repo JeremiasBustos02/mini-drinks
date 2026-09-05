@@ -1,8 +1,6 @@
 import { ButtonLink } from "@/components/ui/button-link";
 import { Container } from "@/components/ui/container";
-import { PlusIcon } from "@/components/ui/icons";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { comboPreviewOptions } from "@/data/home";
 import type { StorefrontAsset } from "@/lib/storefront/assets";
 
 export function ComboBuilderPromo({ asset }: { asset: StorefrontAsset | null }) {
@@ -32,51 +30,14 @@ export function ComboBuilderPromo({ asset }: { asset: StorefrontAsset | null }) 
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {asset ? <img alt={asset.alt} className="aspect-[4/3] w-full rounded-[1.25rem] bg-white object-contain p-5" decoding="async" loading="lazy" src={asset.imageUrl} /> : null}
-            {!asset ? <>
-            <div className="mb-7 flex items-center gap-2" aria-hidden="true">
-              {[1, 2, 3, 4, 5].map((step) => (
-                <span
-                  key={step}
-                  className={`h-2 flex-1 rounded-full ${step === 1 ? "bg-action" : "bg-ink/10"}`}
-                />
-              ))}
-            </div>
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <span className="text-xs font-black tracking-widest text-action uppercase">
-                  Paso 1 de 5
-                </span>
-                <h3 className="mt-2 font-display text-2xl leading-none uppercase sm:text-4xl">
-                  Elegí tu mini
-                </h3>
-              </div>
-            </div>
-            <div className="mt-7 grid grid-cols-3 gap-3 sm:gap-5">
-              {comboPreviewOptions.map(([name, color], index) => (
-                <div
-                  key={name}
-                  className={`relative flex aspect-[0.72] items-end justify-center rounded-xl border-2 p-2 ${
-                    index === 0 ? "border-action" : "border-transparent bg-white"
-                  }`}
-                >
-                  <div className={`relative h-[72%] w-[52%] rounded-t-2xl rounded-b-md border border-ink/15 ${color}`}>
-                    <span className="absolute top-1/2 inset-x-0 text-center text-[0.6rem] font-black uppercase sm:text-xs">
-                      {name}
-                    </span>
-                  </div>
-                  {index === 0 ? (
-                    <span className="absolute top-2 right-2 grid size-5 place-items-center rounded-full bg-action text-xs text-white">
-                      ✓
-                    </span>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-            <div className="mt-5 flex items-center justify-between rounded-xl bg-white px-4 py-3 text-sm font-bold">
-              <span>Miniatura + mixer + vaso + extras</span>
-              <PlusIcon className="size-5 text-action" />
-            </div>
-            </> : null}
+            {!asset ? <div className="build-preview-products grid aspect-[4/3] grid-cols-3 items-end gap-2 overflow-hidden rounded-[1.25rem] bg-white px-4 pt-6 sm:gap-5 sm:px-8">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img alt="" className="build-preview-fernet" src="/fernet50ml.webp" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img alt="" className="build-preview-coke" src="/cocacola354cc.webp" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img alt="" className="build-preview-glass" src="/minivaso.webp" />
+            </div> : null}
           </div>
         </div>
       </Container>

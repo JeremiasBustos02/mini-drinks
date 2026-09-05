@@ -28,8 +28,8 @@ export function ProductCard({
 
   return (
     <article
-      className={`product-card group flex flex-col rounded-[1.5rem] bg-white p-3 shadow-[0_1px_0_rgba(13,13,13,0.08)] ${
-        isFeatured ? "featured-card" : "h-full"
+      className={`product-card group flex flex-col rounded-[1.5rem] bg-white shadow-[0_1px_0_rgba(13,13,13,0.08)] ${
+        isFeatured ? "featured-card p-3" : "h-full p-2.5 sm:p-3"
       } ${className}`}
     >
         <ProductVisual
@@ -37,10 +37,10 @@ export function ProductCard({
           imageUrl={item.imageUrl}
           volumeLabel={item.kind === "product" ? item.volume : "Combo"}
           productType={item.kind === "product" ? item.productType : undefined}
-        className={isFeatured ? "featured-card-visual" : "aspect-[3/4] !h-auto"}
+        className={isFeatured ? "featured-card-visual" : "catalog-card-visual aspect-[5/6] !h-auto !bg-transparent"}
       />
-      <div className="flex flex-1 flex-col p-3 pt-5 sm:p-4 sm:pt-5">
-        <div className="mb-3 flex flex-wrap items-center gap-2">
+      <div className={`flex flex-1 flex-col ${isFeatured ? "p-3 pt-5 sm:p-4 sm:pt-5" : "p-3 pt-4 sm:p-3.5 sm:pt-4"}`}>
+        <div className={`${isFeatured ? "mb-3" : "mb-2.5"} flex flex-wrap items-center gap-2`}>
           <p className="text-xs font-black tracking-[0.16em] text-action uppercase">
             {getItemLabel(item)}
           </p>
@@ -58,14 +58,14 @@ export function ProductCard({
           {item.name}
         </h3>
         <p
-          className={`mt-3 text-sm leading-relaxed text-ink/65 sm:text-base ${
+          className={`${isFeatured ? "mt-3" : "mt-2.5"} text-sm leading-relaxed text-ink/65 sm:text-base ${
             isFeatured ? "featured-card-description min-h-[4.5rem] line-clamp-3" : "min-h-[4.5rem] line-clamp-3"
           }`}
         >
           {item.description}
         </p>
         <div
-          className="mt-auto flex min-h-13 items-end justify-between gap-3 pt-5"
+          className={`mt-auto flex min-h-13 items-end justify-between gap-3 ${isFeatured ? "pt-5" : "pt-4"}`}
         >
           <div>
             {combo ? (
@@ -85,7 +85,7 @@ export function ProductCard({
         </div>
         <Link
           href={`/productos/${item.slug}`}
-          className="product-card-link motion-cta mt-5 inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-action bg-action px-4 py-2 text-sm font-black text-white shadow-[0_3px_0_#0D0D0D] hover:border-ink hover:bg-ink hover:shadow-[0_5px_0_#0D0D0D]"
+          className={`product-card-link motion-cta ${isFeatured ? "mt-5" : "mt-4"} inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-action bg-action px-4 py-2 text-sm font-black text-white shadow-[0_3px_0_#0D0D0D] hover:border-ink hover:bg-ink hover:shadow-[0_5px_0_#0D0D0D]`}
         >
           {combo ? "Ver combo" : "Ver producto"}{" "}
           <ArrowIcon className="product-card-arrow size-4" />
