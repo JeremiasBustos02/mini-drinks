@@ -1085,7 +1085,6 @@ summary::-webkit-details-marker {
   .combo-builder-visual-ribbon-desktop {
     left: 72%;
     width: min(14%, 8rem);
-    opacity: 0.28;
   }
 
   .combo-builder-visual-fernet {
@@ -1118,7 +1117,6 @@ summary::-webkit-details-marker {
   .combo-builder-visual-ribbon-desktop {
     left: 72%;
     width: min(14%, 4rem);
-    opacity: 0.22;
   }
 
   .combo-builder-visual-fernet {
@@ -1151,7 +1149,7 @@ summary::-webkit-details-marker {
   }
 }
 
-@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+@media (prefers-reduced-motion: no-preference) {
   .combo-builder-visual-fernet {
     animation: combo-builder-float 6.5s ease-in-out infinite alternate;
   }
@@ -1170,6 +1168,14 @@ summary::-webkit-details-marker {
 
   .combo-builder-visual-campari {
     animation: combo-builder-float 7.7s ease-in-out 420ms infinite alternate;
+  }
+
+  .wholesale-product-fernet {
+    animation: combo-builder-float 6.8s ease-in-out 180ms infinite alternate;
+  }
+
+  .wholesale-product-coke {
+    animation: combo-builder-float-reverse 7.6s ease-in-out 520ms infinite alternate;
   }
 }
 
