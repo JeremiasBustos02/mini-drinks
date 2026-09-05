@@ -49,10 +49,10 @@ export const brandBenefits = [
 ];
 
 export const packOptions = [
-  { name: "Duo", amount: "02", use: "Uno para vos. Otro también." },
-  { name: "x4", amount: "04", use: "La previa arranca acá." },
-  { name: "x6", amount: "06", use: "Para compartir de verdad." },
-  { name: "x12", amount: "12", use: "Fiesta, evento o regalo." },
+  { name: "Duo", amount: "02", use: "Uno para vos. Otro también.", image: "/packduo.webp" },
+  { name: "x4", amount: "04", use: "La previa arranca acá.", image: "/packx4.webp" },
+  { name: "x6", amount: "06", use: "Para compartir de verdad.", image: "/packx6.webp" },
+  { name: "x12", amount: "12", use: "Fiesta, evento o regalo.", image: "/packx12.webp" },
 ];
 
 export const faqItems = [

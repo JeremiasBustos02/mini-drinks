@@ -34,12 +34,24 @@ export function PacksSection({ asset }: { asset: StorefrontAsset | null }) {
                     : "bg-white text-ink"
               }`}
             >
-              <span className="text-xs font-black tracking-[0.18em] uppercase">
-                Pack {pack.name}
-              </span>
               <p className="absolute -right-2 bottom-8 font-display text-[6.5rem] leading-none tracking-[-0.08em] opacity-15 sm:text-[9rem]">
                 {pack.amount}
               </p>
+              {"image" in pack && pack.image ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 z-0 h-full w-full object-contain pointer-events-none"
+                  decoding="async"
+                  loading="lazy"
+                  src={pack.image}
+                />
+              ) : null}
+              <span className="text-xs font-black tracking-[0.18em] uppercase">
+                Pack {pack.name}
+              </span>
+              
               <div className="absolute right-5 bottom-5 left-5 sm:right-7 sm:bottom-7 sm:left-7">
                 <p className="font-display text-4xl leading-none uppercase sm:text-5xl">
                   {pack.name}
