@@ -383,7 +383,7 @@ summary::-webkit-details-marker {
   }
 
   .wholesale-content {
-    gap: 2.5rem;
+    max-width: 38rem;
   }
 
   .wholesale-content h2 {
@@ -394,9 +394,6 @@ summary::-webkit-details-marker {
     margin-top: 1rem;
   }
 
-  .wholesale-visual {
-    max-width: 24rem;
-  }
 }
 
 /* Motion stays progressive: content is visible until the client observer prepares off-screen reveals. */
@@ -413,13 +410,96 @@ summary::-webkit-details-marker {
   transition:
     background-color 180ms ease,
     border-color 180ms ease,
+    backdrop-filter 180ms ease,
     box-shadow 180ms ease;
 }
 
-html[data-scrolled] .site-header {
+.site-header[data-scrolled] {
   border-color: color-mix(in srgb, var(--ink) 14%, transparent);
   background-color: color-mix(in srgb, var(--canvas) 98%, transparent);
   box-shadow: 0 8px 24px rgb(13 13 13 / 6%);
+}
+
+.site-header[data-scrolled] .header-control {
+  border-color: color-mix(in srgb, var(--ink) 14%, transparent);
+  background-color: var(--paper);
+}
+
+.featured-card-visual {
+  border-radius: 0.75rem;
+  background: transparent;
+}
+
+.featured-card-visual > img {
+  padding: 0.5rem;
+}
+
+.combo-builder-option-visual > img {
+  padding: 0;
+}
+
+.combo-builder-option-image {
+  transform: rotate(12deg) scale(1.55);
+}
+
+.combo-builder-feature-visual > img {
+  padding: 0;
+}
+
+.combo-builder-feature-image {
+  transform: rotate(12deg) scale(1.4);
+}
+
+.wholesale-product {
+  position: absolute;
+  z-index: -20;
+  top: 0;
+  bottom: 0;
+  width: 38%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wholesale-product img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: multiply;
+  opacity: 0.82;
+  transform: scale(2.05);
+}
+
+.wholesale-product-fernet {
+  left: 0;
+}
+
+.wholesale-product-fernet img {
+  object-position: 50% 72%;
+  transform: translateY(8%) rotate(-7deg) scale(2.1);
+}
+
+.wholesale-product-coke {
+  right: 0;
+}
+
+.wholesale-product-coke img {
+  object-position: 50% 58%;
+  transform: translateY(5%) rotate(7deg) scale(1.85);
+}
+
+@media (max-width: 639px) {
+  .wholesale-product {
+    width: 48%;
+    opacity: 0.7;
+  }
+
+  .wholesale-product-fernet {
+    left: -12%;
+  }
+
+  .wholesale-product-coke {
+    right: -10%;
+  }
 }
 
 [data-reveal] {

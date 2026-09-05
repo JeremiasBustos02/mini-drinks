@@ -19,12 +19,12 @@ export function Hero({ asset }: { asset: StorefrontAsset | null }) {
             <span className="block">en mini.</span>
           </h1>
           <div className="hero-actions mt-8 flex flex-col gap-3 min-[390px]:flex-row">
-            <ButtonLink href="/productos?categoria=combos" className="min-[390px]:min-w-36">
+            <ButtonLink href="/productos?categoria=combos" variant="heroPrimary" className="min-[390px]:min-w-36">
               Ver combos
             </ButtonLink>
             <ButtonLink
               href="/arma-tu-combo"
-              variant="secondary"
+              variant="heroSecondary"
               className="min-[390px]:min-w-36"
             >
               Armar el mío

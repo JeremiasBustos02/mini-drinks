@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { useCartHydration } from "@/components/cart/use-cart-hydration";
 import { CartIcon, MenuIcon } from "@/components/ui/icons";
@@ -17,10 +18,18 @@ const navigation = [
 ];
 
 export function Header() {
+  const [scrolled, setScrolled] = useState(false);
   const hydrated = useCartHydration();
   const items = useCartStore((state) => state.items);
   const openCart = useCartStore((state) => state.openCart);
   const totalItems = hydrated ? getCartTotalItems(items) : 0;
+
+  useEffect(() => {
+    const updateHeader = () => setScrolled(window.scrollY > 8);
+    updateHeader();
+    window.addEventListener("scroll", updateHeader, { passive: true });
+    return () => window.removeEventListener("scroll", updateHeader);
+  }, []);
 
   return (
     <>
@@ -30,7 +39,7 @@ export function Header() {
       >
         Saltar al contenido
       </Link>
-      <header className="site-header sticky top-0 z-50 border-b border-ink/10 bg-paper/80 backdrop-blur-xl">
+      <header className="site-header sticky top-0 z-50 border-b border-white/20 bg-paper/55 backdrop-blur-xl" data-scrolled={scrolled ? "" : undefined}>
         <Container className="flex h-[var(--header-height)] items-center justify-between gap-4">
           <Link
             href="/"
@@ -64,7 +73,7 @@ export function Header() {
               type="button"
               onClick={openCart}
               aria-label={`Abrir carrito, ${totalItems} producto${totalItems === 1 ? "" : "s"}`}
-              className="motion-button relative grid size-11 cursor-pointer place-items-center rounded-xl border border-ink/15 bg-white shadow-[0_2px_0_rgb(13_13_13_/_12%)]"
+              className="header-control motion-button relative grid size-11 cursor-pointer place-items-center rounded-xl border border-ink/10 bg-white/85 shadow-[0_2px_0_rgb(13_13_13_/_10%)]"
             >
               <CartIcon />
               <span key={totalItems} className="quantity-value absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-action text-[0.65rem] font-black text-white">
@@ -75,7 +84,7 @@ export function Header() {
             <details className="mobile-menu group relative md:hidden">
               <summary
                 aria-label="Abrir o cerrar menú"
-                className="motion-button grid size-11 cursor-pointer list-none place-items-center rounded-xl border border-ink/15 bg-white shadow-[0_2px_0_rgb(13_13_13_/_12%)]"
+                className="header-control motion-button grid size-11 cursor-pointer list-none place-items-center rounded-xl border border-ink/10 bg-white/85 shadow-[0_2px_0_rgb(13_13_13_/_10%)]"
               >
                 <MenuIcon />
               </summary>

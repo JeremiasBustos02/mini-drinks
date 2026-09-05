@@ -39,7 +39,7 @@ export function ProductCard({
           productType={item.kind === "product" ? item.productType : undefined}
         className={isFeatured ? "featured-card-visual" : "aspect-[3/4] !h-auto"}
       />
-      <div className={`p-3 pt-5 sm:p-4 sm:pt-5 ${isFeatured ? "" : "flex flex-1 flex-col"}`}>
+      <div className="flex flex-1 flex-col p-3 pt-5 sm:p-4 sm:pt-5">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <p className="text-xs font-black tracking-[0.16em] text-action uppercase">
             {getItemLabel(item)}
@@ -52,22 +52,20 @@ export function ProductCard({
         </div>
         <h3
           className={`font-display text-2xl leading-none uppercase ${
-            isFeatured ? "sm:text-[2rem]" : "min-h-12 sm:min-h-15 sm:text-3xl"
+            isFeatured ? "min-h-12 sm:text-[1.65rem]" : "min-h-12 sm:min-h-15 sm:text-3xl"
           }`}
         >
           {item.name}
         </h3>
         <p
           className={`mt-3 text-sm leading-relaxed text-ink/65 sm:text-base ${
-            isFeatured ? "featured-card-description" : "min-h-[4.5rem] line-clamp-3"
+            isFeatured ? "featured-card-description min-h-[4.5rem] line-clamp-3" : "min-h-[4.5rem] line-clamp-3"
           }`}
         >
           {item.description}
         </p>
         <div
-          className={`flex items-end justify-between gap-3 pt-5 ${
-            isFeatured ? "" : "mt-auto min-h-13"
-          }`}
+          className="mt-auto flex min-h-13 items-end justify-between gap-3 pt-5"
         >
           <div>
             {combo ? (
