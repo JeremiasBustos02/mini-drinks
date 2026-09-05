@@ -1,4 +1,4 @@
-import { logoutAction } from "@/app/admin/actions";
+import { logoutAction } from "@/app/auth/actions";
 
 export default function AccessDeniedPage() {
   return (

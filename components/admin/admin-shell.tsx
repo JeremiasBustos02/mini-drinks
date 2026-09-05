@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-import { logoutAction } from "@/app/admin/actions";
+import { logoutAction } from "@/app/auth/actions";
 import { AdminSubmitButton } from "@/components/admin/form-submit-button";
 
 const links = [

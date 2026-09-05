@@ -57,6 +57,20 @@
       "when": 1788563663386,
       "tag": "0008_even_kylun",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788631885423,
+      "tag": "0009_smooth_timeslip",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788633885423,
+      "tag": "0010_fair_iron_fist",
+      "breakpoints": true
     }
   ]
 }

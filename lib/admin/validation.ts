@@ -33,11 +33,6 @@ const money = z.string().trim().transform((value, context) => {
   }
 });
 
-export const loginSchema = z.object({
-  email: z.email("Ingresá un email válido."),
-  password: z.string().min(1, "Ingresá la contraseña."),
-});
-
 export const categorySchema = z.object({
   id: z.preprocess((value) => value || undefined, z.uuid().optional()),
   expectedVersion: z.preprocess(

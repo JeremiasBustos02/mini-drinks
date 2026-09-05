@@ -1,6 +1,6 @@
 {
-  "id": "162a1898-7ae8-4bf4-aa0b-b35bd0b91b8c",
-  "prevId": "046d9b38-ddac-4b70-bb91-e842e841c77e",
+  "id": "607a08a6-2cbc-4630-bb82-bb7a2b6f2302",
+  "prevId": "162a1898-7ae8-4bf4-aa0b-b35bd0b91b8c",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -502,6 +502,74 @@
           "value": "\"combos\".\"promotional_price\" is null or (\"combos\".\"promotional_price\" >= 0 and \"combos\".\"promotional_price\" <= 9007199254740991)"
         }
       },
+      "isRLSEnabled": true
+    },
+    "public.customer_profiles": {
+      "name": "customer_profiles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "auth_user_id": {
+          "name": "auth_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "customer_profiles_auth_user_id_unique": {
+          "name": "customer_profiles_auth_user_id_unique",
+          "columns": [
+            {
+              "expression": "auth_user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": true
     },
     "public.order_items": {

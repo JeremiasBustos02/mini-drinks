@@ -68,6 +68,19 @@ export const adminUsers = pgTable(
   (table) => [uniqueIndex("admin_users_auth_user_id_unique").on(table.authUserId)],
 ).enableRLS();
 
+export const customerProfiles = pgTable(
+  "customer_profiles",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    authUserId: uuid("auth_user_id").notNull(),
+    displayName: text("display_name").notNull(),
+    phone: text("phone"),
+    createdAt: createdAtColumn(),
+    updatedAt: updatedAtColumn(),
+  },
+  (table) => [uniqueIndex("customer_profiles_auth_user_id_unique").on(table.authUserId)],
+).enableRLS();
+
 export const products = pgTable(
   "products",
   {
@@ -369,6 +382,7 @@ export const stockReservationItems = pgTable(
 
 export type CategoryRecord = typeof categories.$inferSelect;
 export type AdminUserRecord = typeof adminUsers.$inferSelect;
+export type CustomerProfileRecord = typeof customerProfiles.$inferSelect;
 export type ProductRecord = typeof products.$inferSelect;
 export type ComboRecord = typeof combos.$inferSelect;
 export type ComboItemRecord = typeof comboItems.$inferSelect;

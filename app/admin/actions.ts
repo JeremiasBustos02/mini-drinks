@@ -26,14 +26,13 @@ import {
   comboStateChangeSchema,
   comboSchema,
   firstValidationError,
-  loginSchema,
   productSchema,
   stateChangeSchema,
 } from "@/lib/admin/validation";
 import { db } from "@/lib/db";
 import { categories, comboImages, comboItems, combos, products } from "@/lib/db/schema";
 import { logServerEvent } from "@/lib/observability/logger";
-import { createClient } from "@/lib/supabase/server";
+import { logoutAction } from "@/app/auth/actions";
 
 function redirectWithNotice(path: string, type: "success" | "error", message: string): never {
   const params = new URLSearchParams({ [type]: message });
@@ -72,39 +71,9 @@ function revalidateCatalog(slugs: string[] = []) {
   slugs.forEach((slug) => revalidatePath(`/productos/${slug}`, "page"));
 }
 
-export type LoginState = { error?: string };
 export type AdminFormState = { error?: string };
 
-export async function loginAction(
-  _previousState: LoginState,
-  formData: FormData,
-): Promise<LoginState> {
-  const parsed = loginSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) {
-    return { error: firstValidationError(parsed.error) };
-  }
-
-  const supabase = await createClient();
-  const result = await supabase.auth.signInWithPassword(parsed.data);
-  if (result.error) {
-    return { error: "Email o contraseña incorrectos." };
-  }
-
-  const access = await getAdminAccess();
-  if (access.status !== "authorized") {
-    redirect("/admin/acceso-denegado");
-  }
-
-  revalidatePath("/admin", "layout");
-  redirect("/admin");
-}
-
-export async function logoutAction() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  revalidatePath("/admin", "layout");
-  redirect("/admin/login");
-}
+export { logoutAction };
 
 export async function saveCategoryAction(
   _previousState: AdminFormState,

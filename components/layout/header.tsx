@@ -81,6 +81,14 @@ export function Header() {
               </span>
             </button>
 
+            <Link
+              aria-label="Ir a mi cuenta"
+              className="header-control motion-button grid min-h-11 rounded-xl border border-ink/10 bg-white/85 px-3 text-sm font-bold shadow-[0_2px_0_rgb(13_13_13_/_10%)] hover:text-action"
+              href="/mi-cuenta"
+            >
+              Mi cuenta
+            </Link>
+
             <details className="mobile-menu group relative md:hidden">
               <summary
                 aria-label="Abrir o cerrar menú"
@@ -101,6 +109,7 @@ export function Header() {
                     {item.label}
                   </Link>
                 ))}
+                <Link href="/mi-cuenta" className="block rounded-xl px-4 py-3 text-base font-bold hover:bg-canvas">Mi cuenta</Link>
               </nav>
             </details>
           </div>
