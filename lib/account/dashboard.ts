@@ -1,6 +1,6 @@
 import "server-only";
 
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import {
@@ -26,7 +26,7 @@ export async function getAccountDashboard(userId: string) {
       .limit(1),
     db
       .select({
-        publicNumber: orders.publicNumber,
+        publicNumber: sql<string>`coalesce(${orders.publicNumber}, 'Mini Sorpresa')`,
         status: orders.status,
         total: orders.total,
         deliveryType: orders.deliveryType,
@@ -42,11 +42,12 @@ export async function getAccountDashboard(userId: string) {
     ? await db
       .select({
         points: loyaltyTransactions.points,
+        type: loyaltyTransactions.type,
         createdAt: loyaltyTransactions.createdAt,
-        publicNumber: orders.publicNumber,
+        publicNumber: sql<string>`coalesce(${orders.publicNumber}, 'Mini Sorpresa')`,
       })
       .from(loyaltyTransactions)
-      .innerJoin(orders, eq(loyaltyTransactions.orderId, orders.id))
+      .leftJoin(orders, eq(loyaltyTransactions.orderId, orders.id))
       .where(eq(loyaltyTransactions.loyaltyAccountId, account.id))
       .orderBy(desc(loyaltyTransactions.createdAt))
       .limit(20)

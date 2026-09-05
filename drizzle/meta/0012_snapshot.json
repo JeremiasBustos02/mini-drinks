@@ -1,6 +1,6 @@
 {
-  "id": "a6c67897-5c76-4bf7-946b-fe43526366c2",
-  "prevId": "607a08a6-2cbc-4630-bb82-bb7a2b6f2302",
+  "id": "3f39fa57-efb2-4038-817a-08abd285584d",
+  "prevId": "a6c67897-5c76-4bf7-946b-fe43526366c2",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -745,7 +745,13 @@
           "name": "order_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "reward_code_id": {
+          "name": "reward_code_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         },
         "idempotency_key": {
           "name": "idempotency_key",
@@ -817,6 +823,21 @@
           "method": "btree",
           "with": {}
         },
+        "loyalty_transactions_reward_code_id_unique": {
+          "name": "loyalty_transactions_reward_code_id_unique",
+          "columns": [
+            {
+              "expression": "reward_code_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "loyalty_transactions_account_created_at_idx": {
           "name": "loyalty_transactions_account_created_at_idx",
           "columns": [
@@ -865,15 +886,28 @@
           ],
           "onDelete": "restrict",
           "onUpdate": "no action"
+        },
+        "loyalty_transactions_reward_code_id_reward_codes_id_fk": {
+          "name": "loyalty_transactions_reward_code_id_reward_codes_id_fk",
+          "tableFrom": "loyalty_transactions",
+          "tableTo": "reward_codes",
+          "columnsFrom": [
+            "reward_code_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
-        "loyalty_transactions_type_earn": {
-          "name": "loyalty_transactions_type_earn",
-          "value": "\"loyalty_transactions\".\"type\" = 'earn'"
+        "loyalty_transactions_type_supported": {
+          "name": "loyalty_transactions_type_supported",
+          "value": "\"loyalty_transactions\".\"type\" in ('earn', 'code_reward')"
         },
         "loyalty_transactions_points_positive": {
           "name": "loyalty_transactions_points_positive",
@@ -1727,6 +1761,230 @@
       },
       "isRLSEnabled": true
     },
+    "public.reward_campaigns": {
+      "name": "reward_campaigns",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "reward_campaign_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'draft'"
+        },
+        "starts_at": {
+          "name": "starts_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ends_at": {
+          "name": "ends_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "reward_campaigns_dates_valid": {
+          "name": "reward_campaigns_dates_valid",
+          "value": "\"reward_campaigns\".\"ends_at\" is null or \"reward_campaigns\".\"starts_at\" is null or \"reward_campaigns\".\"ends_at\" > \"reward_campaigns\".\"starts_at\""
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.reward_codes": {
+      "name": "reward_codes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "campaign_id": {
+          "name": "campaign_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "display_code": {
+          "name": "display_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reward_type": {
+          "name": "reward_type",
+          "type": "reward_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'points'"
+        },
+        "reward_points": {
+          "name": "reward_points",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "redeemed_at": {
+          "name": "redeemed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "redeemed_by_customer_profile_id": {
+          "name": "redeemed_by_customer_profile_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "reward_codes_token_hash_unique": {
+          "name": "reward_codes_token_hash_unique",
+          "columns": [
+            {
+              "expression": "token_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reward_codes_campaign_id_idx": {
+          "name": "reward_codes_campaign_id_idx",
+          "columns": [
+            {
+              "expression": "campaign_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reward_codes_redeemed_by_customer_profile_id_idx": {
+          "name": "reward_codes_redeemed_by_customer_profile_id_idx",
+          "columns": [
+            {
+              "expression": "redeemed_by_customer_profile_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "reward_codes_campaign_id_reward_campaigns_id_fk": {
+          "name": "reward_codes_campaign_id_reward_campaigns_id_fk",
+          "tableFrom": "reward_codes",
+          "tableTo": "reward_campaigns",
+          "columnsFrom": [
+            "campaign_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "reward_codes_redeemed_by_customer_profile_id_customer_profiles_id_fk": {
+          "name": "reward_codes_redeemed_by_customer_profile_id_customer_profiles_id_fk",
+          "tableFrom": "reward_codes",
+          "tableTo": "customer_profiles",
+          "columnsFrom": [
+            "redeemed_by_customer_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "reward_codes_points_positive": {
+          "name": "reward_codes_points_positive",
+          "value": "\"reward_codes\".\"reward_points\" > 0"
+        },
+        "reward_codes_redemption_pair": {
+          "name": "reward_codes_redemption_pair",
+          "value": "(\"reward_codes\".\"redeemed_at\" is null) = (\"reward_codes\".\"redeemed_by_customer_profile_id\" is null)"
+        }
+      },
+      "isRLSEnabled": true
+    },
     "public.stock_reservation_items": {
       "name": "stock_reservation_items",
       "schema": "",
@@ -2059,6 +2317,28 @@
         "extra",
         "accessory",
         "supply"
+      ]
+    },
+    "public.reward_campaign_status": {
+      "name": "reward_campaign_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "active",
+        "paused",
+        "ended"
+      ]
+    },
+    "public.reward_type": {
+      "name": "reward_type",
+      "schema": "public",
+      "values": [
+        "points",
+        "discount_percent",
+        "discount_fixed",
+        "free_shipping",
+        "multiplier",
+        "special"
       ]
     },
     "public.stock_reservation_status": {

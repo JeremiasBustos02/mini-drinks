@@ -33,6 +33,8 @@ export const stockReservationStatusEnum = pgEnum(
   "stock_reservation_status",
   stockReservationStatusValues,
 );
+export const rewardCampaignStatusEnum = pgEnum("reward_campaign_status", ["draft", "active", "paused", "ended"]);
+export const rewardTypeEnum = pgEnum("reward_type", ["points", "discount_percent", "discount_fixed", "free_shipping", "multiplier", "special"]);
 
 const createdAtColumn = () =>
   timestamp("created_at", { withTimezone: true }).defaultNow().notNull();
@@ -312,6 +314,43 @@ export const orders = pgTable(
   ],
 ).enableRLS();
 
+export const rewardCampaigns = pgTable(
+  "reward_campaigns",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    description: text("description"),
+    status: rewardCampaignStatusEnum("status").default("draft").notNull(),
+    startsAt: timestamp("starts_at", { withTimezone: true }),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    createdAt: createdAtColumn(),
+    updatedAt: updatedAtColumn(),
+  },
+  (table) => [check("reward_campaigns_dates_valid", sql`${table.endsAt} is null or ${table.startsAt} is null or ${table.endsAt} > ${table.startsAt}`)],
+).enableRLS();
+
+export const rewardCodes = pgTable(
+  "reward_codes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    campaignId: uuid("campaign_id").notNull().references(() => rewardCampaigns.id, { onDelete: "restrict" }),
+    tokenHash: text("token_hash").notNull(),
+    displayCode: text("display_code"),
+    rewardType: rewardTypeEnum("reward_type").default("points").notNull(),
+    rewardPoints: integer("reward_points").notNull(),
+    redeemedAt: timestamp("redeemed_at", { withTimezone: true }),
+    redeemedByCustomerProfileId: uuid("redeemed_by_customer_profile_id").references(() => customerProfiles.id, { onDelete: "set null" }),
+    createdAt: createdAtColumn(),
+  },
+  (table) => [
+    uniqueIndex("reward_codes_token_hash_unique").on(table.tokenHash),
+    index("reward_codes_campaign_id_idx").on(table.campaignId),
+    index("reward_codes_redeemed_by_customer_profile_id_idx").on(table.redeemedByCustomerProfileId),
+    check("reward_codes_points_positive", sql`${table.rewardPoints} > 0`),
+    check("reward_codes_redemption_pair", sql`(${table.redeemedAt} is null) = (${table.redeemedByCustomerProfileId} is null)`),
+  ],
+).enableRLS();
+
 export const loyaltyTransactions = pgTable(
   "loyalty_transactions",
   {
@@ -319,9 +358,8 @@ export const loyaltyTransactions = pgTable(
     loyaltyAccountId: uuid("loyalty_account_id")
       .notNull()
       .references(() => loyaltyAccounts.id, { onDelete: "cascade" }),
-    orderId: uuid("order_id")
-      .notNull()
-      .references(() => orders.id, { onDelete: "restrict" }),
+    orderId: uuid("order_id").references(() => orders.id, { onDelete: "restrict" }),
+    rewardCodeId: uuid("reward_code_id").references(() => rewardCodes.id, { onDelete: "restrict" }),
     idempotencyKey: text("idempotency_key").notNull(),
     type: text("type").default("earn").notNull(),
     points: integer("points").notNull(),
@@ -332,8 +370,9 @@ export const loyaltyTransactions = pgTable(
   (table) => [
     uniqueIndex("loyalty_transactions_idempotency_key_unique").on(table.idempotencyKey),
     index("loyalty_transactions_order_id_idx").on(table.orderId),
+    uniqueIndex("loyalty_transactions_reward_code_id_unique").on(table.rewardCodeId),
     index("loyalty_transactions_account_created_at_idx").on(table.loyaltyAccountId, table.createdAt),
-    check("loyalty_transactions_type_earn", sql`${table.type} = 'earn'`),
+    check("loyalty_transactions_type_supported", sql`${table.type} in ('earn', 'code_reward')`),
     check("loyalty_transactions_points_positive", sql`${table.points} > 0`),
     check("loyalty_transactions_earn_unit_cents_positive", sql`${table.earnUnitCents} > 0`),
     check("loyalty_transactions_points_per_unit_positive", sql`${table.pointsPerUnit} > 0`),

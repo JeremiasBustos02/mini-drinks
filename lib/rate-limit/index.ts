@@ -21,6 +21,7 @@ export const rateLimitPolicies = {
   createAttempt: { name: "checkout-create-attempt", limit: 10, windowSeconds: 60 },
   webhookIp: { name: "mp-webhook-ip", limit: 300, windowSeconds: 60 },
   webhookPayment: { name: "mp-webhook-payment", limit: 120, windowSeconds: 60 },
+  rewardRedeem: { name: "reward-redeem", limit: 20, windowSeconds: 300 },
 } satisfies Record<string, RateLimitPolicy>;
 
 const localWindows = new Map<string, { count: number; resetAt: number }>();

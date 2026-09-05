@@ -6,4 +6,10 @@
 
 `/admin/login` redirects to `/login?next=/admin`. The `next` value is restricted to internal paths and only admins can use an `/admin` destination. `/admin/*` remains protected server-side through `requireAdmin`/`getAdminAccess`; UI redirects are not authorization.
 
-Logout is shared and signs out through Supabase before redirecting to `/`. `/mi-cuenta` currently shows identity/session information, an empty real-order state, and a Mini Club placeholder. Loyalty, orders linked to profiles, points, rewards, QR codes, and referrals remain pending.
+Logout is shared and signs out through Supabase before redirecting to `/`. `/mi-cuenta` shows orders and the Mini Club ledger.
+
+## Mini Sorpresa
+
+Administrators create campaigns and point-code batches at `/admin/mini-club`. Each redeemable URL contains a cryptographically random token; only its SHA-256 hash is stored. Tokens, URLs, CSV exports, and QR images are available only in the admin's one-time batch result and are never logged.
+
+`/canjear/<token>` requires a customer session and performs the mutable claim through a server action. The claim locks the code row, verifies campaign availability, credits a `code_reward` loyalty ledger entry with `code:<reward-code-id>:reward`, updates both loyalty totals, and marks the code redeemed in one PostgreSQL transaction. Future reward types are represented in schema only; discounts, shipping, multipliers, rewards catalogues, and point spending are not implemented.

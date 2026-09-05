@@ -30,10 +30,11 @@ export function LoginForm({ next }: { next?: string }) {
   </form>;
 }
 
-export function RegistrationForm() {
+export function RegistrationForm({ next }: { next?: string }) {
   const [state, formAction, pending] = useActionState(registerAction, initialState);
   return <form action={formAction} aria-busy={pending} className="space-y-4">
     <Notice state={state} />
+    <input name="next" type="hidden" value={next ?? ""} />
     <label className="block text-sm font-bold" htmlFor="display-name">Nombre<input autoComplete="name" className={inputClass} id="display-name" name="displayName" required type="text" /></label>
     <label className="block text-sm font-bold" htmlFor="email">Email<input autoComplete="email" className={inputClass} id="email" inputMode="email" name="email" required type="email" /></label>
     <label className="block text-sm font-bold" htmlFor="password">Contraseña<input autoComplete="new-password" className={inputClass} id="password" minLength={8} name="password" required type="password" /><span className="mt-1 block text-xs font-normal text-ink/55">Al menos 8 caracteres.</span></label>

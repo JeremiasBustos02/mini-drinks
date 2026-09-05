@@ -14,6 +14,7 @@ const links = [
   { href: "/admin/combos", label: "Combos", icon: "layers" },
   { href: "/admin/contenido", label: "Contenido", icon: "image" },
   { href: "/admin/pedidos", label: "Pedidos", icon: "receipt" },
+  { href: "/admin/mini-club", label: "Mini Sorpresa", icon: "gift" },
 ] as const;
 
 function NavIcon({ name }: { name: (typeof links)[number]["icon"] }) {
@@ -24,6 +25,7 @@ function NavIcon({ name }: { name: (typeof links)[number]["icon"] }) {
     layers: <><path d="m12 2 9 5-9 5-9-5Z" /><path d="m3 12 9 5 9-5" /><path d="m3 17 9 5 9-5" /></>,
     image: <><rect height="16" rx="2" width="18" x="3" y="4" /><circle cx="9" cy="10" r="2" /><path d="m21 15-5-5L5 21" /></>,
     receipt: <><path d="M6 2h12v20l-3-2-3 2-3-2-3 2Z" /><path d="M9 7h6M9 11h6M9 15h3" /></>,
+    gift: <><rect height="12" rx="1" width="18" x="3" y="9" /><path d="M12 9v12M3 13h18M12 9c-4 0-5-2-5-4 0-1 1-2 2-2 2 0 3 3 3 6Zm0 0c4 0 5-2 5-4 0-1-1-2-2-2-2 0-3 3-3 6Z" /></>,
   };
   return <svg aria-hidden="true" className="size-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24">{paths[name]}</svg>;
 }
