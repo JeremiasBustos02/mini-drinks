@@ -10,35 +10,56 @@ export function ComboBuilderPromo({ asset }: { asset: StorefrontAsset | null }) 
     <section
       id="arma-tu-combo"
       data-reveal="up"
-      className="combo-builder-promo build-section bg-action py-20 text-white sm:py-28 lg:py-32"
+      className="combo-builder-promo build-section bg-action text-white"
     >
-      <Container>
-        <div className="combo-builder-layout">
-          <div className="combo-builder-intro">
-            <SectionHeading
-              eyebrow="La parte más divertida"
-              title="Armalo a tu manera."
-              description="Elegí tu mini, tu mixer y sumale un extra para hacerlo más tuyo."
-              inverted
-            />
-            <p className="combo-builder-categories" aria-label="Categorías disponibles">
-              <span>Mini</span><span>Mixer</span><span>Vaso</span><span>+ Extra</span>
-            </p>
-            <ButtonLink href="/arma-tu-combo" variant="lightdark" className="combo-builder-cta min-w-36">
-              Empezar
-            </ButtonLink>
-          </div>
+      <div className="combo-builder-visual-ribbon-clip" aria-hidden="true">
+        <svg className="combo-builder-visual-ribbon combo-builder-visual-ribbon-desktop" viewBox="0 0 180 540" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="combo-builder-ribbon-desktop-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#FFFFFF" />
+              <stop offset="78%" stopColor="#FFFFFF" />
+              <stop offset="100%" stopColor="#F5F3F0" />
+            </linearGradient>
+          </defs>
+          <path fill="url(#combo-builder-ribbon-desktop-gradient)" transform="rotate(-7 90 270)" d="M176 -14C181 64 174 125 124 188C80 239 35 289 53 357C66 417 118 475 96 546H62C78 484 22 425 12 354C0 267 50 219 75 170C108 90 48 34 6 -14Z" />
+        </svg>
+      </div>
+      <div className="combo-builder-promo-inner py-20 sm:py-28 lg:py-32">
+        <Container>
+          <div className="combo-builder-layout">
+            <div className="combo-builder-intro">
+              <SectionHeading
+                eyebrow="Armá tu combo"
+                title="Vos elegís. Nosotros lo hacemos mini."
+                description="Elegí tu mini, tu mixer, el vaso y sumale un extra si querés."
+                inverted
+              />
+              <p className="combo-builder-categories" aria-label="Categorías disponibles">
+                Mini <span>/</span> Mixer <span>/</span> Vaso <span>/</span> + Extra
+              </p>
+              <ButtonLink href="/arma-tu-combo" variant="lightdark" className="combo-builder-cta min-w-36">
+                Empezar
+              </ButtonLink>
+            </div>
 
-          <div className="combo-builder-visual" aria-hidden="true">
-            <span className="combo-builder-visual-blob" />
-            <span className="combo-builder-visual-halo" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" className="combo-builder-visual-fernet" src="/brancapng.webp" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" className="combo-builder-visual-coke" src="/cocacolapng.webp" />
+            <div className="combo-builder-visual" aria-hidden="true">
+              <svg className="combo-builder-visual-ribbon combo-builder-visual-ribbon-mobile" viewBox="0 0 420 320" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="ribbon-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stopColor="#FFFFFF" />
+      <stop offset="100%" stopColor="#F5F3F0" />
+    </linearGradient>
+  </defs>
+  <path d="M18 238C89 195 116 102 194 116C254 126 272 211 341 182C371 169 388 143 402 111L387 182C360 242 303 273 251 242C191 206 177 160 126 177C82 192 62 249 32 278Z" />
+</svg>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img alt="" className="combo-builder-visual-fernet" src="/fernetsinfondo.png" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img alt="" className="combo-builder-visual-coke" src="/cocacolapng.webp" />
+            </div>
           </div>
-        </div>
-      </Container>
+        </Container>
+      </div>
     </section>
   );
 }

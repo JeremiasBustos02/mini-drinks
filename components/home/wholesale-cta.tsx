@@ -8,7 +8,7 @@ export function WholesaleCta({ asset: _asset }: { asset: StorefrontAsset | null 
     <section
       id="mayoristas"
       data-reveal="fade"
-      className="wholesale-section relative isolate overflow-hidden bg-action py-24 text-white sm:py-28"
+      className="wholesale-section relative isolate bg-action py-24 text-white sm:py-28"
     >
       <div className="wholesale-backdrop" aria-hidden="true">
         <span className="wholesale-mass wholesale-mass-left" />
@@ -17,7 +17,7 @@ export function WholesaleCta({ asset: _asset }: { asset: StorefrontAsset | null 
       </div>
       <div className="wholesale-product wholesale-product-fernet" aria-hidden="true">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" src="/brancapng.webp" />
+        <img alt="" src="/fernetsinfondo.png" />
       </div>
       <div className="wholesale-product wholesale-product-coke" aria-hidden="true">
         {/* eslint-disable-next-line @next/next/no-img-element */}
