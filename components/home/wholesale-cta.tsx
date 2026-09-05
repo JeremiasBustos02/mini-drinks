@@ -10,6 +10,11 @@ export function WholesaleCta({ asset: _asset }: { asset: StorefrontAsset | null 
       data-reveal="fade"
       className="wholesale-section relative isolate overflow-hidden bg-action py-24 text-white sm:py-28"
     >
+      <div className="wholesale-backdrop" aria-hidden="true">
+        <span className="wholesale-mass wholesale-mass-left" />
+        <span className="wholesale-mass wholesale-mass-right" />
+        <span className="wholesale-central-shape" />
+      </div>
       <div className="wholesale-product wholesale-product-fernet" aria-hidden="true">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img alt="" src="/brancapng.webp" />
@@ -18,7 +23,6 @@ export function WholesaleCta({ asset: _asset }: { asset: StorefrontAsset | null 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img alt="" src="/cocacolapng.webp" />
       </div>
-      <div className="absolute inset-0 -z-10" />
       <Container className="relative z-10">
         <div className="wholesale-content mx-auto max-w-3xl text-center">
           <h2 className="font-display text-[clamp(2.5rem,10vw,6rem)] leading-[0.92] tracking-[-0.045em] uppercase">

@@ -15,8 +15,9 @@ export function Hero({ asset }: { asset: StorefrontAsset | null }) {
         <div className="relative z-10 max-w-4xl">
           <h1 className="hero-title font-display text-paper text-[clamp(3rem,15vw,8.8rem)] leading-[0.82] tracking-[-0.065em] uppercase [text-shadow:0_3px_24px_rgb(0_0_0_/_35%)]">
             <span className="block">Tu</span>
-            <span className="block">trago.</span>
-            <span className="block">en mini.</span>
+            <span className="block">trago</span>
+            <span className="block">en mini</span>
+          
           </h1>
           <div className="hero-actions mt-8 flex flex-col gap-3 min-[390px]:flex-row">
             <ButtonLink href="/productos?categoria=combos" variant="heroPrimary" className="min-[390px]:min-w-36">
