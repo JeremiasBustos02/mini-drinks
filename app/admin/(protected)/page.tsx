@@ -3,15 +3,41 @@ import Link from "next/link";
 import { AdminPageHeader, EmptyState, QuickLink, StatCard } from "@/components/admin/admin-ui";
 import { FulfillmentBadge, OrderStatusBadge, PaymentStatusBadge } from "@/components/admin/status-badge";
 import { formatAdminDateTime } from "@/lib/admin/presentation";
-import { getAdminDashboardStats, getAdminLowStockProducts, getAdminOrders } from "@/lib/db/queries/admin";
+import {
+  getAdminDashboardLowStockProducts,
+  getAdminDashboardOrders,
+  getAdminDashboardStats,
+} from "@/lib/db/queries/admin";
 import { formatArsCents } from "@/lib/money";
 
+async function traceDashboardOperation<T>(name: string, operation: () => Promise<T>) {
+  const startedAt = performance.now();
+  console.info(`[dashboard.${name}] start`);
+
+  try {
+    const result = await operation();
+    console.info(`[dashboard.${name}] end`, {
+      durationMs: Math.round(performance.now() - startedAt),
+      status: "success",
+    });
+    return result;
+  } catch (error) {
+    console.error(`[dashboard.${name}] end`, {
+      durationMs: Math.round(performance.now() - startedAt),
+      errorName: error instanceof Error ? error.name : "UnknownError",
+      status: "error",
+    });
+    throw error;
+  }
+}
+
 export default async function AdminDashboardPage() {
-  const [stats, recentOrders, lowStockProducts] = await Promise.all([
-    getAdminDashboardStats(),
-    getAdminOrders({}, 5),
-    getAdminLowStockProducts(6),
-  ]);
+  const [stats, recentOrders, lowStockProducts] = await traceDashboardOperation("load", async () => {
+    const dashboardStats = await traceDashboardOperation("metrics", getAdminDashboardStats);
+    const orders = await traceDashboardOperation("latest_orders", () => getAdminDashboardOrders(5));
+    const lowStock = await traceDashboardOperation("low_stock", () => getAdminDashboardLowStockProducts(6));
+    return [dashboardStats, orders, lowStock] as const;
+  });
 
   const cards = [
     { label: "Productos totales", value: stats.products, href: "/admin/productos", tone: "neutral" as const },

@@ -4,7 +4,6 @@ import {
   and,
   asc,
   count,
-  countDistinct,
   desc,
   eq,
   ilike,
@@ -35,6 +34,9 @@ import { getEffectiveReservationStatus } from "@/lib/stock/effective-status";
 import type { OrderStatus, PaymentStatus, ProductType } from "@/types/domain";
 
 const availableStock = availableStockSql();
+const DASHBOARD_STATEMENT_TIMEOUT_MS = 15_000;
+
+type AdminReadDatabase = Pick<typeof db, "execute" | "select" | "selectDistinctOn">;
 
 async function authorizeAdminRead() {
   await connection();
@@ -43,50 +45,89 @@ async function authorizeAdminRead() {
   if (access.status === "forbidden") redirect("/admin/acceso-denegado");
 }
 
+async function traceDashboardMetric<T>(name: string, query: Promise<T>) {
+  const startedAt = performance.now();
+  console.info(`[dashboard.metrics.${name}] start`);
+
+  try {
+    const result = await query;
+    console.info(`[dashboard.metrics.${name}] end`, {
+      durationMs: Math.round(performance.now() - startedAt),
+      status: "success",
+    });
+    return result;
+  } catch (error) {
+    console.error(`[dashboard.metrics.${name}] end`, {
+      durationMs: Math.round(performance.now() - startedAt),
+      errorName: error instanceof Error ? error.name : "UnknownError",
+      status: "error",
+    });
+    throw error;
+  }
+}
+
+async function withDashboardStatementTimeout<T>(operation: (database: AdminReadDatabase) => Promise<T>) {
+  return db.transaction(async (transaction) => {
+    await transaction.execute(sql`select set_config(
+      'statement_timeout',
+      ${String(DASHBOARD_STATEMENT_TIMEOUT_MS)},
+      true
+    )`);
+    return operation(transaction);
+  });
+}
+
 export async function getAdminDashboardStats() {
   await authorizeAdminRead();
-  const [
-    [productCount],
-    [publishedProductCount],
-    [lowStockProductCount],
-    [activeComboCount],
-    [pendingOrderCount],
-    [paidOrderCount],
-  ] = await Promise.all([
-    db.select({ value: count(products.id) }).from(products),
-    db
-      .select({ value: count(products.id) })
-      .from(products)
-      .where(and(eq(products.published, true), eq(products.active, true))),
-    db
-      .select({ value: count(products.id) })
-      .from(products)
-      .where(and(eq(products.active, true), lte(availableStock, 5))),
-    db
-      .select({ value: count(combos.id) })
-      .from(combos)
-      .where(and(eq(combos.active, true), eq(combos.published, true))),
-    db
-      .select({ value: count(orders.id) })
-      .from(orders)
-      .leftJoin(stockReservations, eq(stockReservations.orderId, orders.id))
-      .where(and(
-        inArray(orders.status, ["pending_payment", "payment_pending"]),
-        sql`not coalesce(${stockReservations.status} = 'active' and ${stockReservations.expiresAt} <= now(), false)`,
-      )),
-    db
-      .select({ value: countDistinct(payments.orderId) })
-      .from(payments)
-      .where(eq(payments.status, "approved")),
-  ]);
+  const [stats] = await withDashboardStatementTimeout((database) => traceDashboardMetric("query", database.execute(sql<{
+    products: number;
+    publishedProducts: number;
+    lowStockProducts: number;
+    activeCombos: number;
+    pendingOrders: number;
+    paidOrders: number;
+  }>`
+    select
+      (select count(*)::integer from ${products}) as "products",
+      (
+        select count(*)::integer
+        from ${products}
+        where ${products.published} = true and ${products.active} = true
+      ) as "publishedProducts",
+      (
+        select count(*)::integer
+        from ${products}
+        where ${products.active} = true and ${availableStock} <= 5
+      ) as "lowStockProducts",
+      (
+        select count(*)::integer
+        from ${combos}
+        where ${combos.active} = true and ${combos.published} = true
+      ) as "activeCombos",
+      (
+        select count(${orders.id})::integer
+        from ${orders}
+        left join ${stockReservations} on ${stockReservations.orderId} = ${orders.id}
+        where ${orders.status} in ('pending_payment', 'payment_pending')
+          and not coalesce(
+            ${stockReservations.status} = 'active' and ${stockReservations.expiresAt} <= now(),
+            false
+          )
+      ) as "pendingOrders",
+      (
+        select count(distinct ${payments.orderId})::integer
+        from ${payments}
+        where ${payments.status} = 'approved'
+      ) as "paidOrders"
+  `)));
 
   return {
-    products: productCount?.value ?? 0,
-    publishedProducts: publishedProductCount?.value ?? 0,
-    lowStockProducts: lowStockProductCount?.value ?? 0,
-    activeCombos: activeComboCount?.value ?? 0,
-    pendingOrders: pendingOrderCount?.value ?? 0,
-    paidOrders: paidOrderCount?.value ?? 0,
+    products: Number(stats?.products ?? 0),
+    publishedProducts: Number(stats?.publishedProducts ?? 0),
+    lowStockProducts: Number(stats?.lowStockProducts ?? 0),
+    activeCombos: Number(stats?.activeCombos ?? 0),
+    pendingOrders: Number(stats?.pendingOrders ?? 0),
+    paidOrders: Number(stats?.paidOrders ?? 0),
   };
 }
 
@@ -139,7 +180,11 @@ export async function getAdminProducts(filters: AdminProductFilters = {}) {
 
 export async function getAdminLowStockProducts(limit = 6) {
   await authorizeAdminRead();
-  return db
+  return queryAdminLowStockProducts(db, limit);
+}
+
+function queryAdminLowStockProducts(database: AdminReadDatabase, limit: number) {
+  return database
     .select({
       id: products.id,
       name: products.name,
@@ -152,6 +197,11 @@ export async function getAdminLowStockProducts(limit = 6) {
     .where(and(eq(products.active, true), lte(availableStock, 5)))
     .orderBy(asc(availableStock), asc(products.name))
     .limit(limit);
+}
+
+export async function getAdminDashboardLowStockProducts(limit = 6) {
+  await authorizeAdminRead();
+  return withDashboardStatementTimeout((database) => queryAdminLowStockProducts(database, limit));
 }
 
 export async function getAdminProductOptions() {
@@ -265,7 +315,11 @@ export type AdminOrderFilters = {
 
 export async function getAdminOrders(filters: AdminOrderFilters = {}, limit = 100) {
   await authorizeAdminRead();
-  const latestPayment = db
+  return queryAdminOrders(db, filters, limit);
+}
+
+async function queryAdminOrders(database: AdminReadDatabase, filters: AdminOrderFilters, limit: number) {
+  const latestPayment = database
     .selectDistinctOn([payments.orderId], {
       orderId: payments.orderId,
       status: payments.status,
@@ -285,7 +339,7 @@ export async function getAdminOrders(filters: AdminOrderFilters = {}, limit = 10
   }
   if (filters.paymentStatus) conditions.push(eq(latestPayment.status, filters.paymentStatus));
 
-  const rows = await db
+  const rows = await database
     .select({
       id: orders.id,
       publicNumber: orders.publicNumber,
@@ -318,6 +372,11 @@ export async function getAdminOrders(filters: AdminOrderFilters = {}, limit = 10
       now,
     ),
   }));
+}
+
+export async function getAdminDashboardOrders(limit = 5) {
+  await authorizeAdminRead();
+  return withDashboardStatementTimeout((database) => queryAdminOrders(database, {}, limit));
 }
 
 export async function getAdminOrderDetail(id: string) {
