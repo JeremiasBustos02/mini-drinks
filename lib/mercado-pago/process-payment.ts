@@ -24,6 +24,8 @@ import {
   lockAndReadAvailableStock,
 } from "@/lib/stock/reservations";
 import { logServerEvent } from "@/lib/observability/logger";
+import { awardLoyaltyForPaidOrder } from "@/lib/loyalty/award";
+import { tryLoyaltyAwardAfterPaymentCommit } from "@/lib/loyalty/award-utils";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -36,15 +38,16 @@ export async function processMercadoPagoPayment(payment: MercadoPagoPayment, cor
     });
     return { outcome: "unmatched" as const };
   }
+  const orderId = payment.externalReference;
 
-  return db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     await tx.execute(
-      sql`select id from orders where id = ${payment.externalReference}::uuid for update`,
+      sql`select id from orders where id = ${orderId}::uuid for update`,
     );
     const [order] = await tx
       .select()
       .from(orders)
-      .where(eq(orders.id, payment.externalReference!))
+      .where(eq(orders.id, orderId))
       .limit(1);
     if (!order) {
       logServerEvent("warn", "mercado_pago.payment_unmatched", {
@@ -258,4 +261,23 @@ export async function processMercadoPagoPayment(payment: MercadoPagoPayment, cor
     await tx.update(orders).set({ status: "manual_review", updatedAt: now }).where(eq(orders.id, order.id));
     return { outcome: "manual_review" as const, reason: status };
   });
+
+  if (result.outcome === "approved" || result.outcome === "duplicate") {
+    const loyaltyAttempt = await tryLoyaltyAwardAfterPaymentCommit(() => awardLoyaltyForPaidOrder(orderId));
+    if (loyaltyAttempt.status === "failed") {
+      logServerEvent("error", "loyalty.award_failed", {
+        correlationId,
+        orderId,
+        errorName: loyaltyAttempt.errorName,
+      });
+    } else if (loyaltyAttempt.result.outcome === "credited") {
+      logServerEvent("info", "loyalty.points_credited", {
+        correlationId,
+        orderId,
+        points: loyaltyAttempt.result.points,
+      });
+    }
+  }
+
+  return result;
 }

@@ -16,6 +16,7 @@ import { db } from "@/lib/db";
 import { orderItems, orders } from "@/lib/db/schema";
 import { ensureMercadoPagoPreference } from "@/lib/mercado-pago/create-preference";
 import { getReservationExpiresAt } from "@/lib/stock/config";
+import { getAccountAccess, getCustomerProfileId } from "@/lib/account/auth";
 import {
   findReservationShortage,
   insertStockReservation,
@@ -58,6 +59,10 @@ export async function createOrder(
   payload: ValidCreateOrderPayload,
   correlationId?: string,
 ): Promise<CheckoutCreationResult> {
+  const access = await getAccountAccess();
+  const customerProfileId = access.status === "authenticated"
+    ? await getCustomerProfileId(access.userId)
+    : null;
   const accessTokenHash = hashOrderAccessToken(payload.accessToken);
   const checkoutRequestHash = createCheckoutRequestHash(payload);
   const existingResult = resolveIdempotentOrder(
@@ -164,6 +169,7 @@ export async function createOrder(
             checkoutAttemptId: payload.checkoutAttemptId,
             accessTokenHash,
             checkoutRequestHash,
+            customerProfileId,
             status: "pending_payment",
             customerName: payload.customer.firstName,
             customerLastName: payload.customer.lastName,

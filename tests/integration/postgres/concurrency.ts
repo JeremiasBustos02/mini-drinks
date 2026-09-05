@@ -24,17 +24,35 @@ async function main() {
     });
   }
 
+  async function creditLoyalty(client: typeof first, orderId: string, idempotencyKey: string) {
+    return client.begin(async (tx) => {
+      await tx.unsafe(`set local search_path to ${schema}`);
+      const [credit] = await tx`
+        insert into loyalty_transactions (loyalty_account_id, order_id, idempotency_key, points)
+        values (1, ${orderId}, ${idempotencyKey}, 5)
+        on conflict (idempotency_key) do nothing
+        returning id
+      `;
+      if (!credit) return false;
+      await tx`update loyalty_accounts set balance = balance + 5, lifetime_earned_points = lifetime_earned_points + 5 where id = 1`;
+      return true;
+    });
+  }
+
   try {
     await admin.unsafe(`create schema ${schema}`);
     await admin.unsafe(`
       create table ${schema}.products (id integer primary key, stock integer not null, version integer not null default 1);
       create table ${schema}.combos (id integer primary key, version integer not null default 1);
-      create table ${schema}.categories (id integer primary key, version integer not null default 1);
-      create table ${schema}.reservations (attempt_id uuid unique not null, product_id integer not null, quantity integer not null, active boolean not null, expires_at timestamptz not null);
-      create table ${schema}.orders (id bigserial primary key, checkout_attempt_id uuid unique not null);
-      insert into ${schema}.products (id, stock) values (1, 1);
-      insert into ${schema}.combos (id) values (1);
-      insert into ${schema}.categories (id) values (1);
+       create table ${schema}.categories (id integer primary key, version integer not null default 1);
+       create table ${schema}.reservations (attempt_id uuid unique not null, product_id integer not null, quantity integer not null, active boolean not null, expires_at timestamptz not null);
+       create table ${schema}.orders (id bigserial primary key, checkout_attempt_id uuid unique not null);
+        create table ${schema}.loyalty_accounts (id integer primary key, balance integer not null default 0, lifetime_earned_points integer not null default 0);
+        create table ${schema}.loyalty_transactions (id bigserial primary key, loyalty_account_id integer not null references ${schema}.loyalty_accounts(id), order_id uuid not null, idempotency_key text unique not null, points integer not null check (points > 0));
+       insert into ${schema}.products (id, stock) values (1, 1);
+       insert into ${schema}.combos (id) values (1);
+       insert into ${schema}.categories (id) values (1);
+       insert into ${schema}.loyalty_accounts (id) values (1);
     `);
 
     const reservationResults = await Promise.all([
@@ -58,6 +76,26 @@ async function main() {
     ]);
     const [count] = await admin.unsafe(`select count(*)::integer as value from ${schema}.orders`);
     assert.equal(count.value, 1);
+
+    const loyaltyResults = await Promise.all([
+      creditLoyalty(first, randomUUID(), `order:${randomUUID()}:purchase-earned`),
+      creditLoyalty(second, randomUUID(), `order:${randomUUID()}:purchase-earned`),
+    ]);
+    assert.deepEqual(loyaltyResults.sort(), [true, true]);
+
+    const creditedOrderId = randomUUID();
+    const earnedKey = `order:${creditedOrderId}:purchase-earned`;
+    const duplicateCreditResults = await Promise.all([
+      creditLoyalty(first, creditedOrderId, earnedKey),
+      creditLoyalty(second, creditedOrderId, earnedKey),
+    ]);
+    assert.deepEqual(duplicateCreditResults.sort(), [false, true]);
+    assert.equal(await creditLoyalty(first, creditedOrderId, `order:${creditedOrderId}:purchase-reversal`), true);
+    const [loyaltyBalance] = await admin.unsafe(`select balance, lifetime_earned_points from ${schema}.loyalty_accounts where id = 1`);
+    assert.equal(loyaltyBalance.balance, 20);
+    assert.equal(loyaltyBalance.lifetime_earned_points, 20);
+    const [sameOrderTransactions] = await admin.unsafe(`select count(*)::integer as value from ${schema}.loyalty_transactions where order_id = '${creditedOrderId}'`);
+    assert.equal(sameOrderTransactions.value, 2);
     console.log("PostgreSQL concurrency diagnostics passed.");
   } finally {
     try {

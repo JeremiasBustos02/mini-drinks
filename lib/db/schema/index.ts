@@ -81,6 +81,41 @@ export const customerProfiles = pgTable(
   (table) => [uniqueIndex("customer_profiles_auth_user_id_unique").on(table.authUserId)],
 ).enableRLS();
 
+export const loyaltySettings = pgTable(
+  "loyalty_settings",
+  {
+    key: text("key").primaryKey().default("default"),
+    earnUnitCents: bigint("earn_unit_cents", { mode: "number" }).notNull(),
+    pointsPerUnit: integer("points_per_unit").notNull(),
+    createdAt: createdAtColumn(),
+    updatedAt: updatedAtColumn(),
+  },
+  (table) => [
+    check("loyalty_settings_singleton", sql`${table.key} = 'default'`),
+    check("loyalty_settings_earn_unit_cents_positive", sql`${table.earnUnitCents} > 0`),
+    check("loyalty_settings_points_per_unit_positive", sql`${table.pointsPerUnit} > 0`),
+  ],
+).enableRLS();
+
+export const loyaltyAccounts = pgTable(
+  "loyalty_accounts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    customerProfileId: uuid("customer_profile_id")
+      .notNull()
+      .references(() => customerProfiles.id, { onDelete: "cascade" }),
+    balance: integer("balance").default(0).notNull(),
+    lifetimeEarnedPoints: integer("lifetime_earned_points").default(0).notNull(),
+    createdAt: createdAtColumn(),
+    updatedAt: updatedAtColumn(),
+  },
+  (table) => [
+    uniqueIndex("loyalty_accounts_customer_profile_id_unique").on(table.customerProfileId),
+    check("loyalty_accounts_balance_non_negative", sql`${table.balance} >= 0`),
+    check("loyalty_accounts_lifetime_earned_points_non_negative", sql`${table.lifetimeEarnedPoints} >= 0`),
+  ],
+).enableRLS();
+
 export const products = pgTable(
   "products",
   {
@@ -200,6 +235,9 @@ export const orders = pgTable(
     checkoutAttemptId: uuid("checkout_attempt_id").notNull(),
     accessTokenHash: text("access_token_hash").notNull(),
     checkoutRequestHash: text("checkout_request_hash").notNull(),
+    customerProfileId: uuid("customer_profile_id").references(() => customerProfiles.id, {
+      onDelete: "set null",
+    }),
     status: orderStatusEnum("status").default("pending_payment").notNull(),
     customerName: text("customer_name").notNull(),
     customerLastName: text("customer_last_name").notNull(),
@@ -238,6 +276,7 @@ export const orders = pgTable(
     uniqueIndex("orders_checkout_attempt_id_unique").on(table.checkoutAttemptId),
     uniqueIndex("orders_access_token_hash_unique").on(table.accessTokenHash),
     index("orders_status_idx").on(table.status),
+    index("orders_customer_profile_id_created_at_idx").on(table.customerProfileId, table.createdAt),
     index("orders_created_at_idx").on(table.createdAt),
     uniqueIndex("orders_mercado_pago_preference_id_unique").on(
       table.mercadoPagoPreferenceId,
@@ -270,6 +309,34 @@ export const orders = pgTable(
       "orders_delivery_details_required",
       sql`${table.deliveryType} = 'pickup' or (nullif(btrim(${table.deliveryAddress}), '') is not null and nullif(btrim(${table.city}), '') is not null)`,
     ),
+  ],
+).enableRLS();
+
+export const loyaltyTransactions = pgTable(
+  "loyalty_transactions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    loyaltyAccountId: uuid("loyalty_account_id")
+      .notNull()
+      .references(() => loyaltyAccounts.id, { onDelete: "cascade" }),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "restrict" }),
+    idempotencyKey: text("idempotency_key").notNull(),
+    type: text("type").default("earn").notNull(),
+    points: integer("points").notNull(),
+    earnUnitCents: bigint("earn_unit_cents", { mode: "number" }).notNull(),
+    pointsPerUnit: integer("points_per_unit").notNull(),
+    createdAt: createdAtColumn(),
+  },
+  (table) => [
+    uniqueIndex("loyalty_transactions_idempotency_key_unique").on(table.idempotencyKey),
+    index("loyalty_transactions_order_id_idx").on(table.orderId),
+    index("loyalty_transactions_account_created_at_idx").on(table.loyaltyAccountId, table.createdAt),
+    check("loyalty_transactions_type_earn", sql`${table.type} = 'earn'`),
+    check("loyalty_transactions_points_positive", sql`${table.points} > 0`),
+    check("loyalty_transactions_earn_unit_cents_positive", sql`${table.earnUnitCents} > 0`),
+    check("loyalty_transactions_points_per_unit_positive", sql`${table.pointsPerUnit} > 0`),
   ],
 ).enableRLS();
 
@@ -383,6 +450,8 @@ export const stockReservationItems = pgTable(
 export type CategoryRecord = typeof categories.$inferSelect;
 export type AdminUserRecord = typeof adminUsers.$inferSelect;
 export type CustomerProfileRecord = typeof customerProfiles.$inferSelect;
+export type LoyaltySettingsRecord = typeof loyaltySettings.$inferSelect;
+export type LoyaltyAccountRecord = typeof loyaltyAccounts.$inferSelect;
 export type ProductRecord = typeof products.$inferSelect;
 export type ComboRecord = typeof combos.$inferSelect;
 export type ComboItemRecord = typeof comboItems.$inferSelect;
@@ -390,6 +459,7 @@ export type ComboImageRecord = typeof comboImages.$inferSelect;
 export type StorefrontAssetRecord = typeof storefrontAssets.$inferSelect;
 export type OrderRecord = typeof orders.$inferSelect;
 export type OrderItemRecord = typeof orderItems.$inferSelect;
+export type LoyaltyTransactionRecord = typeof loyaltyTransactions.$inferSelect;
 export type PaymentRecord = typeof payments.$inferSelect;
 export type StockReservationRecord = typeof stockReservations.$inferSelect;
 export type StockReservationItemRecord = typeof stockReservationItems.$inferSelect;

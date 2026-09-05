@@ -43,3 +43,13 @@ export async function getCustomerProfile(userId: string) {
 
   return profile ?? null;
 }
+
+export async function getCustomerProfileId(userId: string) {
+  const [profile] = await db
+    .select({ id: customerProfiles.id })
+    .from(customerProfiles)
+    .where(eq(customerProfiles.authUserId, userId))
+    .limit(1);
+
+  return profile?.id ?? null;
+}
