@@ -43,7 +43,7 @@ export function Header() {
         <Container className="flex h-[var(--header-height)] items-center justify-between gap-4">
           <Link
             href="/"
-            className="font-display text-2xl leading-none tracking-[-0.04em]"
+            className="site-header-brand font-display text-2xl leading-none tracking-[-0.04em]"
             aria-label="MINI, volver al inicio"
           >
             MINI<span className="text-action">.</span>
@@ -57,7 +57,7 @@ export function Header() {
               <Link
                 key={item.label}
                 href={item.href}
-                className={`text-sm font-bold transition-colors ${
+                className={`site-header-link text-sm font-bold transition-colors ${
                   item.label === "Mayoristas"
                     ? "text-action hover:text-ink"
                     : "text-ink/75 hover:text-action"

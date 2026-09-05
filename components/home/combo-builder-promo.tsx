@@ -31,11 +31,17 @@ export function ComboBuilderPromo({ asset }: { asset: StorefrontAsset | null }) 
               <SectionHeading
                 eyebrow="Armá tu combo"
                 title="Vos elegís. Nosotros lo hacemos mini."
-                description="Elegí tu mini, tu mixer, el vaso y sumale un extra si querés."
+                description="Elegí, mezclá, hacelo tuyo."
                 inverted
               />
               <p className="combo-builder-categories" aria-label="Categorías disponibles">
-                Mini <span>/</span> Mixer <span>/</span> Vaso <span>/</span> + Extra
+                <span className="combo-builder-category">Mini</span>
+                <span className="combo-builder-category-operator">+</span>
+                <span className="combo-builder-category">Mixer</span>
+                <span className="combo-builder-category-operator">+</span>
+                <span className="combo-builder-category">Vaso</span>
+                <span className="combo-builder-category-operator">+</span>
+                <span className="combo-builder-category combo-builder-category-extra">Extra</span>
               </p>
               <ButtonLink href="/arma-tu-combo" variant="lightdark" className="combo-builder-cta min-w-36">
                 Empezar
@@ -43,15 +49,6 @@ export function ComboBuilderPromo({ asset }: { asset: StorefrontAsset | null }) 
             </div>
 
             <div className="combo-builder-visual" aria-hidden="true">
-              <svg className="combo-builder-visual-ribbon combo-builder-visual-ribbon-mobile" viewBox="0 0 420 320" preserveAspectRatio="none">
-  <defs>
-    <linearGradient id="ribbon-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stopColor="#FFFFFF" />
-      <stop offset="100%" stopColor="#F5F3F0" />
-    </linearGradient>
-  </defs>
-  <path d="M18 238C89 195 116 102 194 116C254 126 272 211 341 182C371 169 388 143 402 111L387 182C360 242 303 273 251 242C191 206 177 160 126 177C82 192 62 249 32 278Z" />
-</svg>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img alt="" className="combo-builder-visual-fernet" src="/fernetsinfondo.png" />
               {/* eslint-disable-next-line @next/next/no-img-element */}

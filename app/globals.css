@@ -6,6 +6,7 @@
   --paper: #FFFFFF;
   --action: #7392B0;
   --mint: #c7dbf0;
+  --accent-yellow: #F4D64E;
   --header-height: 4.5rem;
 }
 
@@ -391,22 +392,50 @@ summary::-webkit-details-marker {
 }
 
 .site-header {
+  border-color: transparent;
+  background-color: rgb(29 29 29 / 62%);
+  box-shadow: none;
+  color: var(--paper);
   transition:
-    background-color 180ms ease,
-    border-color 180ms ease,
-    backdrop-filter 180ms ease,
-    box-shadow 180ms ease;
+    background-color 240ms ease,
+    border-color 240ms ease,
+    box-shadow 240ms ease,
+    color 240ms ease;
+}
+
+.site-header-brand,
+.site-header-link,
+.site-header .header-control {
+  transition:
+    background-color 240ms ease,
+    border-color 240ms ease,
+    box-shadow 240ms ease,
+    color 240ms ease;
+}
+
+.site-header:not([data-scrolled]) .site-header-brand,
+.site-header:not([data-scrolled]) .site-header-link {
+  color: var(--paper);
+}
+
+.site-header:not([data-scrolled]) .header-control {
+  border-color: rgb(255 255 255 / 30%);
+  background-color: rgb(29 29 29 / 30%);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 24%);
+  color: var(--paper);
 }
 
 .site-header[data-scrolled] {
   border-color: color-mix(in srgb, var(--ink) 14%, transparent);
   background-color: color-mix(in srgb, var(--canvas) 98%, transparent);
   box-shadow: 0 8px 24px rgb(13 13 13 / 6%);
+  color: var(--ink);
 }
 
 .site-header[data-scrolled] .header-control {
   border-color: color-mix(in srgb, var(--ink) 14%, transparent);
   background-color: var(--paper);
+  color: var(--ink);
 }
 
 .featured-card-visual {
@@ -509,23 +538,24 @@ summary::-webkit-details-marker {
 .wholesale-mass-left {
   top: -15rem;
   left: -15rem;
-  background: color-mix(in srgb, var(--mint) 72%, var(--action));
+  background: var(--canvas);
   transform: rotate(-18deg);
+  border-radius: 40% 60% 60% 40% / 35% 55% 55% 20%;
 }
 
 .wholesale-mass-right {
   right: -14rem;
   bottom: -17rem;
-  background: rgb(245 243 240 / 28%);
-  border-radius: 58% 42% 63% 37% / 39% 62% 38% 61%;
+  background: var(--canvas);
+  border-radius: 38% 32% 33% 17% / 38% 32% 33% 17%;
   transform: rotate(18deg);
 }
 
 .wholesale-halo {
   width: 24rem;
   height: 28rem;
-  border-radius: 46% 54% 50% 50% / 48% 45% 55% 52%;
-  background: rgb(245 243 240 / 30%);
+  border-radius: 46% 54% 50% 50% / 28% 25% 25% 12%;
+  background: var(--canvas);
   filter: blur(24px);
 }
 
@@ -758,30 +788,30 @@ summary::-webkit-details-marker {
 
 @media (max-width: 639px) {
   .wholesale-product {
-    width: 38%;
+    width: 48%;
   }
 
   .wholesale-product-fernet {
-    left: -10%;
+    left: -18%;
   }
 
   .wholesale-product-coke {
-    right: -8%;
+    right: -18%;
   }
 
   .wholesale-mass {
-    width: 28rem;
-    height: 22rem;
+    width: clamp(17rem, 68vw, 24rem);
+    height: clamp(14rem, 52vw, 18rem);
   }
 
   .wholesale-mass-left {
-    top: -10rem;
-    left: -15rem;
+    top: -7rem;
+    left: -11rem;
   }
 
   .wholesale-mass-right {
-    right: -14rem;
-    bottom: -12rem;
+    right: -10rem;
+    bottom: -8rem;
   }
 
   .wholesale-halo {
@@ -799,8 +829,8 @@ summary::-webkit-details-marker {
   }
 
   .wholesale-central-shape {
-    width: 93%;
-    height: 13rem;
+    width: 76%;
+    height: 11rem;
   }
 
   .wholesale-content p {
@@ -907,22 +937,33 @@ summary::-webkit-details-marker {
 }
 
 .combo-builder-categories {
-  margin: 2rem 0 0;
-  color: rgb(245 243 240 / 82%);
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 1.75rem 0 0;
+  color: rgb(255 255 255 / 92%);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  letter-spacing: 0.025em;
+  line-height: 0.95;
   text-transform: uppercase;
 }
 
-.combo-builder-categories span {
-  margin: 0 0.35rem;
-  color: var(--mint);
+.combo-builder-category-operator {
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-size: 0.9em;
+  font-weight: 900;
+}
+
+.combo-builder-category-extra {
+  color: var(--accent-yellow);
 }
 
 .combo-builder-cta {
   display: inline-flex;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
 }
 
 .combo-builder-visual {
@@ -946,10 +987,6 @@ summary::-webkit-details-marker {
   opacity: 1;
 }
 
-.combo-builder-visual-ribbon:not(.combo-builder-visual-ribbon-desktop) {
-  fill: #FFFFFF;
-}
-
 .combo-builder-visual-ribbon-clip {
   position: absolute;
   inset: 0;
@@ -965,10 +1002,6 @@ summary::-webkit-details-marker {
   width: min(15%, 14rem);
   height: 100%;
   overflow: visible;
-}
-
-.combo-builder-visual-ribbon-mobile {
-  display: none;
 }
 
 .combo-builder-visual-fernet {
@@ -1024,39 +1057,80 @@ summary::-webkit-details-marker {
   }
 }
 
+@media (min-width: 640px) and (max-width: 1023px) {
+  .wholesale-mass {
+    width: clamp(18rem, 46vw, 28rem);
+    height: clamp(14rem, 36vw, 20rem);
+  }
+
+  .wholesale-mass-left {
+    top: -11rem;
+    left: -12rem;
+  }
+
+  .wholesale-mass-right {
+    right: -11rem;
+    bottom: -12rem;
+  }
+
+  .wholesale-central-shape {
+    width: min(70vw, 36rem);
+    height: 16rem;
+  }
+
+  .combo-builder-visual {
+    min-height: clamp(24rem, 58vw, 30rem);
+  }
+
+  .combo-builder-visual-ribbon-desktop {
+    left: 72%;
+    width: min(14%, 8rem);
+    opacity: 0.28;
+  }
+
+  .combo-builder-visual-fernet {
+    bottom: -12%;
+    left: clamp(14%, calc(50% - 16rem), 24%);
+    height: 76%;
+  }
+
+  .combo-builder-visual-coke {
+    top: -8%;
+    right: auto;
+    left: clamp(48%, calc(50% + 1rem), 58%);
+    height: 54%;
+  }
+}
+
 @media (max-width: 639px) {
   .combo-builder-layout {
     gap: 2.25rem;
   }
 
+  .combo-builder-categories {
+    font-size: 1rem;
+  }
+
   .combo-builder-visual {
-    min-height: 20rem;
+    min-height: 24rem;
   }
 
-  .combo-builder-visual-ribbon {
-    display: none;
-    opacity: 0.62;
-  }
-
-  .combo-builder-visual-ribbon-mobile {
-    display: block;
-    top: 26%;
-    right: 11%;
-    bottom: auto;
-    left: 9%;
-    width: 82%;
-    height: 48%;
-    transform: rotate(-8deg);
+  .combo-builder-visual-ribbon-desktop {
+    left: 72%;
+    width: min(14%, 4rem);
+    opacity: 0.22;
   }
 
   .combo-builder-visual-fernet {
-    left: -5%;
-    height: 76%;
+    bottom: -10%;
+    left: 8%;
+    height: 74%;
   }
 
   .combo-builder-visual-coke {
-    top: -16%;
-    right: -13%;
+    top: -10%;
+    right: auto;
+    left: 36%;
     height: 52%;
   }
 
