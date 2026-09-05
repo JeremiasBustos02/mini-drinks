@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #0D0D0D;
+  --ink: #0F0F0F;
   --canvas: #F5F3F0;
   --paper: #FFFFFF;
-  --action: #3F4933;
-  --mint: #A3AF76;
+  --action: #7392B0;
+  --mint: #c7dbf0;
   --header-height: 4.5rem;
 }
 
@@ -479,12 +479,12 @@ summary::-webkit-details-marker {
 
 .wholesale-section {
   /* CTA image controls: scale changes size, rotate inclines, x/y move it, object-position anchors its source. */
-  --cta-fernet-scale: 2.1;
+  --cta-fernet-scale: 1.5;
   --cta-fernet-rotate: -7deg;
   --cta-fernet-x: 0%;
-  --cta-fernet-y: 8%;
+  --cta-fernet-y: 0%;
   --cta-fernet-object-position: 50% 72%;
-  --cta-coke-scale: 1.85;
+  --cta-coke-scale: 1.2;
   --cta-coke-rotate: 7deg;
   --cta-coke-x: 0%;
   --cta-coke-y: 5%;
@@ -508,7 +508,7 @@ summary::-webkit-details-marker {
   object-fit: contain;
   background: transparent;
   mix-blend-mode: multiply;
-  opacity: 0.82;
+  opacity: 1;
 }
 
 .wholesale-product-fernet {

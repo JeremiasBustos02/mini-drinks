@@ -32,9 +32,9 @@ export function ComboBuilderPromo({ asset }: { asset: StorefrontAsset | null }) 
             {asset ? <img alt={asset.alt} className="aspect-[4/3] w-full rounded-[1.25rem] bg-white object-contain p-5" decoding="async" loading="lazy" src={asset.imageUrl} /> : null}
             {!asset ? <div className="build-preview-products grid aspect-[4/3] grid-cols-3 items-end gap-2 overflow-hidden rounded-[1.25rem] bg-white px-4 pt-6 sm:gap-5 sm:px-8">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img alt="" className="build-preview-fernet" src="/fernet50ml.webp" />
+              <img alt="" className="build-preview-fernet" src="/brancapng.webp" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img alt="" className="build-preview-coke" src="/cocacola354cc.webp" />
+              <img alt="" className="build-preview-coke" src="/cocacolapng.webp" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img alt="" className="build-preview-glass" src="/minivaso.webp" />
             </div> : null}

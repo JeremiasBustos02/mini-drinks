@@ -12,13 +12,13 @@ export function WholesaleCta({ asset: _asset }: { asset: StorefrontAsset | null 
     >
       <div className="wholesale-product wholesale-product-fernet" aria-hidden="true">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" src="/fernet50ml.webp" />
+        <img alt="" src="/brancapng.webp" />
       </div>
       <div className="wholesale-product wholesale-product-coke" aria-hidden="true">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt="" src="/cocacola354cc.webp" />
+        <img alt="" src="/cocacolapng.webp" />
       </div>
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,var(--action)_0%,rgb(63_73_51_/_92%)_42%,rgb(63_73_51_/_72%)_100%)]" />
+      <div className="absolute inset-0 -z-10" />
       <Container className="relative z-10">
         <div className="wholesale-content mx-auto max-w-3xl text-center">
           <h2 className="font-display text-[clamp(2.5rem,10vw,6rem)] leading-[0.92] tracking-[-0.045em] uppercase">
