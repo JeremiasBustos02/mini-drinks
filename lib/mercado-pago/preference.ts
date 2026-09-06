@@ -82,7 +82,7 @@ export function buildMercadoPagoPreference(
       failure: `${appUrl}/pago/error?${returnQuery}`,
     },
     auto_return: "approved",
-    notification_url: `${appUrl}/api/webhooks/mercado-pago`,
+    notification_url: `${appUrl}/api/mercado-pago/webhook`,
     expires: true,
     expiration_date_from: createdAt.toISOString(),
     expiration_date_to: expiresAt.toISOString(),

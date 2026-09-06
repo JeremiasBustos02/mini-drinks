@@ -11,7 +11,7 @@ La integración usa Checkout Pro alojado por Mercado Pago mediante el SDK oficia
 3. La transacción bloquea los productos requeridos por UUID ordenado, calcula stock físico menos reservas activas vigentes y crea `order`, `order_items`, reserva e ítems de reserva.
 4. Fuera de esa transacción se crea o reutiliza una Preference a partir del pedido persistido.
 5. Solo con una Preference persistida y un `init_point` válido el navegador limpia el carrito y redirige a Mercado Pago.
-6. Mercado Pago notifica `POST /api/webhooks/mercado-pago`.
+6. Mercado Pago notifica `POST /api/mercado-pago/webhook`.
 7. El endpoint valida la firma y consulta el Payment real y, cuando existe, su Merchant Order para verificar la Preference.
 8. Un pago aprobado consume reserva, descuenta stock físico y marca el pedido pagado dentro de una sola transacción.
 9. Los retornos `/pago/exito`, `/pago/pendiente` y `/pago/error` solo muestran estado persistido. Nunca confirman pagos.
@@ -194,7 +194,7 @@ Las páginas de retorno leen el mismo estado persistido y aclaran que el webhook
 `.env.local` de desarrollo:
 
 ```dotenv
-MERCADO_PAGO_ACCESS_TOKEN=TEST-...
+MP_ACCESS_TOKEN=APP_USR_...
 MERCADO_PAGO_WEBHOOK_SECRET=...
 APP_URL=https://URL_HTTPS_ACCESIBLE
 STOCK_RESERVATION_MINUTES=15
@@ -206,22 +206,22 @@ En Vercel:
 
 | Variable | Tipo | Observación |
 | --- | --- | --- |
-| `MERCADO_PAGO_ACCESS_TOKEN` | Secret | token TEST durante esta fase |
+| `MP_ACCESS_TOKEN` | Secret | Access Token `APP_USR` de la aplicación Checkout Pro del vendedor de prueba |
 | `MERCADO_PAGO_WEBHOOK_SECRET` | Secret | firma de Webhooks |
 | `APP_URL` | Config | origin HTTPS canónico, sin path/query |
 | `STOCK_RESERVATION_MINUTES` | Config opcional | default 15 |
 
 Producción debe usar el dominio canónico. Para Preview se necesita un `APP_URL` estable o específico de ese deployment y registrar ese endpoint de prueba en Mercado Pago. No se deriva de `Host` ni `X-Forwarded-Host`.
 
-## Prueba real con credenciales TEST
+## Prueba manual con cuentas de prueba
 
-1. Crear o seleccionar una aplicación en Mercado Pago Developers Argentina.
-2. Obtener Access Token TEST. No cargar credenciales productivas.
+1. Crear o seleccionar un usuario de prueba VENDEDOR y crear una aplicación Checkout Pro dentro de esa cuenta.
+2. Cargar el Access Token `APP_USR` de esa aplicación en `MP_ACCESS_TOKEN`. El código no interpreta prefijos ni cambia de flujo según el token.
 3. Configurar las cuatro variables locales anteriores.
 4. Exponer la app local con HTTPS o desplegar un Preview controlado.
-5. En la aplicación de Mercado Pago, configurar Webhooks para `payment` apuntando a `https://ORIGIN/api/webhooks/mercado-pago`.
+5. En la aplicación de Mercado Pago, configurar Webhooks para `payment` apuntando a `https://ORIGIN/api/mercado-pago/webhook`.
 6. Copiar la firma secreta generada a `MERCADO_PAGO_WEBHOOK_SECRET`.
-7. Crear/usar vendedor y comprador de prueba distintos si Mercado Pago lo requiere. No iniciar sesión con la cuenta vendedora para comprar.
+7. Crear o usar un usuario de prueba COMPRADOR diferente. Abrir Checkout Pro con esa cuenta; nunca usar la cuenta vendedora para pagar.
 8. Aplicar migraciones y cargar stock conocido.
 9. Ejecutar un pago aprobado con datos de prueba y comprobar `payments`, Order `paid`, reserva `consumed` y decremento físico único.
 10. Reenviar la misma notificación y comprobar que el stock no cambia.

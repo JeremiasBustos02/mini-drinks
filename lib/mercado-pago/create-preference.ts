@@ -212,7 +212,7 @@ export async function ensureMercadoPagoPreference(
         idempotencyKey: `${prepared.order.id}:${prepared.order.mercadoPagoPreferenceGeneration}`,
       },
     });
-    const initPoint = response.init_point ?? response.sandbox_init_point;
+    const initPoint = response.init_point;
     if (!response.id || !initPoint) throw new Error("Mercado Pago returned an incomplete preference.");
 
     const persisted = await db.transaction(async (tx) => {

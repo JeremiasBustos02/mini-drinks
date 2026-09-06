@@ -19,8 +19,8 @@ export function getAppUrl() {
 }
 
 export function getMercadoPagoAccessToken() {
-  const token = process.env.MERCADO_PAGO_ACCESS_TOKEN;
-  if (!token) throw new Error("MERCADO_PAGO_ACCESS_TOKEN is required.");
+  const token = process.env.MP_ACCESS_TOKEN;
+  if (!token) throw new Error("MP_ACCESS_TOKEN is required.");
   return token;
 }
 

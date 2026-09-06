@@ -198,7 +198,7 @@ SECRET:
 | --- | --- | --- |
 | `DATABASE_URL` | Sí | Transaction Pooler, server-only |
 | `DATABASE_MIGRATION_URL` | No | solo CI/operador de migraciones |
-| `MERCADO_PAGO_ACCESS_TOKEN` | Sí, pendiente | TEST antes de cualquier credencial productiva |
+| `MP_ACCESS_TOKEN` | Sí, pendiente | Access Token de la aplicación Checkout Pro del vendedor del entorno |
 | `MERCADO_PAGO_WEBHOOK_SECRET` | Sí, pendiente | secreto del endpoint del entorno |
 | `UPSTASH_REDIS_REST_URL` | Sí | endpoint del limiter distribuido |
 | `UPSTASH_REDIS_REST_TOKEN` | Sí | token server-only del limiter |
@@ -249,7 +249,7 @@ SECRET:
 
 - [ ] Mantener Mercado Pago marcado como pendiente hasta completar prueba real TEST.
 - [ ] Obtener y cargar credenciales TEST, no productivas.
-- [ ] Registrar webhook TEST en `${APP_URL}/api/webhooks/mercado-pago`.
+- [ ] Registrar webhook de pagos en `${APP_URL}/api/mercado-pago/webhook`.
 - [ ] Confirmar firma válida e inválida.
 - [ ] Probar aprobado, pendiente y rechazado con comprador/vendedor TEST separados.
 - [ ] Reenviar webhook aprobado y confirmar un único descuento de stock.

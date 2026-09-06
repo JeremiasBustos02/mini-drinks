@@ -60,6 +60,8 @@ test("builds an expiring Checkout Pro preference from persisted order rows", () 
   assert.equal(preference.items[0].currency_id, "ARS");
   assert.equal(preference.external_reference, orderId);
   assert.deepEqual(preference.metadata, { order_id: orderId });
+  assert.equal(preference.auto_return, "approved");
+  assert.equal(preference.notification_url, "https://shop.example.com/api/mercado-pago/webhook");
   assert.equal(preference.expiration_date_to, to.toISOString());
   assert.equal(preference.expires, true);
   assert.match(preference.back_urls.success, /\/pago\/exito\?/);
@@ -163,7 +165,7 @@ function signedWebhook(paymentId = "123", type = "payment") {
   const hash = createHmac("sha256", "test-secret")
     .update(`id:${paymentId};request-id:${requestId};ts:${ts};`)
     .digest("hex");
-  return new Request(`https://shop.example.com/api/webhooks/mercado-pago?data.id=${paymentId}`, {
+  return new Request(`https://shop.example.com/api/mercado-pago/webhook?data.id=${paymentId}`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -176,7 +178,7 @@ function signedWebhook(paymentId = "123", type = "payment") {
 
 test("webhook rejects an invalid signature before fetching the payment", async () => {
   let fetched = false;
-  const response = await handleMercadoPagoWebhook(new Request("https://shop.example.com/api/webhooks/mercado-pago?data.id=123", {
+  const response = await handleMercadoPagoWebhook(new Request("https://shop.example.com/api/mercado-pago/webhook?data.id=123", {
     method: "POST",
     headers: { "x-request-id": "request-1", "x-signature": "ts=1,v1=invalid" },
     body: JSON.stringify({ type: "payment", data: { id: "123" } }),
