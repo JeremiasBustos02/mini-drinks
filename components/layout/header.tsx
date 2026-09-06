@@ -19,6 +19,7 @@ const navigation = [
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
+  const [accountLink, setAccountLink] = useState({ label: "Ingresar", href: "/login" });
   const hydrated = useCartHydration();
   const items = useCartStore((state) => state.items);
   const openCart = useCartStore((state) => state.openCart);
@@ -29,6 +30,13 @@ export function Header() {
     updateHeader();
     window.addEventListener("scroll", updateHeader, { passive: true });
     return () => window.removeEventListener("scroll", updateHeader);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/account-access", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((value) => { if (value?.label && value?.href) setAccountLink(value); })
+      .catch(() => undefined);
   }, []);
 
   return (
@@ -82,11 +90,11 @@ export function Header() {
             </button>
 
             <Link
-              aria-label="Ir a mi cuenta"
-              className="header-control motion-button grid min-h-11 rounded-xl border border-ink/10 bg-white/85 px-3 text-sm font-bold shadow-[0_2px_0_rgb(13_13_13_/_10%)] hover:text-action"
-              href="/mi-cuenta"
+              aria-label={accountLink.label}
+              className="header-control motion-button inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-ink/10 bg-white/85 px-3 text-sm font-bold leading-none shadow-[0_2px_0_rgb(13_13_13_/_10%)] transition duration-200 hover:-translate-y-px hover:border-action/35 hover:bg-mint/25 hover:text-action hover:shadow-[0_4px_0_rgb(13_13_13_/_12%)] active:translate-y-0 active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
+              href={accountLink.href}
             >
-              Mi cuenta
+              {accountLink.label}
             </Link>
 
             <details className="mobile-menu group relative md:hidden">
@@ -109,7 +117,7 @@ export function Header() {
                     {item.label}
                   </Link>
                 ))}
-                <Link href="/mi-cuenta" className="block rounded-xl px-4 py-3 text-base font-bold hover:bg-canvas">Mi cuenta</Link>
+                <Link href={accountLink.href} className="block rounded-xl px-4 py-3 text-base font-bold hover:bg-canvas">{accountLink.label}</Link>
               </nav>
             </details>
           </div>
