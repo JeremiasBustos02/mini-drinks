@@ -46,7 +46,7 @@ export function AdminShell({ children, email }: { children: React.ReactNode; ema
         return (
           <Link
             aria-current={active ? "page" : undefined}
-            className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors ${active ? "bg-action text-white shadow-sm" : "text-ink/65 hover:bg-canvas hover:text-ink"}`}
+            className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action ${active ? "bg-action text-white shadow-sm" : "text-ink/65 hover:bg-canvas hover:text-ink"}`}
             href={link.href}
             key={link.href}
             onClick={() => setMenuOpen(false)}
@@ -80,7 +80,7 @@ export function AdminShell({ children, email }: { children: React.ReactNode; ema
             <span className="block text-[0.65rem] font-bold uppercase tracking-[0.14em] text-ink/40">Administración</span>
           </span>
         </Link>
-        <div className="mt-9 flex-1">{navigation}</div>
+        <div className="mt-5"><Link className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl px-2 text-sm font-bold text-ink/55 transition-colors hover:bg-mint/25 hover:text-action focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action active:bg-mint/40" href="/"><span aria-hidden="true">←</span> Ir al sitio</Link></div><div className="mt-4 flex-1">{navigation}</div>
         {session}
       </aside>
 
@@ -115,7 +115,7 @@ export function AdminShell({ children, email }: { children: React.ReactNode; ema
                   <svg aria-hidden="true" className="size-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></svg>
                 </button>
               </div>
-              <div className="mt-8 flex-1">{navigation}</div>
+              <div className="mt-4"><Link className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl px-2 text-sm font-bold text-ink/55 transition-colors hover:bg-mint/25 hover:text-action focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action active:bg-mint/40" href="/" onClick={() => setMenuOpen(false)}><span aria-hidden="true">←</span> Ir al sitio</Link></div><div className="mt-4 flex-1">{navigation}</div>
               {session}
             </aside>
           </div>

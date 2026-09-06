@@ -9,7 +9,7 @@ const initialState: AuthFormState = {};
 const inputClass = "mt-1.5 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3.5 text-ink outline-offset-2 focus:border-action";
 
 function SubmitButton({ children, pendingLabel, pending }: { children: string; pendingLabel: string; pending: boolean }) {
-  return <button className="min-h-11 w-full cursor-pointer rounded-xl bg-action px-4 py-3 font-bold text-white shadow-[0_3px_0_rgb(1_53_18_/_40%)] transition duration-200 hover:-translate-y-px hover:bg-[#013512] hover:shadow-[0_5px_0_rgb(1_53_18_/_35%)] active:translate-y-0 active:shadow-[0_1px_0_rgb(1_53_18_/_35%)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action disabled:cursor-wait disabled:translate-y-0 disabled:bg-action/55 disabled:shadow-none disabled:opacity-70" disabled={pending} type="submit">{pending ? pendingLabel : children}</button>;
+  return <button className="min-h-11 w-full cursor-pointer rounded-xl bg-action px-4 py-3 font-bold text-white shadow-[0_3px_0_rgb(29_29_29_/_28%)] transition duration-200 hover:-translate-y-px hover:brightness-90 hover:shadow-[0_5px_0_rgb(29_29_29_/_24%)] active:translate-y-0 active:shadow-[0_1px_0_rgb(29_29_29_/_24%)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action disabled:cursor-wait disabled:translate-y-0 disabled:brightness-100 disabled:shadow-none disabled:opacity-55" disabled={pending} type="submit">{pending ? pendingLabel : children}</button>;
 }
 
 function Notice({ state }: { state: AuthFormState }) {
@@ -20,7 +20,7 @@ function Notice({ state }: { state: AuthFormState }) {
 
 export function LoginForm({ next }: { next?: string }) {
   const [state, formAction, pending] = useActionState(loginAction, initialState);
-  return <form action={formAction} aria-busy={pending} className="space-y-4">
+  return <form action={formAction} aria-busy={pending} className="auth-form space-y-4">
     <Notice state={state} />
     <input name="next" type="hidden" value={next ?? ""} />
     <label className="block text-sm font-bold" htmlFor="email">Email<input autoComplete="email" className={inputClass} id="email" inputMode="email" name="email" required type="email" /></label>
@@ -32,7 +32,7 @@ export function LoginForm({ next }: { next?: string }) {
 
 export function RegistrationForm({ next }: { next?: string }) {
   const [state, formAction, pending] = useActionState(registerAction, initialState);
-  return <form action={formAction} aria-busy={pending} className="space-y-4">
+  return <form action={formAction} aria-busy={pending} className="auth-form space-y-4">
     <Notice state={state} />
     <input name="next" type="hidden" value={next ?? ""} />
     <label className="block text-sm font-bold" htmlFor="display-name">Nombre<input autoComplete="name" className={inputClass} id="display-name" name="displayName" required type="text" /></label>
