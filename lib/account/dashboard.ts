@@ -9,6 +9,7 @@ import {
   loyaltyTransactions,
   orders,
 } from "@/lib/db/schema";
+import { formatLoyaltyPoints } from "@/lib/loyalty/points";
 
 export async function getAccountDashboard(userId: string) {
   const [profile] = await db
@@ -16,7 +17,7 @@ export async function getAccountDashboard(userId: string) {
     .from(customerProfiles)
     .where(eq(customerProfiles.authUserId, userId))
     .limit(1);
-  if (!profile) return { balance: 0, orders: [], transactions: [] };
+  if (!profile) return { balance: formatLoyaltyPoints(0), orders: [], transactions: [] };
 
   const [[account], customerOrders] = await Promise.all([
     db
@@ -53,5 +54,9 @@ export async function getAccountDashboard(userId: string) {
       .limit(20)
     : [];
 
-  return { balance: account?.balance ?? 0, orders: customerOrders, transactions };
+  return {
+    balance: formatLoyaltyPoints(account?.balance ?? 0),
+    orders: customerOrders,
+    transactions: transactions.map((transaction) => ({ ...transaction, points: formatLoyaltyPoints(transaction.points) })),
+  };
 }

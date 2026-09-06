@@ -85,6 +85,13 @@
       "when": 1788646827838,
       "tag": "0012_mini_surprise",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1788657543146,
+      "tag": "0013_loyalty_points_scale",
+      "breakpoints": true
     }
   ]
 }

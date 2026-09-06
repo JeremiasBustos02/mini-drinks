@@ -5,10 +5,11 @@ import { revalidatePath } from "next/cache";
 
 import { getAccountAccess } from "@/lib/account/auth";
 import { logServerEvent } from "@/lib/observability/logger";
+import { formatLoyaltyPoints } from "@/lib/loyalty/points";
 import { checkRateLimit, rateLimitPolicies } from "@/lib/rate-limit";
 import { redeemRewardCode } from "@/lib/rewards/service";
 
-export type RedeemState = { outcome?: "redeemed" | "invalid" | "already_redeemed" | "unavailable" | "rate_limited"; points?: number };
+export type RedeemState = { outcome?: "redeemed" | "invalid" | "already_redeemed" | "unavailable" | "rate_limited"; points?: string };
 
 export async function redeemRewardAction(_previous: RedeemState, formData: FormData): Promise<RedeemState> {
   const token = String(formData.get("token") ?? "");
@@ -23,7 +24,7 @@ export async function redeemRewardAction(_previous: RedeemState, formData: FormD
     if (result.outcome === "redeemed") {
       logServerEvent("info", "reward_code.redeemed", { codeId: result.codeId, campaignId: result.campaignId, points: result.points });
       revalidatePath("/mi-cuenta");
-      return result;
+      return { ...result, points: formatLoyaltyPoints(result.points) };
     }
     logServerEvent("info", result.outcome === "already_redeemed" ? "reward_code.already_redeemed" : "reward_code.invalid", { outcome: result.outcome });
     return result;

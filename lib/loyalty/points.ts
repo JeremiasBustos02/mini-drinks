@@ -3,6 +3,12 @@ export type LoyaltyEarnSettings = {
   pointsPerUnit: number;
 };
 
+const pointsFormatter = new Intl.NumberFormat("es-AR");
+
+export function formatLoyaltyPoints(points: number) {
+  return pointsFormatter.format(points);
+}
+
 export function calculateLoyaltyPoints(
   subtotalAfterDiscountsCents: number,
   settings: LoyaltyEarnSettings,

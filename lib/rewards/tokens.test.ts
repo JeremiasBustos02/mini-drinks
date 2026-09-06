@@ -13,7 +13,7 @@ test("reward tokens are random and hashes are deterministic", () => {
 });
 
 test("validates configured reward batches", () => {
-  assert.deepEqual(parseRewardDistribution("70 | 5\n20 | 10"), [{ quantity: 70, points: 5 }, { quantity: 20, points: 10 }]);
+  assert.deepEqual(parseRewardDistribution("70 | 500\n20 | 1000"), [{ quantity: 70, points: 500 }, { quantity: 20, points: 1000 }]);
   assert.throws(() => parseRewardDistribution("0 | 5"));
   assert.throws(() => parseRewardDistribution("2 | 0"));
 });
