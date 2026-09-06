@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useCartHydration } from "@/components/cart/use-cart-hydration";
@@ -19,7 +20,8 @@ const navigation = [
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
-  const [accountLink, setAccountLink] = useState({ label: "Ingresar", href: "/login" });
+  const [accountLink, setAccountLink] = useState<{ label: string; href: string } | null>(null);
+  const pathname = usePathname();
   const hydrated = useCartHydration();
   const items = useCartStore((state) => state.items);
   const openCart = useCartStore((state) => state.openCart);
@@ -33,11 +35,13 @@ export function Header() {
   }, []);
 
   useEffect(() => {
+    let active = true;
     fetch("/api/account-access", { cache: "no-store" })
       .then((response) => response.ok ? response.json() : null)
-      .then((value) => { if (value?.label && value?.href) setAccountLink(value); })
-      .catch(() => undefined);
-  }, []);
+      .then((value) => { if (active) setAccountLink(value?.label && value?.href ? value : { label: "Ingresar", href: "/login" }); })
+      .catch(() => { if (active) setAccountLink({ label: "Ingresar", href: "/login" }); });
+    return () => { active = false; };
+  }, [pathname]);
 
   return (
     <>
@@ -89,13 +93,13 @@ export function Header() {
               </span>
             </button>
 
-            <Link
+            {accountLink && <Link
               aria-label={accountLink.label}
               className="header-control motion-button inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-ink/10 bg-white/85 px-3 text-sm font-bold leading-none shadow-[0_2px_0_rgb(13_13_13_/_10%)] transition duration-200 hover:-translate-y-px hover:border-action/35 hover:bg-mint/25 hover:text-action hover:shadow-[0_4px_0_rgb(13_13_13_/_12%)] active:translate-y-0 active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
               href={accountLink.href}
             >
               {accountLink.label}
-            </Link>
+            </Link>}
 
             <details className="mobile-menu group relative md:hidden">
               <summary
@@ -117,7 +121,7 @@ export function Header() {
                     {item.label}
                   </Link>
                 ))}
-                <Link href={accountLink.href} className="block rounded-xl px-4 py-3 text-base font-bold hover:bg-canvas">{accountLink.label}</Link>
+                {accountLink && <Link href={accountLink.href} className="block rounded-xl px-4 py-3 text-base font-bold hover:bg-canvas">{accountLink.label}</Link>}
               </nav>
             </details>
           </div>
