@@ -3,7 +3,7 @@ import { logoutAction } from "@/app/auth/actions";
 export default function AccessDeniedPage() {
   return (
     <main className="grid min-h-screen place-items-center bg-canvas px-4">
-      <section className="max-w-lg rounded-[1.75rem] border-2 border-ink bg-white p-8 text-center shadow-[8px_8px_0_#024018]">
+      <section className="max-w-lg rounded-[1.75rem] border-2 border-ink bg-white p-8 text-center shadow-[8px_8px_0_var(--action)]">
         <p className="text-xs font-black uppercase tracking-[0.16em] text-action">Acceso denegado</p>
         <h1 className="mt-3 font-display text-4xl leading-none">ESTA CUENTA NO ES ADMIN</h1>
         <p className="mt-5 leading-7 text-ink/65">

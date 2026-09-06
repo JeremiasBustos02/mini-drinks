@@ -116,12 +116,12 @@ export function Header() {
                   <Link
                     key={item.label}
                     href={item.href}
-                    className="block rounded-xl px-4 py-3 text-base font-bold hover:bg-canvas"
+                    className="block cursor-pointer rounded-xl px-4 py-3 text-base font-bold transition-colors hover:bg-mint/25 hover:text-action focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
                   >
                     {item.label}
                   </Link>
                 ))}
-                {accountLink && <Link href={accountLink.href} className="block rounded-xl px-4 py-3 text-base font-bold hover:bg-canvas">{accountLink.label}</Link>}
+                {accountLink && <Link href={accountLink.href} className="block cursor-pointer rounded-xl px-4 py-3 text-base font-bold transition-colors hover:bg-mint/25 hover:text-action focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action">{accountLink.label}</Link>}
               </nav>
             </details>
           </div>

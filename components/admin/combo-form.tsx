@@ -138,7 +138,7 @@ export function ComboForm({ combo, products }: { combo?: ComboValue; products: P
                     Cantidad
                     <input aria-label={`Cantidad de ${product.name}`} className="mt-1 h-9 w-full rounded-lg border border-ink/15 px-2 text-sm font-bold outline-none focus:border-action" min="1" onChange={(event) => updateQuantity(line.key, Number(event.target.value))} step="1" type="number" value={line.quantity} />
                   </label>
-                  <button aria-label={`Eliminar ${product.name}`} className="col-span-3 min-h-9 rounded-lg border border-red-200 px-3 text-xs font-black text-red-700 hover:bg-red-50 sm:col-span-1" onClick={() => removeLine(line.key)} type="button">Eliminar</button>
+                  <button aria-label={`Eliminar ${product.name}`} className="col-span-3 min-h-9 cursor-pointer rounded-lg border border-red-200 px-3 text-xs font-black text-red-700 transition duration-200 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action sm:col-span-1" onClick={() => removeLine(line.key)} type="button">Eliminar</button>
                 </div>
               );
             })}

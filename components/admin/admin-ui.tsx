@@ -3,8 +3,8 @@ import Link from "next/link";
 export { ProductThumbnail } from "@/components/admin/product-thumbnail";
 
 export const adminInputClass = "mt-1.5 min-h-11 w-full rounded-xl border border-ink/15 bg-white px-3.5 py-2.5 text-sm text-ink outline-none transition placeholder:text-ink/35 focus:border-action focus:ring-3 focus:ring-mint/45";
-export const adminPrimaryButtonClass = "inline-flex min-h-11 items-center justify-center rounded-xl bg-action px-4 py-2.5 text-sm font-black text-white transition hover:bg-[#013512] disabled:cursor-not-allowed disabled:opacity-50";
-export const adminSecondaryButtonClass = "inline-flex min-h-10 items-center justify-center rounded-xl border border-ink/15 bg-white px-3.5 py-2 text-sm font-bold text-ink transition hover:border-ink/30 hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-50";
+export const adminPrimaryButtonClass = "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl bg-action px-4 py-2.5 text-sm font-black text-ink shadow-[0_2px_0_rgb(29_29_29_/_24%)] transition duration-200 hover:-translate-y-px hover:brightness-90 hover:shadow-[0_4px_0_rgb(29_29_29_/_20%)] active:translate-y-0 active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action disabled:cursor-not-allowed disabled:translate-y-0 disabled:brightness-100 disabled:shadow-none disabled:opacity-50";
+export const adminSecondaryButtonClass = "inline-flex min-h-10 cursor-pointer items-center justify-center rounded-xl border border-ink/15 bg-white px-3.5 py-2 text-sm font-bold text-ink shadow-[0_1px_0_rgb(29_29_29_/_10%)] transition duration-200 hover:-translate-y-px hover:border-action/45 hover:bg-mint/25 hover:text-action hover:shadow-[0_3px_0_rgb(29_29_29_/_12%)] active:translate-y-0 active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-none disabled:opacity-50";
 
 export function AdminPageHeader({
   action,
@@ -70,7 +70,7 @@ export function EmptyState({
 
 export function QuickLink({ description, href, label }: { description: string; href: string; label: string }) {
   return (
-    <Link className="group flex items-center justify-between gap-4 rounded-xl border border-ink/10 bg-white p-4 transition hover:border-action/35" href={href}>
+    <Link className="group flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-ink/10 bg-white p-4 transition duration-200 hover:-translate-y-px hover:border-action/45 hover:shadow-sm active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action" href={href}>
       <span>
         <span className="block text-sm font-black">{label}</span>
         <span className="mt-0.5 block text-xs text-ink/45">{description}</span>
@@ -83,7 +83,7 @@ export function QuickLink({ description, href, label }: { description: string; h
 export function StatCard({ href, label, value, tone = "neutral" }: { href: string; label: string; value: number; tone?: "neutral" | "green" | "amber" | "blue" }) {
   const tones = { neutral: "bg-ink/10", green: "bg-action", amber: "bg-amber-500", blue: "bg-sky-600" };
   return (
-    <Link className="group relative overflow-hidden rounded-2xl border border-ink/10 bg-white p-5 transition hover:-translate-y-0.5 hover:border-ink/20 hover:shadow-sm" href={href}>
+    <Link className="group relative cursor-pointer overflow-hidden rounded-2xl border border-ink/10 bg-white p-5 transition duration-200 hover:-translate-y-px hover:border-action/35 hover:shadow-sm active:translate-y-0 active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action" href={href}>
       <span aria-hidden="true" className={`absolute inset-x-0 top-0 h-1 ${tones[tone]}`} />
       <p className="text-sm font-bold text-ink/50">{label}</p>
       <div className="mt-5 flex items-end justify-between gap-3"><p className="text-4xl font-black tracking-[-0.05em]">{value}</p><span aria-hidden="true" className="text-action transition-transform group-hover:translate-x-0.5">→</span></div>

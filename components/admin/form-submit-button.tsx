@@ -21,7 +21,7 @@ export function AdminSubmitButton({
     <button
       {...props}
       aria-busy={pending}
-      className={className}
+      className={`${className ?? ""} cursor-pointer disabled:cursor-not-allowed`}
       disabled={disabled || pending}
       onClick={(event) => {
         if (confirmMessage && !window.confirm(confirmMessage)) event.preventDefault();

@@ -43,10 +43,13 @@ summary {
 
 a:focus-visible,
 button:focus-visible,
-summary:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 3px;
-  box-shadow: 0 0 0 6px var(--paper);
+summary:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--action) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 3px var(--paper) !important;
 }
 
 summary::-webkit-details-marker {
@@ -424,10 +427,11 @@ summary::-webkit-details-marker {
 .site-header-link,
 .site-header .header-control {
   transition:
-    background-color 240ms ease,
-    border-color 240ms ease,
-    box-shadow 240ms ease,
-    color 240ms ease;
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    color 200ms ease,
+    transform 200ms ease;
 }
 
 .site-header:not([data-scrolled]) .site-header-brand,
@@ -442,6 +446,24 @@ summary::-webkit-details-marker {
   color: var(--paper);
 }
 
+.site-header:not([data-scrolled]) .header-control:hover {
+  border-color: var(--paper);
+  background-color: var(--paper);
+  box-shadow: 0 4px 0 rgb(0 0 0 / 20%);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.site-header:not([data-scrolled]) .header-control:active:not(:disabled) {
+  box-shadow: 0 1px 0 rgb(0 0 0 / 20%);
+  transform: translateY(0);
+}
+
+.site-header:not([data-scrolled]) .header-control:focus-visible {
+  outline-color: var(--paper) !important;
+  outline-offset: 3px !important;
+}
+
 .site-header[data-scrolled] {
   border-color: color-mix(in srgb, var(--ink) 14%, transparent);
   background-color: color-mix(in srgb, var(--canvas) 98%, transparent);
@@ -453,6 +475,24 @@ summary::-webkit-details-marker {
   border-color: color-mix(in srgb, var(--ink) 14%, transparent);
   background-color: var(--paper);
   color: var(--ink);
+}
+
+.site-header[data-scrolled] .header-control:hover {
+  border-color: var(--action);
+  background-color: var(--action);
+  box-shadow: 0 4px 0 rgb(29 29 29 / 18%);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.site-header[data-scrolled] .header-control:active:not(:disabled) {
+  box-shadow: 0 1px 0 rgb(29 29 29 / 18%);
+  transform: translateY(0);
+}
+
+.site-header[data-scrolled] .header-control:focus-visible {
+  outline-color: var(--action) !important;
+  outline-offset: 3px !important;
 }
 
 .featured-card-visual {
@@ -1238,7 +1278,7 @@ summary::-webkit-details-marker {
 
 .motion-button:active:not(:disabled),
 .motion-cta:active {
-  transform: translateY(1px) scale(0.99);
+  transform: translateY(0);
 }
 
 .mobile-menu[open] > summary {

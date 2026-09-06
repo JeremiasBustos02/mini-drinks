@@ -46,7 +46,7 @@ export function AdminShell({ children, email }: { children: React.ReactNode; ema
         return (
           <Link
             aria-current={active ? "page" : undefined}
-            className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action ${active ? "bg-action text-white shadow-sm" : "text-ink/65 hover:bg-canvas hover:text-ink"}`}
+            className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action ${active ? "bg-action text-ink shadow-sm" : "text-ink/65 hover:bg-canvas hover:text-ink"}`}
             href={link.href}
             key={link.href}
             onClick={() => setMenuOpen(false)}
@@ -73,8 +73,8 @@ export function AdminShell({ children, email }: { children: React.ReactNode; ema
   return (
     <div className="min-h-screen bg-canvas lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
       <aside className="sticky top-0 hidden h-screen flex-col border-r border-ink/10 bg-paper px-5 py-6 lg:flex">
-        <Link className="flex items-center gap-3" href="/admin">
-          <span className="grid size-10 place-items-center rounded-xl bg-action font-display text-sm text-white">M.</span>
+        <Link className="flex cursor-pointer items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action" href="/admin">
+          <span className="grid size-10 place-items-center rounded-xl bg-action font-display text-sm text-ink">M.</span>
           <span>
             <span className="block text-sm font-black tracking-[-0.02em]">MINI.</span>
             <span className="block text-[0.65rem] font-bold uppercase tracking-[0.14em] text-ink/40">Administración</span>
@@ -91,7 +91,7 @@ export function AdminShell({ children, email }: { children: React.ReactNode; ema
               aria-controls="admin-mobile-navigation"
               aria-expanded={menuOpen}
               aria-label="Abrir navegación"
-              className="grid size-10 shrink-0 place-items-center rounded-xl border border-ink/15 bg-white lg:hidden"
+              className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-xl border border-ink/15 bg-white transition duration-200 hover:-translate-y-px hover:border-action/45 hover:bg-mint/25 hover:text-action hover:shadow-sm active:translate-y-0 active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action lg:hidden"
               onClick={() => setMenuOpen(true)}
               type="button"
             >
@@ -107,11 +107,11 @@ export function AdminShell({ children, email }: { children: React.ReactNode; ema
 
         {menuOpen && (
           <div className="fixed inset-0 z-50 lg:hidden" id="admin-mobile-navigation">
-            <button aria-label="Cerrar navegación" className="absolute inset-0 bg-ink/35" onClick={() => setMenuOpen(false)} type="button" />
+            <button aria-label="Cerrar navegación" className="absolute inset-0 cursor-pointer bg-ink/35" onClick={() => setMenuOpen(false)} type="button" />
             <aside className="relative flex h-full w-[min(19rem,86vw)] flex-col bg-paper p-5 shadow-2xl">
               <div className="flex items-center justify-between gap-3">
                 <span className="font-display text-xl tracking-[-0.04em]">MINI. ADMIN</span>
-                <button aria-label="Cerrar navegación" className="grid size-10 place-items-center rounded-xl border border-ink/15" onClick={() => setMenuOpen(false)} type="button">
+                <button aria-label="Cerrar navegación" className="grid size-10 cursor-pointer place-items-center rounded-xl border border-ink/15 transition duration-200 hover:-translate-y-px hover:border-action/45 hover:bg-mint/25 hover:text-action hover:shadow-sm active:translate-y-0 active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action" onClick={() => setMenuOpen(false)} type="button">
                   <svg aria-hidden="true" className="size-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></svg>
                 </button>
               </div>

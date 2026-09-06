@@ -114,8 +114,8 @@ export function ProductImageField({
     <div>
       <input name="imageMode" type="hidden" value={mode} />
       <div aria-label="Origen de la imagen" className="grid grid-cols-2 rounded-xl border border-ink/10 bg-white p-1" role="group">
-        <button aria-pressed={mode === "upload"} className={`min-h-10 rounded-lg px-3 text-sm font-black transition ${mode === "upload" ? "bg-action text-white" : "text-ink/55 hover:bg-canvas"}`} onClick={() => changeMode("upload")} type="button">Subir archivo</button>
-        <button aria-pressed={mode === "url"} className={`min-h-10 rounded-lg px-3 text-sm font-black transition ${mode === "url" ? "bg-action text-white" : "text-ink/55 hover:bg-canvas"}`} onClick={() => changeMode("url")} type="button">Usar URL</button>
+        <button aria-pressed={mode === "upload"} className={`min-h-10 cursor-pointer rounded-lg px-3 text-sm font-black transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action ${mode === "upload" ? "bg-action text-ink shadow-sm" : "text-ink/55 hover:bg-mint/25 hover:text-action"}`} onClick={() => changeMode("upload")} type="button">Subir archivo</button>
+        <button aria-pressed={mode === "url"} className={`min-h-10 cursor-pointer rounded-lg px-3 text-sm font-black transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action ${mode === "url" ? "bg-action text-ink shadow-sm" : "text-ink/55 hover:bg-mint/25 hover:text-action"}`} onClick={() => changeMode("url")} type="button">Usar URL</button>
       </div>
 
       <div className="mt-4 grid min-w-0 gap-4 md:grid-cols-[minmax(0,0.85fr)_minmax(16rem,1.15fr)]">
@@ -140,7 +140,7 @@ export function ProductImageField({
               <label className="block text-sm font-bold" htmlFor={`${fieldId}-file`}>Archivo de imagen</label>
               <input accept={PRODUCT_IMAGE_ACCEPT} aria-describedby={`${fieldId}-file-help ${fieldId}-file-error`} className="mt-1.5 block min-h-11 w-full min-w-0 rounded-xl border border-ink/15 bg-white text-sm text-ink file:mr-3 file:min-h-11 file:border-0 file:border-r file:border-ink/10 file:bg-canvas file:px-3 file:text-sm file:font-black file:text-action hover:file:bg-mint/20" id={`${fieldId}-file`} name="imageFile" onChange={(event) => handleFile(event.target.files?.[0])} ref={fileInputRef} required type="file" />
               <p className="mt-1.5 text-xs leading-5 text-ink/45" id={`${fieldId}-file-help`}>La imagen se subirá al guardar.</p>
-              {selectedFile && <div className="mt-3 flex min-w-0 items-center justify-between gap-3 rounded-xl border border-ink/10 bg-white p-3"><div className="min-w-0"><p className="truncate text-sm font-black">{selectedFile.name}</p><p className="mt-0.5 text-xs text-ink/45">{Math.ceil(selectedFile.size / 1024)} KB · Lista para subir</p></div><button className="shrink-0 text-xs font-black text-red-700 hover:underline" onClick={() => clearSelectedFile()} type="button">Cancelar</button></div>}
+              {selectedFile && <div className="mt-3 flex min-w-0 items-center justify-between gap-3 rounded-xl border border-ink/10 bg-white p-3"><div className="min-w-0"><p className="truncate text-sm font-black">{selectedFile.name}</p><p className="mt-0.5 text-xs text-ink/45">{Math.ceil(selectedFile.size / 1024)} KB · Lista para subir</p></div><button className="shrink-0 cursor-pointer text-xs font-black text-red-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action" onClick={() => clearSelectedFile()} type="button">Cancelar</button></div>}
               {fileError && <p className="mt-2 text-xs font-bold text-red-700" id={`${fieldId}-file-error`} role="alert">{fileError}</p>}
               {dimensionWarning && <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold leading-5 text-amber-800" role="status">{dimensionWarning}</p>}
             </div>

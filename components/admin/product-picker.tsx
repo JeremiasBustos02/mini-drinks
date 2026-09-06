@@ -52,7 +52,7 @@ export function ProductPicker({
                 <p className="mt-0.5 text-xs text-ink/45">{productTypeLabels[product.productType]} · {formatArsCents(product.price)} · stock {product.stock}</p>
                 {!operational && <p className="mt-0.5 text-xs font-bold text-amber-700">No disponible en tienda</p>}
               </div>
-              <button className="min-h-9 shrink-0 rounded-lg border border-action/20 px-3 text-xs font-black text-action hover:bg-mint/20 disabled:border-ink/10 disabled:text-ink/35" disabled={selected} onClick={() => onAdd(product.id)} type="button">
+              <button className="min-h-9 shrink-0 cursor-pointer rounded-lg border border-action/20 px-3 text-xs font-black text-action transition duration-200 hover:-translate-y-px hover:border-action/45 hover:bg-mint/30 hover:shadow-sm active:translate-y-0 active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action disabled:cursor-not-allowed disabled:translate-y-0 disabled:border-ink/10 disabled:text-ink/35 disabled:shadow-none" disabled={selected} onClick={() => onAdd(product.id)} type="button">
                 {selected ? "Agregado" : "Agregar"}
               </button>
             </div>
