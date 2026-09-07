@@ -62,6 +62,21 @@ async function main() {
     });
   }
 
+  async function advanceFulfillment(
+    client: typeof first,
+    orderId: number,
+    expectedStatus: string,
+    nextStatus: string,
+  ) {
+    await client.unsafe(`set search_path to ${schema}`);
+    return client`
+      update orders
+      set status = ${nextStatus}
+      where id = ${orderId} and status = ${expectedStatus}
+      returning status
+    `;
+  }
+
   try {
     await admin.unsafe(`create schema ${schema}`);
     await admin.unsafe(`
@@ -69,7 +84,7 @@ async function main() {
       create table ${schema}.combos (id integer primary key, version integer not null default 1);
        create table ${schema}.categories (id integer primary key, version integer not null default 1);
        create table ${schema}.reservations (attempt_id uuid unique not null, product_id integer not null, quantity integer not null, active boolean not null, expires_at timestamptz not null);
-       create table ${schema}.orders (id bigserial primary key, checkout_attempt_id uuid unique not null);
+       create table ${schema}.orders (id bigserial primary key, checkout_attempt_id uuid unique not null, status text not null default 'pending_payment', delivery_type text not null default 'pickup');
          create table ${schema}.loyalty_accounts (id integer primary key, balance integer not null default 0, lifetime_earned_points integer not null default 0);
          create table ${schema}.loyalty_redemptions (id bigserial primary key, order_id uuid unique not null, loyalty_account_id integer not null references ${schema}.loyalty_accounts(id), points integer not null check (points > 0), status text not null check (status in ('reserved', 'redeemed', 'released')));
         create table ${schema}.loyalty_transactions (id bigserial primary key, loyalty_account_id integer not null references ${schema}.loyalty_accounts(id), order_id uuid not null, idempotency_key text unique not null, points integer not null check (points > 0));
@@ -100,6 +115,19 @@ async function main() {
     ]);
     const [count] = await admin.unsafe(`select count(*)::integer as value from ${schema}.orders`);
     assert.equal(count.value, 1);
+
+    const [fulfillmentOrder] = await admin`
+      insert into ${admin(schema + ".orders")} (checkout_attempt_id, status, delivery_type)
+      values (${randomUUID()}, 'paid', 'pickup')
+      returning id
+    `;
+    const fulfillmentUpdates = await Promise.all([
+      advanceFulfillment(first, fulfillmentOrder.id, "paid", "preparing"),
+      advanceFulfillment(second, fulfillmentOrder.id, "paid", "preparing"),
+    ]);
+    assert.deepEqual(fulfillmentUpdates.map((rows) => rows.length).sort(), [0, 1]);
+    const [advancedFulfillmentOrder] = await admin.unsafe(`select status from ${schema}.orders where id = ${fulfillmentOrder.id}`);
+    assert.equal(advancedFulfillmentOrder.status, "preparing");
 
     const loyaltyResults = await Promise.all([
       creditLoyalty(first, randomUUID(), `order:${randomUUID()}:purchase-earned`),

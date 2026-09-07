@@ -14,6 +14,7 @@ import { formatArsCents } from "@/lib/money";
 import type { OrderSnapshotComponent } from "@/types/checkout";
 import { OrderTracker } from "@/components/orders/order-tracker";
 import { shortOrderReference } from "@/lib/account/order-presentation";
+import { OrderFulfillmentAction } from "@/components/admin/order-fulfillment-action";
 
 function DetailSection({
   children,
@@ -133,6 +134,19 @@ export function OrderDetail({ data }: { data: AdminOrderDetailData }) {
             />
           </dl>
         </DetailSection>
+        <DetailSection
+          description="El pago se mantiene separado. Sólo se habilita el próximo paso operativo permitido."
+          title="Estado operativo"
+        >
+          <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(15rem,0.8fr)] sm:items-end">
+            <DataItem label="Estado actual" value={<OrderStatusBadge status={order.status} />} />
+            <OrderFulfillmentAction
+              deliveryType={order.deliveryType}
+              orderId={order.id}
+              status={order.status}
+            />
+          </div>
+        </DetailSection>
         <OrderTracker deliveryType={order.deliveryType} status={order.status} />
 
         <DetailSection
@@ -248,6 +262,35 @@ export function OrderDetail({ data }: { data: AdminOrderDetailData }) {
             ))}
           </div>
         </DetailSection>
+
+        {data.miniClub && (
+          <DetailSection title="Mini Club">
+            <dl className="grid gap-4 sm:grid-cols-2">
+              {data.miniClub.redemption && (
+                <>
+                  <DataItem
+                    label="Puntos usados"
+                    value={`${data.miniClub.redemption.points.toLocaleString("es-AR")} pts`}
+                  />
+                  <DataItem
+                    label="Descuento"
+                    value={formatArsCents(data.miniClub.redemption.discountCents)}
+                  />
+                  <DataItem
+                    label="Estado del canje"
+                    value={data.miniClub.redemption.status}
+                  />
+                </>
+              )}
+              {data.miniClub.earnedPoints > 0 && (
+                <DataItem
+                  label="Puntos ganados"
+                  value={`${data.miniClub.earnedPoints.toLocaleString("es-AR")} pts`}
+                />
+              )}
+            </dl>
+          </DetailSection>
+        )}
 
         <DetailSection
           description={
@@ -416,8 +459,8 @@ export function OrderDetail({ data }: { data: AdminOrderDetailData }) {
         </DetailSection>
 
         <div className="rounded-2xl border border-mint/60 bg-mint/15 p-4 text-xs leading-5 text-action">
-          Esta vista es informativa. Los estados de pago, pedido y reserva no
-          pueden modificarse manualmente desde este detalle.
+          El estado de pago y la reserva son informativos. El estado operativo
+          sólo avanza por su secuencia permitida.
         </div>
       </aside>
     </div>

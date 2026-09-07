@@ -57,7 +57,7 @@ export default async function AdminOrdersPage({
   return (
     <div className="mx-auto max-w-[92rem]">
       <AdminPageHeader
-        description="Consultá fulfillment, pago y reserva sin modificar estados manualmente."
+        description="Consultá fulfillment, pago y reserva, y avanzá el próximo paso operativo permitido."
         eyebrow="Operación"
         title="Pedidos"
       />

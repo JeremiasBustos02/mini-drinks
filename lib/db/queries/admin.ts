@@ -17,6 +17,8 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 
 import { getAdminAccess } from "@/lib/admin/auth";
+import { adminAttentionOrderStatuses } from "@/lib/admin/order-fulfillment";
+import { getOrderMiniClubActivity } from "@/lib/admin/order-mini-club";
 import { parseOrderItemConfigurationSnapshot } from "@/lib/checkout/order-snapshot";
 import { db } from "@/lib/db";
 import {
@@ -29,6 +31,8 @@ import {
   payments,
   products,
   stockReservations,
+  loyaltyRedemptions,
+  loyaltyTransactions,
 } from "@/lib/db/schema";
 import { availableStockSql } from "@/lib/stock/availability-sql";
 import { getEffectiveReservationStatus } from "@/lib/stock/effective-status";
@@ -393,9 +397,7 @@ async function queryAdminOrders(
       )!,
     );
   if (filters.attention)
-    conditions.push(
-      or(eq(orders.status, "manual_review"), eq(orders.status, "paid"))!,
-    );
+    conditions.push(inArray(orders.status, adminAttentionOrderStatuses));
   if (filters.orderStatus === "expired") {
     conditions.push(
       sql`(${orders.status} = 'expired' or (${orders.status} in ('pending_payment', 'payment_pending') and ${stockReservations.status} = 'active' and ${stockReservations.expiresAt} <= now()))`,
@@ -490,7 +492,7 @@ export async function getAdminOrderDetail(id: string) {
 
   if (!order) return null;
 
-  const [itemRows, paymentRows, reservationRows] = await Promise.all([
+  const [itemRows, paymentRows, reservationRows, redemptionRows, earnedRows] = await Promise.all([
     db
       .select({
         id: orderItems.id,
@@ -536,6 +538,24 @@ export async function getAdminOrderDetail(id: string) {
       .from(stockReservations)
       .where(eq(stockReservations.orderId, order.id))
       .limit(1),
+    db
+      .select({
+        orderId: loyaltyRedemptions.orderId,
+        points: loyaltyRedemptions.points,
+        discountCents: loyaltyRedemptions.discountCents,
+        status: loyaltyRedemptions.status,
+      })
+      .from(loyaltyRedemptions)
+      .where(eq(loyaltyRedemptions.orderId, order.id))
+      .limit(1),
+    db
+      .select({
+        orderId: loyaltyTransactions.orderId,
+        points: loyaltyTransactions.points,
+        type: loyaltyTransactions.type,
+      })
+      .from(loyaltyTransactions)
+      .where(and(eq(loyaltyTransactions.orderId, order.id), eq(loyaltyTransactions.type, "earn"))),
   ]);
 
   const reservation = reservationRows[0] ?? null;
@@ -567,6 +587,7 @@ export async function getAdminOrderDetail(id: string) {
       };
     }),
     payments: paymentRows,
+    miniClub: getOrderMiniClubActivity(order.id, redemptionRows, earnedRows),
     reservation,
     effectiveReservationStatus,
   };
