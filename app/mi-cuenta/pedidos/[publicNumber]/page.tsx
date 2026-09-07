@@ -10,6 +10,8 @@ import {
 } from "@/lib/account/order-presentation";
 import { formatLoyaltyPoints } from "@/lib/loyalty/points";
 import { formatArsCents } from "@/lib/money";
+import { shortOrderReference } from "@/lib/account/order-presentation";
+import { OrderTracker } from "@/components/orders/order-tracker";
 
 export default async function CustomerOrderPage({
   params,
@@ -41,7 +43,7 @@ export default async function CustomerOrderPage({
           <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
             <div>
               <h1 className="font-display text-4xl tracking-[-0.05em] sm:text-5xl">
-                {order.publicNumber}
+                {shortOrderReference(order.publicNumber)}
               </h1>
               <p className="mt-2 text-sm text-ink/60">
                 {order.createdAt.toLocaleDateString("es-AR", {
@@ -54,12 +56,16 @@ export default async function CustomerOrderPage({
               {orderStatusLabels[order.status]}
             </span>
           </div>
+          <p className="mt-3 text-xs text-ink/50">
+            Código de referencia: {order.publicNumber}
+          </p>
           {orderStatusMessage(order.status) ? (
             <p className="mt-4 max-w-xl text-sm leading-6 text-ink/65">
               {orderStatusMessage(order.status)}
             </p>
           ) : null}
         </header>
+        <OrderTracker deliveryType={order.deliveryType} status={order.status} />
         <section className="mt-6 rounded-3xl border border-ink/10 bg-paper p-5 sm:p-7">
           <h2 className="font-display text-2xl uppercase">Productos</h2>
           <ol className="mt-5 divide-y divide-ink/10">

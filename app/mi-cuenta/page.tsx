@@ -8,6 +8,7 @@ import { formatLoyaltyPoints } from "@/lib/loyalty/points";
 import { loadLoyaltyRedemptionSettings } from "@/lib/loyalty/redemptions";
 import { formatArsCents } from "@/lib/money";
 import { orderStatusLabels } from "@/lib/account/order-presentation";
+import { shortOrderReference } from "@/lib/account/order-presentation";
 
 function formatDate(value: Date) {
   return new Intl.DateTimeFormat("es-AR", { dateStyle: "medium" }).format(
@@ -141,7 +142,9 @@ export default async function MyAccountPage() {
                   <li className="py-4 first:pt-0" key={order.publicNumber}>
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="font-bold">{order.publicNumber}</p>
+                        <p className="font-bold">
+                          {shortOrderReference(order.publicNumber)}
+                        </p>
                         <p className="mt-1 text-sm text-ink/55">
                           {formatDate(order.createdAt)} ·{" "}
                           {order.deliveryType === "pickup" ? "Retiro" : "Envío"}
