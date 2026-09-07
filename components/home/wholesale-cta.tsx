@@ -42,19 +42,17 @@ export function WholesaleCta({
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">
             Sumá minis, combos y opciones para reventa a tu mostrador.
           </p>
-          <ButtonLink
-            href="/mayoristas"
-            variant="lightdark"
-            className="mt-8 shrink-0 sm:mt-10"
-          >
-            Quiero venderlos
-          </ButtonLink>
-          <Link
-            href="/mayoristas"
-            className="motion-button mt-4 inline-flex min-h-11 cursor-pointer items-center text-sm font-bold text-white/75 hover:text-white"
-          >
-            ¿Cómo funciona? →
-          </Link>
+          <div className="mt-8 flex flex-col items-center sm:mt-10">
+            <ButtonLink href="/mayoristas" variant="lightdark" className="shrink-0">
+              Quiero venderlos
+            </ButtonLink>
+            <Link
+              href="/mayoristas"
+              className="wholesale-how-link motion-button mt-4 inline-flex min-h-11 cursor-pointer items-center text-sm font-bold text-white/75 hover:text-white"
+            >
+              ¿Cómo funciona? <span aria-hidden="true">↓</span>
+            </Link>
+          </div>
         </div>
       </Container>
     </section>
