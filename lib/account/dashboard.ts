@@ -1,12 +1,13 @@
 import "server-only";
 
-import { desc, eq, sql } from "drizzle-orm";
+import { asc, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import {
   customerProfiles,
   loyaltyAccounts,
   loyaltyTransactions,
+  orderItems,
   orders,
 } from "@/lib/db/schema";
 import { formatLoyaltyPoints } from "@/lib/loyalty/points";
@@ -43,6 +44,7 @@ export async function getAccountDashboard(userId: string) {
       .limit(1),
     db
       .select({
+        id: orders.id,
         publicNumber: sql<string>`coalesce(${orders.publicNumber}, 'Mini Sorpresa')`,
         status: orders.status,
         total: orders.total,
@@ -54,6 +56,23 @@ export async function getAccountDashboard(userId: string) {
       .orderBy(desc(orders.createdAt))
       .limit(20),
   ]);
+
+  const orderItemsByOrder = customerOrders.length
+    ? await db
+        .select({
+          orderId: orderItems.orderId,
+          displayName: orderItems.displayName,
+          quantity: orderItems.quantity,
+        })
+        .from(orderItems)
+        .where(
+          inArray(
+            orderItems.orderId,
+            customerOrders.map((order) => order.id),
+          ),
+        )
+        .orderBy(asc(orderItems.createdAt), asc(orderItems.id))
+    : [];
 
   const transactions = account
     ? await db
@@ -80,7 +99,13 @@ export async function getAccountDashboard(userId: string) {
       ),
     ),
     hasReservedPoints: (account?.reservedPoints ?? 0) > 0,
-    orders: customerOrders,
+    orders: customerOrders.map((order) => ({
+      ...order,
+      productSummary: orderItemsByOrder
+        .filter((item) => item.orderId === order.id)
+        .map((item) => `${item.quantity} x ${item.displayName}`)
+        .join(" · "),
+    })),
     transactions: transactions.map((transaction) => ({
       ...transaction,
       points: formatLoyaltyPoints(transaction.points),

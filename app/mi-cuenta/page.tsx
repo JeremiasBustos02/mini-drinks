@@ -7,18 +7,7 @@ import { getAccountDashboard } from "@/lib/account/dashboard";
 import { formatLoyaltyPoints } from "@/lib/loyalty/points";
 import { loadLoyaltyRedemptionSettings } from "@/lib/loyalty/redemptions";
 import { formatArsCents } from "@/lib/money";
-
-const orderStatusLabels: Record<string, string> = {
-  cancelled: "Cancelado",
-  completed: "Completado",
-  expired: "Vencido",
-  manual_review: "En revisión",
-  paid: "Pagado",
-  payment_pending: "Pago pendiente",
-  payment_rejected: "Pago rechazado",
-  pending_payment: "Esperando pago",
-  preparing: "En preparación",
-};
+import { orderStatusLabels } from "@/lib/account/order-presentation";
 
 function formatDate(value: Date) {
   return new Intl.DateTimeFormat("es-AR", { dateStyle: "medium" }).format(
@@ -134,9 +123,18 @@ export default async function MyAccountPage() {
               </span>
             </div>
             {dashboard.orders.length === 0 ? (
-              <p className="mt-3 text-sm leading-6 text-ink/60">
-                Los pedidos que hagas con la sesión iniciada aparecerán acá.
-              </p>
+              <div className="mt-4">
+                <p className="text-sm leading-6 text-ink/60">
+                  Todavía no hiciste ningún pedido. Cuando hagas tu primer
+                  pedido, lo vas a encontrar acá.
+                </p>
+                <Link
+                  href="/productos"
+                  className="motion-button mt-3 inline-flex min-h-11 items-center text-sm font-bold text-action hover:text-ink"
+                >
+                  Ver productos →
+                </Link>
+              </div>
             ) : (
               <ol className="mt-4 divide-y divide-ink/10">
                 {dashboard.orders.map((order) => (
@@ -148,16 +146,27 @@ export default async function MyAccountPage() {
                           {formatDate(order.createdAt)} ·{" "}
                           {order.deliveryType === "pickup" ? "Retiro" : "Envío"}
                         </p>
+                        {order.productSummary ? (
+                          <p className="mt-1 text-xs leading-5 text-ink/55">
+                            {order.productSummary}
+                          </p>
+                        ) : null}
                       </div>
                       <div className="text-right">
                         <p className="font-bold">
                           {formatArsCents(order.total)}
                         </p>
                         <p className="mt-1 text-xs font-bold text-action">
-                          {orderStatusLabels[order.status] ?? order.status}
+                          {orderStatusLabels[order.status]}
                         </p>
                       </div>
                     </div>
+                    <Link
+                      href={`/mi-cuenta/pedidos/${encodeURIComponent(order.publicNumber)}`}
+                      className="motion-button mt-3 inline-flex min-h-11 cursor-pointer items-center text-sm font-bold text-action hover:text-ink"
+                    >
+                      Ver pedido →
+                    </Link>
                   </li>
                 ))}
               </ol>
