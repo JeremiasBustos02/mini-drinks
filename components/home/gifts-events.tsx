@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/container";
+import Link from "next/link";
 import type { StorefrontAsset } from "@/lib/storefront/assets";
 
 export function GiftsEvents({ asset }: { asset: StorefrontAsset | null }) {
@@ -18,7 +19,8 @@ export function GiftsEvents({ asset }: { asset: StorefrontAsset | null }) {
               Chico. Distinto. Regalable.
             </h2>
             <p className="mt-5 max-w-sm text-base leading-relaxed text-ink/65">
-              Boxes, packs temáticos y una presentación que no pasa desapercibida.
+              Boxes, packs temáticos y una presentación que no pasa
+              desapercibida.
             </p>
             <span className="gift-sticker absolute right-7 bottom-7 grid size-32 rotate-8 place-items-center rounded-2xl bg-mint text-center font-display text-2xl leading-none uppercase shadow-[7px_8px_0_#0d0d0d] sm:right-12 sm:bottom-12 sm:size-44 sm:text-3xl">
               Para vos
@@ -27,7 +29,18 @@ export function GiftsEvents({ asset }: { asset: StorefrontAsset | null }) {
 
           <article className="gift-card relative min-h-[27rem] overflow-hidden rounded-[1.75rem] bg-mint p-7 sm:min-h-[34rem] sm:p-12">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            {asset ? <><img alt={asset.alt} className="absolute inset-0 size-full object-cover" decoding="async" loading="lazy" src={asset.imageUrl} /><div className="absolute inset-0 bg-mint/80" /></> : null}
+            {asset ? (
+              <>
+                <img
+                  alt={asset.alt}
+                  className="absolute inset-0 size-full object-cover"
+                  decoding="async"
+                  loading="lazy"
+                  src={asset.imageUrl}
+                />
+                <div className="absolute inset-0 bg-mint/80" />
+              </>
+            ) : null}
             <p className="relative text-xs font-black tracking-[0.18em] text-action uppercase">
               Eventos
             </p>
@@ -37,9 +50,12 @@ export function GiftsEvents({ asset }: { asset: StorefrontAsset | null }) {
             <p className="relative mt-5 max-w-sm text-base leading-relaxed text-ink/65">
               Packs, souvenirs y opciones personalizadas para celebraciones.
             </p>
-            <p className="absolute right-7 bottom-7 border-b-2 border-ink pb-2 text-sm font-black sm:right-12 sm:bottom-12">
-              Consultas para eventos, próximamente
-            </p>
+            <Link
+              href="/eventos"
+              className="motion-button absolute right-7 bottom-7 inline-flex min-h-11 cursor-pointer items-center border-b-2 border-ink pb-1 text-sm font-black hover:text-action sm:right-12 sm:bottom-12"
+            >
+              Ver eventos →
+            </Link>
           </article>
         </div>
       </Container>

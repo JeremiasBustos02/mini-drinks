@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/container";
+import Link from "next/link";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { packOptions } from "@/data/home";
 import type { StorefrontAsset } from "@/lib/storefront/assets";
@@ -18,10 +19,23 @@ export function PacksSection({ asset }: { asset: StorefrontAsset | null }) {
             description="Desde un duo hasta doce combinaciones para regalar, compartir o resolver un evento."
             inverted
           />
-          <p className="text-sm font-bold text-white/70 sm:mb-1">Próximamente</p>
+          <Link
+            href="/productos?categoria=combos"
+            className="motion-button inline-flex min-h-11 cursor-pointer items-center rounded-xl border border-white/35 px-4 text-sm font-black text-white hover:bg-white hover:text-ink sm:mb-1"
+          >
+            Ver packs →
+          </Link>
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {asset ? <img alt={asset.alt} className="mt-10 aspect-[16/7] w-full rounded-[1.5rem] bg-white object-contain p-4 sm:p-6" decoding="async" loading="lazy" src={asset.imageUrl} /> : null}
+        {asset ? (
+          <img
+            alt={asset.alt}
+            className="mt-10 aspect-[16/7] w-full rounded-[1.5rem] bg-white object-contain p-4 sm:p-6"
+            decoding="async"
+            loading="lazy"
+            src={asset.imageUrl}
+          />
+        ) : null}
         <div className="packs-grid mt-12 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-5">
           {packOptions.map((pack, index) => (
             <article
@@ -51,12 +65,14 @@ export function PacksSection({ asset }: { asset: StorefrontAsset | null }) {
               <span className="text-xs font-black tracking-[0.18em] uppercase">
                 Pack {pack.name}
               </span>
-              
+
               <div className="absolute right-5 bottom-5 left-5 sm:right-7 sm:bottom-7 sm:left-7">
                 <p className="font-display text-4xl leading-none uppercase sm:text-5xl">
                   {pack.name}
                 </p>
-                <p className="mt-3 text-sm opacity-65 sm:text-base">{pack.use}</p>
+                <p className="mt-3 text-sm opacity-65 sm:text-base">
+                  {pack.use}
+                </p>
               </div>
             </article>
           ))}

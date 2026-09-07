@@ -1,8 +1,13 @@
 import { ButtonLink } from "@/components/ui/button-link";
 import { Container } from "@/components/ui/container";
+import Link from "next/link";
 import type { StorefrontAsset } from "@/lib/storefront/assets";
 
-export function WholesaleCta({ asset: _asset }: { asset: StorefrontAsset | null }) {
+export function WholesaleCta({
+  asset: _asset,
+}: {
+  asset: StorefrontAsset | null;
+}) {
   void _asset;
   return (
     <section
@@ -15,11 +20,17 @@ export function WholesaleCta({ asset: _asset }: { asset: StorefrontAsset | null 
         <span className="wholesale-mass wholesale-mass-right" />
         <span className="wholesale-central-shape" />
       </div>
-      <div className="wholesale-product wholesale-product-fernet" aria-hidden="true">
+      <div
+        className="wholesale-product wholesale-product-fernet"
+        aria-hidden="true"
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img alt="" src="/fernetsinfondo.png" />
       </div>
-      <div className="wholesale-product wholesale-product-coke" aria-hidden="true">
+      <div
+        className="wholesale-product wholesale-product-coke"
+        aria-hidden="true"
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img alt="" src="/cocacolapng.webp" />
       </div>
@@ -31,9 +42,19 @@ export function WholesaleCta({ asset: _asset }: { asset: StorefrontAsset | null 
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">
             Sumá minis, combos y opciones para reventa a tu mostrador.
           </p>
-          <ButtonLink href="#mayoristas" variant="lightdark" className="mt-8 shrink-0 sm:mt-10">
+          <ButtonLink
+            href="/mayoristas"
+            variant="lightdark"
+            className="mt-8 shrink-0 sm:mt-10"
+          >
             Quiero venderlos
           </ButtonLink>
+          <Link
+            href="/mayoristas"
+            className="motion-button mt-4 inline-flex min-h-11 cursor-pointer items-center text-sm font-bold text-white/75 hover:text-white"
+          >
+            ¿Cómo funciona? →
+          </Link>
         </div>
       </Container>
     </section>
