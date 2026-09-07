@@ -634,6 +634,10 @@ summary::-webkit-details-marker {
   background: rgb(29 29 29 / 68%);
 }
 
+.events-occasions-title span {
+  display: block;
+}
+
 .events-occasion-reel {
   overflow: hidden;
   border-block: 1px solid rgb(255 255 255 / 22%);
@@ -703,7 +707,7 @@ summary::-webkit-details-marker {
 
 .events-occasion-reel-title {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 9vw, 3.2rem);
+  font-size: clamp(1.85rem, 2.35vw, 2.7rem);
   letter-spacing: -0.06em;
   line-height: 0.82;
 }
@@ -1111,7 +1115,7 @@ summary::-webkit-details-marker {
 @media (min-width: 1024px) {
   .events-occasion-reel {
     display: flex;
-    height: clamp(43rem, 56vw, 54rem);
+    height: clamp(32.5rem, 65svh, 43.75rem);
   }
 
   .events-occasion-reel-panel {
@@ -1142,7 +1146,7 @@ summary::-webkit-details-marker {
   .events-occasion-reel-title {
     padding-block: 0.3rem;
     writing-mode: vertical-rl;
-    font-size: clamp(2.8rem, 5.5vw, 5.5rem);
+    font-size: clamp(2.4375rem, 3.0625vw, 3.5625rem);
     line-height: 0.95;
     transform: rotate(180deg);
     transform-origin: center;

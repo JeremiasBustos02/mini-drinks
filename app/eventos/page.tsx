@@ -30,9 +30,12 @@ export default function EventsPage() {
 
         <Container className="py-16 sm:py-20">
           <section className="events-occasions">
-            <div className="max-w-xl">
+            <div>
               <p className="text-xs font-black uppercase tracking-[.18em] text-action">Para lo que venga</p>
-              <h2 className="mt-3 font-display text-[clamp(2.7rem,5vw,4.8rem)] leading-[.9] tracking-[-.055em] uppercase">No hace falta una excusa gigante.</h2>
+              <h2 className="events-occasions-title mt-3 font-display text-[clamp(2.7rem,5vw,4.8rem)] leading-[.9] tracking-[-.055em] uppercase">
+                <span>No hace falta una</span>
+                <span>excusa gigante.</span>
+              </h2>
             </div>
             <OccasionSelector />
           </section>
