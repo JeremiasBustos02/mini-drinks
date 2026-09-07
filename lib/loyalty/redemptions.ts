@@ -14,6 +14,10 @@ import {
   redemptionIdempotencyKey,
   type LoyaltyRedemptionSettings,
 } from "@/lib/loyalty/redemption";
+import {
+  activeReservedLoyaltyPointsSql,
+  calculateAvailableLoyaltyPoints,
+} from "@/lib/loyalty/available-balance-sql";
 import type { DatabaseTransaction } from "@/lib/stock/reservations";
 
 export async function loadLoyaltyRedemptionSettings(
@@ -40,12 +44,11 @@ export async function getAvailableLoyaltyBalance(customerProfileId: string) {
 }
 
 export async function getLoyaltyBalanceSummary(customerProfileId: string) {
-  const now = new Date();
   const [account] = await db
     .select({
       totalPoints: loyaltyAccounts.balance,
       lifetimeEarnedPoints: loyaltyAccounts.lifetimeEarnedPoints,
-      reservedPoints: sql<number>`coalesce((select sum(${loyaltyRedemptions.points}) from ${loyaltyRedemptions} where ${loyaltyRedemptions.loyaltyAccountId} = ${loyaltyAccounts.id} and ${loyaltyRedemptions.status} = 'reserved' and ${loyaltyRedemptions.expiresAt} > ${now}), 0)::integer`,
+      reservedPoints: activeReservedLoyaltyPointsSql(),
     })
     .from(loyaltyAccounts)
     .where(eq(loyaltyAccounts.customerProfileId, customerProfileId))
@@ -56,7 +59,10 @@ export async function getLoyaltyBalanceSummary(customerProfileId: string) {
     totalPoints,
     lifetimeEarnedPoints: account?.lifetimeEarnedPoints ?? 0,
     reservedPoints,
-    availablePoints: Math.max(totalPoints - reservedPoints, 0),
+    availablePoints: calculateAvailableLoyaltyPoints(
+      totalPoints,
+      reservedPoints,
+    ),
   };
 }
 

@@ -6,14 +6,16 @@ import { db } from "@/lib/db";
 import {
   customerProfiles,
   loyaltyAccounts,
-  loyaltyRedemptions,
   loyaltyTransactions,
   orders,
 } from "@/lib/db/schema";
 import { formatLoyaltyPoints } from "@/lib/loyalty/points";
+import {
+  activeReservedLoyaltyPointsSql,
+  calculateAvailableLoyaltyPoints,
+} from "@/lib/loyalty/available-balance-sql";
 
 export async function getAccountDashboard(userId: string) {
-  const now = new Date();
   const [profile] = await db
     .select({ id: customerProfiles.id })
     .from(customerProfiles)
@@ -34,7 +36,7 @@ export async function getAccountDashboard(userId: string) {
       .select({
         id: loyaltyAccounts.id,
         balance: loyaltyAccounts.balance,
-        reservedPoints: sql<number>`coalesce((select sum(${loyaltyRedemptions.points}) from ${loyaltyRedemptions} where ${loyaltyRedemptions.loyaltyAccountId} = ${loyaltyAccounts.id} and ${loyaltyRedemptions.status} = 'reserved' and ${loyaltyRedemptions.expiresAt} > ${now}), 0)::integer`,
+        reservedPoints: activeReservedLoyaltyPointsSql(),
       })
       .from(loyaltyAccounts)
       .where(eq(loyaltyAccounts.customerProfileId, profile.id))
@@ -72,7 +74,10 @@ export async function getAccountDashboard(userId: string) {
     totalPoints: formatLoyaltyPoints(account?.balance ?? 0),
     reservedPoints: formatLoyaltyPoints(account?.reservedPoints ?? 0),
     availablePoints: formatLoyaltyPoints(
-      Math.max((account?.balance ?? 0) - (account?.reservedPoints ?? 0), 0),
+      calculateAvailableLoyaltyPoints(
+        account?.balance ?? 0,
+        account?.reservedPoints ?? 0,
+      ),
     ),
     hasReservedPoints: (account?.reservedPoints ?? 0) > 0,
     orders: customerOrders,
