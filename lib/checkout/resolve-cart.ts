@@ -260,6 +260,7 @@ export function resolveCheckout(
       discountTotal,
       deliveryTotal,
       total,
+      loyaltyRedemption: { points: 0, discountCents: 0 },
       hasPriceChanges: resolvedLines.some((line) => line.priceChanged),
     },
   };

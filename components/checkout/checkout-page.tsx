@@ -15,6 +15,8 @@ import {
   type CheckoutQuoteDraft,
 } from "@/lib/checkout/quote-ui";
 import { formatArsCents } from "@/lib/money";
+import { formatLoyaltyPoints } from "@/lib/loyalty/points";
+import { maximumRedeemablePoints, type LoyaltyRedemptionSettings } from "@/lib/loyalty/redemption";
 import { useCartStore } from "@/store/cart-store";
 import type { CartItem } from "@/types/cart";
 import type {
@@ -105,12 +107,14 @@ function createCheckoutPayload({
   fulfillment,
   checkoutAttemptId,
   accessToken,
+  requestedPoints,
 }: {
   items: CartItem[];
   formValues: CheckoutFormValues;
   fulfillment: "pickup" | "delivery";
   checkoutAttemptId: string;
   accessToken: string;
+  requestedPoints: number;
 }): CheckoutPayload | null {
   const lines = toCheckoutLines(items);
   if (!lines) return null;
@@ -124,6 +128,7 @@ function createCheckoutPayload({
       email: formValues.email,
     },
     notes: formValues.notes || undefined,
+    requestedPoints: requestedPoints || undefined,
     lines,
   };
 
@@ -184,13 +189,37 @@ function CheckoutSummary({ quote, items }: { quote: ResolvedCheckout | null; ite
           </div>
         ))}
       </div>
-      <dl className="mt-5 space-y-2 text-sm"><div className="flex justify-between"><dt>Subtotal</dt><dd className="font-bold">{formatArsCents(quote.subtotal)}</dd></div><div className="flex justify-between"><dt>Entrega</dt><dd className="font-bold">{quote.deliveryTotal === 0 ? "Sin cargo definido" : formatArsCents(quote.deliveryTotal)}</dd></div></dl>
+      <dl className="mt-5 space-y-2 text-sm"><div className="flex justify-between"><dt>Subtotal</dt><dd className="font-bold">{formatArsCents(quote.subtotal)}</dd></div>{quote.loyaltyRedemption.discountCents > 0 ? <div className="flex justify-between text-action"><dt>Descuento Mini Club</dt><dd className="font-bold">-{formatArsCents(quote.loyaltyRedemption.discountCents)}</dd></div> : null}<div className="flex justify-between"><dt>Envío</dt><dd className="font-bold">{quote.deliveryTotal === 0 ? "Sin cargo definido" : formatArsCents(quote.deliveryTotal)}</dd></div></dl>
       <div className="mt-4 flex items-end justify-between border-t-2 border-ink pt-4"><p className="font-black">Total</p><p className="text-2xl font-black">{formatArsCents(quote.total)}</p></div>
     </div>
   );
 }
 
-export function CheckoutPage() {
+function LoyaltyRedemptionControl({
+  loyalty,
+  subtotal,
+  requestedPoints,
+  onChange,
+}: {
+  loyalty: { balance: number; settings: LoyaltyRedemptionSettings } | null;
+  subtotal: number;
+  requestedPoints: number;
+  onChange: (points: number) => void;
+}) {
+  if (!loyalty) return <p className="rounded-[1.5rem] bg-white p-5 text-sm text-ink/60 sm:p-7">Ingresá para usar tus puntos Mini Club.</p>;
+  const maximum = maximumRedeemablePoints(loyalty.balance, subtotal, loyalty.settings);
+  const step = loyalty.settings.redemptionStepPoints;
+  const enabled = requestedPoints > 0;
+  const discount = requestedPoints * loyalty.settings.redemptionValueCents;
+  return (
+    <section className="rounded-[1.5rem] bg-white p-5 sm:p-7" aria-labelledby="mini-club-title">
+      <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black tracking-[0.16em] text-action uppercase">Mini Club</p><h2 id="mini-club-title" className="mt-1 font-display text-2xl uppercase">Usá tus puntos</h2></div><p className="text-right text-sm font-black">{formatLoyaltyPoints(loyalty.balance)} pts</p></div>
+      {loyalty.balance < loyalty.settings.minRedemptionPoints ? <p className="mt-4 text-sm text-ink/60">Necesitás {formatLoyaltyPoints(loyalty.settings.minRedemptionPoints)} pts para empezar a canjear.</p> : maximum === 0 ? <p className="mt-4 text-sm text-ink/60">En este pedido todavía no podés usar puntos.</p> : <div className="mt-5"><label className="flex items-center gap-3 text-sm font-bold"><input type="checkbox" checked={enabled} onChange={(event) => onChange(event.target.checked ? loyalty.settings.minRedemptionPoints : 0)} /> Usar puntos</label>{enabled ? <div className="mt-4 flex flex-wrap items-center gap-2"><button type="button" onClick={() => onChange(Math.max(loyalty.settings.minRedemptionPoints, requestedPoints - step))} className="motion-button min-h-11 rounded-xl border-2 border-ink/15 px-4 font-black" aria-label="Usar menos puntos">-</button><output className="min-w-32 text-center text-sm font-black">{formatLoyaltyPoints(requestedPoints)} pts</output><button type="button" onClick={() => onChange(Math.min(maximum, requestedPoints + step))} className="motion-button min-h-11 rounded-xl border-2 border-ink/15 px-4 font-black" aria-label="Usar más puntos">+</button><button type="button" onClick={() => onChange(maximum)} className="motion-button min-h-11 rounded-xl bg-action px-4 text-sm font-black text-white">Usar máximo</button></div> : null}{enabled ? <p className="mt-3 text-sm font-bold text-action">{formatLoyaltyPoints(requestedPoints)} pts · Ahorrás {formatArsCents(discount)}</p> : null}</div>}
+    </section>
+  );
+}
+
+export function CheckoutPage({ loyalty }: { loyalty: { balance: number; settings: LoyaltyRedemptionSettings } | null }) {
   const hydrated = useCartHydration();
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
@@ -207,6 +236,7 @@ export function CheckoutPage() {
   } | null>(null);
   const [paymentError, setPaymentError] = useState<CheckoutFailure | null>(null);
   const [retryNonce, setRetryNonce] = useState(0);
+  const [requestedPoints, setRequestedPoints] = useState(0);
   const [isPaying, startPaymentTransition] = useTransition();
   const checkoutAttemptId = useRef("");
   const accessToken = useRef("");
@@ -236,6 +266,7 @@ export function CheckoutPage() {
     customer: quoteDraft.customer,
     fulfillment,
     address: quoteDraft.address,
+    requestedPoints,
   });
   const activeQuote = quote && isCurrentCheckoutQuote(quote.signature, quoteSignature) ? quote : null;
   const activeQuoteError = quoteError && isCurrentCheckoutQuote(quoteError.signature, quoteSignature)
@@ -288,6 +319,7 @@ export function CheckoutPage() {
         fulfillment,
         checkoutAttemptId: checkoutAttemptId.current,
         accessToken: accessToken.current,
+        requestedPoints,
       });
       if (!payload) return;
 
@@ -317,7 +349,7 @@ export function CheckoutPage() {
     }, quoteDebounceMs);
 
     return () => window.clearTimeout(timer);
-  }, [cartSignature, formValues, fulfillment, hydrated, items, quoteReady, quoteSignature, retryNonce]);
+  }, [cartSignature, formValues, fulfillment, hydrated, items, quoteReady, quoteSignature, requestedPoints, retryNonce]);
 
   function handleFormChange(event: React.FormEvent<HTMLFormElement>) {
     const data = new FormData(event.currentTarget);
@@ -344,6 +376,7 @@ export function CheckoutPage() {
       fulfillment,
       checkoutAttemptId: checkoutAttemptId.current,
       accessToken: accessToken.current,
+      requestedPoints,
     });
     if (!payload || !activeQuote) return;
     setPaymentError(null);
@@ -390,6 +423,7 @@ export function CheckoutPage() {
           <div className="space-y-6">
             <fieldset className="rounded-[1.5rem] bg-white p-5 sm:p-7"><legend className="px-2 font-display text-2xl uppercase">Tus datos</legend><div className="mt-2 grid gap-4 sm:grid-cols-2"><label className="text-sm font-bold">Nombre<input name="firstName" autoComplete="given-name" required maxLength={80} className={fieldClass} /></label><label className="text-sm font-bold">Apellido<input name="lastName" autoComplete="family-name" required maxLength={80} className={fieldClass} /></label><label className="text-sm font-bold">Teléfono<input name="phone" type="tel" autoComplete="tel" required maxLength={40} className={fieldClass} /></label><label className="text-sm font-bold">Email<input name="email" type="email" autoComplete="email" required maxLength={254} className={fieldClass} /></label></div></fieldset>
             <fieldset className="rounded-[1.5rem] bg-white p-5 sm:p-7"><legend className="px-2 font-display text-2xl uppercase">Entrega</legend><div className="mt-2 grid gap-3 sm:grid-cols-2"><label className={`cursor-pointer rounded-xl border-2 p-4 ${fulfillment === "pickup" ? "border-action bg-mint/35" : "border-ink/15"}`}><input type="radio" name="fulfillment" value="pickup" checked={fulfillment === "pickup"} onChange={() => setFulfillment("pickup")} className="mr-2" /><span className="font-black">Retiro</span><span className="mt-1 block text-xs text-ink/60">Coordinamos el punto y horario.</span></label><label className={`cursor-pointer rounded-xl border-2 p-4 ${fulfillment === "delivery" ? "border-action bg-mint/35" : "border-ink/15"}`}><input type="radio" name="fulfillment" value="delivery" checked={fulfillment === "delivery"} onChange={() => setFulfillment("delivery")} className="mr-2" /><span className="font-black">Envío local</span><span className="mt-1 block text-xs text-ink/60">Entrega propia, sujeta a coordinación.</span></label></div>{fulfillment === "delivery" ? <div className="mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_8rem]"><label className="text-sm font-bold">Calle<input name="street" autoComplete="address-line1" required maxLength={120} className={fieldClass} /></label><label className="text-sm font-bold">Número<input name="number" required maxLength={20} className={fieldClass} /></label><label className="text-sm font-bold sm:col-span-2">Localidad<input name="locality" autoComplete="address-level2" required maxLength={100} className={fieldClass} /></label><label className="text-sm font-bold sm:col-span-2">Referencia <span className="font-normal text-ink/50">(opcional)</span><input name="reference" maxLength={240} className={fieldClass} /></label></div> : null}</fieldset>
+            <LoyaltyRedemptionControl loyalty={loyalty} subtotal={activeQuote?.value.subtotal ?? getCartSubtotal(items)} requestedPoints={requestedPoints} onChange={setRequestedPoints} />
             <label className="block rounded-[1.5rem] bg-white p-5 text-sm font-bold sm:p-7">Observaciones <span className="font-normal text-ink/50">(opcional)</span><textarea name="notes" maxLength={500} rows={3} className={fieldClass} /></label>
           </div>
           <aside className="lg:sticky lg:top-28"><CheckoutSummary quote={activeQuote?.value ?? null} items={items} />{quoteUiState === "incomplete" ? <p className="mt-4 text-sm font-bold text-ink/60">Completá los datos necesarios para continuar.</p> : null}{quoteUiState === "validating" ? <p className="mt-4 text-sm font-bold text-ink/60" aria-live="polite">Actualizando tu pedido...</p> : null}{quoteUiState === "valid" ? <div className="mt-4 rounded-xl border-2 border-action bg-mint/40 p-4 text-sm font-bold">Pedido actualizado. Ya podés continuar al pago.</div> : null}{quoteUiState === "price_changed" ? <div className="mt-4 rounded-xl border-2 border-action bg-mint/40 p-4 text-sm font-bold">Actualizamos el total con la información más reciente.</div> : null}{activeQuoteError ? <div role="alert" className="mt-4 rounded-xl border-2 border-red-800 bg-red-50 p-4 text-sm font-bold text-red-900"><p>{["product_unavailable", "combo_unavailable", "insufficient_stock"].includes(activeQuoteError.code) ? activeQuoteError.message : "No pudimos actualizar tu pedido. Intentá nuevamente."}</p>{activeQuoteError.retryAfterSeconds ? <p className="mt-1 text-xs">Podés reintentar en aproximadamente {activeQuoteError.retryAfterSeconds} segundos.</p> : null}{activeQuoteError.correlationId ? <p className="mt-1 text-xs font-normal">Ref. {activeQuoteError.correlationId}</p> : null}<button type="button" onClick={() => { setQuoteError(null); setRetryNonce((value) => value + 1); }} className="motion-button mt-3 text-sm font-bold text-red-900 underline decoration-2 underline-offset-4">Reintentar</button></div> : null}{paymentError ? <div role="alert" className="mt-4 rounded-xl border-2 border-red-800 bg-red-50 p-4 text-sm font-bold text-red-900"><p>{paymentError.message}</p>{paymentError.correlationId ? <p className="mt-1 text-xs font-normal">Ref. {paymentError.correlationId}</p> : null}</div> : null}<button type="submit" disabled={!activeQuote || isPaying} className="motion-button mt-4 flex min-h-13 w-full items-center justify-center rounded-xl bg-action px-6 py-3 text-base font-black text-white disabled:cursor-not-allowed disabled:opacity-60">{isPaying ? "Preparando pago..." : "Pagar con Mercado Pago"}</button><Link href="/carrito" className="motion-button mt-4 flex min-h-11 items-center justify-center text-sm font-bold text-action underline decoration-2 underline-offset-4">Volver al carrito</Link></aside>

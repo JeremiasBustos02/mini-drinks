@@ -20,6 +20,7 @@ export function createCheckoutRequestHash(payload: ValidCreateOrderPayload) {
     customer: payload.customer,
     fulfillment: payload.fulfillment,
     notes: payload.notes,
+    requestedPoints: payload.requestedPoints,
     lines: payload.lines,
     acceptedTotal: payload.acceptedTotal,
     acceptedQuoteHash: payload.acceptedQuoteHash,

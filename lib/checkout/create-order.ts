@@ -24,6 +24,8 @@ import {
 } from "@/lib/stock/reservations";
 import type { CheckoutCreationResult } from "@/types/checkout";
 import { logServerEvent } from "@/lib/observability/logger";
+import { applyLoyaltyRedemption, calculateLoyaltyRedemption } from "@/lib/loyalty/redemption";
+import { getAvailableLoyaltyBalance, loadLoyaltyRedemptionSettings, reserveLoyaltyRedemption } from "@/lib/loyalty/redemptions";
 
 function createPublicNumber() {
   const date = new Date().toISOString().slice(0, 10).replaceAll("-", "");
@@ -116,19 +118,37 @@ export async function createOrder(
         const catalog = await loadCheckoutCatalog(tx);
         const resolved = resolveCheckout(payload, catalog);
         if (!resolved.ok) return resolved;
+        let checkout = resolved.checkout;
+        if (payload.requestedPoints) {
+          if (!customerProfileId) {
+            return { ok: false as const, code: "invalid_payload" as const, message: "Ingresá para usar tus puntos Mini Club." };
+          }
+          const [settings, availableBalance] = await Promise.all([
+            loadLoyaltyRedemptionSettings(tx),
+            getAvailableLoyaltyBalance(customerProfileId),
+          ]);
+          try {
+            checkout = applyLoyaltyRedemption(
+              checkout,
+              calculateLoyaltyRedemption(payload.requestedPoints, availableBalance, checkout.subtotal, settings),
+            );
+          } catch {
+            return { ok: false as const, code: "price_changed" as const, message: "Los puntos elegidos ya no están disponibles para este pedido.", quote: checkout, quoteHash: createCheckoutQuoteHash(checkout, payload.fulfillment) };
+          }
+        }
         const currentQuoteHash = createCheckoutQuoteHash(
-          resolved.checkout,
+          checkout,
           payload.fulfillment,
         );
         if (
-          resolved.checkout.total !== payload.acceptedTotal ||
+          checkout.total !== payload.acceptedTotal ||
           currentQuoteHash !== payload.acceptedQuoteHash
         ) {
           return {
             ok: false as const,
             code: "price_changed" as const,
             message: "El total cambió. Revisá el resumen actualizado antes de confirmar.",
-            quote: resolved.checkout,
+            quote: checkout,
             quoteHash: currentQuoteHash,
           };
         }
@@ -179,12 +199,33 @@ export async function createOrder(
             deliveryAddress,
             city,
             notes: payload.notes || null,
-            subtotal: resolved.checkout.subtotal,
-            discountTotal: resolved.checkout.discountTotal,
-            deliveryTotal: resolved.checkout.deliveryTotal,
-            total: resolved.checkout.total,
+            subtotal: checkout.subtotal,
+            discountTotal: checkout.discountTotal,
+            deliveryTotal: checkout.deliveryTotal,
+            total: checkout.total,
           })
           .returning({ id: orders.id });
+
+        if (payload.requestedPoints) {
+          const redemption = await reserveLoyaltyRedemption(tx, {
+            orderId: order.id,
+            customerProfileId,
+            requestedPoints: payload.requestedPoints,
+            subtotalCents: checkout.subtotal,
+            expiresAt: reservationExpiresAt,
+          });
+          if (redemption.settings) {
+            await tx.update(orders).set({
+              loyaltyRedemptionPoints: redemption.points,
+              loyaltyRedemptionDiscount: redemption.discountCents,
+              loyaltyRedemptionValueCents: redemption.settings.redemptionValueCents,
+              loyaltyMinRedemptionPoints: redemption.settings.minRedemptionPoints,
+              loyaltyRedemptionStepPoints: redemption.settings.redemptionStepPoints,
+              loyaltyMaxRedemptionPercentage: redemption.settings.maxRedemptionPercentage,
+              updatedAt: new Date(),
+            }).where(eq(orders.id, order.id));
+          }
+        }
 
         await tx.insert(orderItems).values(
           resolved.checkout.lines.map((line) => ({

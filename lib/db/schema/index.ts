@@ -35,6 +35,7 @@ export const stockReservationStatusEnum = pgEnum(
 );
 export const rewardCampaignStatusEnum = pgEnum("reward_campaign_status", ["draft", "active", "paused", "ended"]);
 export const rewardTypeEnum = pgEnum("reward_type", ["points", "discount_percent", "discount_fixed", "free_shipping", "multiplier", "special"]);
+export const loyaltyRedemptionStatusEnum = pgEnum("loyalty_redemption_status", ["reserved", "redeemed", "released"]);
 
 const createdAtColumn = () =>
   timestamp("created_at", { withTimezone: true }).defaultNow().notNull();
@@ -89,6 +90,10 @@ export const loyaltySettings = pgTable(
     key: text("key").primaryKey().default("default"),
     earnUnitCents: bigint("earn_unit_cents", { mode: "number" }).notNull(),
     pointsPerUnit: integer("points_per_unit").notNull(),
+    redemptionValueCents: bigint("redemption_value_cents", { mode: "number" }).default(40).notNull(),
+    minRedemptionPoints: integer("min_redemption_points").default(2500).notNull(),
+    redemptionStepPoints: integer("redemption_step_points").default(100).notNull(),
+    maxRedemptionPercentage: integer("max_redemption_percentage").default(20).notNull(),
     createdAt: createdAtColumn(),
     updatedAt: updatedAtColumn(),
   },
@@ -96,6 +101,10 @@ export const loyaltySettings = pgTable(
     check("loyalty_settings_singleton", sql`${table.key} = 'default'`),
     check("loyalty_settings_earn_unit_cents_positive", sql`${table.earnUnitCents} > 0`),
     check("loyalty_settings_points_per_unit_positive", sql`${table.pointsPerUnit} > 0`),
+    check("loyalty_settings_redemption_value_cents_positive", sql`${table.redemptionValueCents} > 0`),
+    check("loyalty_settings_min_redemption_points_positive", sql`${table.minRedemptionPoints} > 0`),
+    check("loyalty_settings_redemption_step_points_positive", sql`${table.redemptionStepPoints} > 0`),
+    check("loyalty_settings_max_redemption_percentage_range", sql`${table.maxRedemptionPercentage} > 0 and ${table.maxRedemptionPercentage} <= 100`),
   ],
 ).enableRLS();
 
@@ -254,6 +263,12 @@ export const orders = pgTable(
     discountTotal: bigint("discount_total", { mode: "number" }).default(0).notNull(),
     deliveryTotal: bigint("delivery_total", { mode: "number" }).default(0).notNull(),
     total: bigint("total", { mode: "number" }).notNull(),
+    loyaltyRedemptionPoints: integer("loyalty_redemption_points").default(0).notNull(),
+    loyaltyRedemptionDiscount: bigint("loyalty_redemption_discount", { mode: "number" }).default(0).notNull(),
+    loyaltyRedemptionValueCents: bigint("loyalty_redemption_value_cents", { mode: "number" }),
+    loyaltyMinRedemptionPoints: integer("loyalty_min_redemption_points"),
+    loyaltyRedemptionStepPoints: integer("loyalty_redemption_step_points"),
+    loyaltyMaxRedemptionPercentage: integer("loyalty_max_redemption_percentage"),
     mercadoPagoPreferenceId: text("mercado_pago_preference_id"),
     mercadoPagoInitPoint: text("mercado_pago_init_point"),
     mercadoPagoPreferenceCreatedAt: timestamp("mercado_pago_preference_created_at", {
@@ -303,6 +318,8 @@ export const orders = pgTable(
       sql`${table.total} >= 0 and ${table.total} <= 9007199254740991`,
     ),
     check("orders_discount_not_greater_than_subtotal", sql`${table.discountTotal} <= ${table.subtotal}`),
+    check("orders_loyalty_redemption_points_non_negative", sql`${table.loyaltyRedemptionPoints} >= 0`),
+    check("orders_loyalty_redemption_discount_non_negative", sql`${table.loyaltyRedemptionDiscount} >= 0 and ${table.loyaltyRedemptionDiscount} <= ${table.subtotal}`),
     check(
       "orders_total_matches_components",
       sql`${table.total} = ${table.subtotal} - ${table.discountTotal} + ${table.deliveryTotal}`,
@@ -372,10 +389,40 @@ export const loyaltyTransactions = pgTable(
     index("loyalty_transactions_order_id_idx").on(table.orderId),
     uniqueIndex("loyalty_transactions_reward_code_id_unique").on(table.rewardCodeId),
     index("loyalty_transactions_account_created_at_idx").on(table.loyaltyAccountId, table.createdAt),
-    check("loyalty_transactions_type_supported", sql`${table.type} in ('earn', 'code_reward')`),
+    check("loyalty_transactions_type_supported", sql`${table.type} in ('earn', 'code_reward', 'redeem')`),
     check("loyalty_transactions_points_positive", sql`${table.points} > 0`),
     check("loyalty_transactions_earn_unit_cents_positive", sql`${table.earnUnitCents} > 0`),
     check("loyalty_transactions_points_per_unit_positive", sql`${table.pointsPerUnit} > 0`),
+  ],
+).enableRLS();
+
+export const loyaltyRedemptions = pgTable(
+  "loyalty_redemptions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    customerProfileId: uuid("customer_profile_id").notNull().references(() => customerProfiles.id, { onDelete: "restrict" }),
+    loyaltyAccountId: uuid("loyalty_account_id").notNull().references(() => loyaltyAccounts.id, { onDelete: "restrict" }),
+    orderId: uuid("order_id").notNull().references(() => orders.id, { onDelete: "restrict" }),
+    points: integer("points").notNull(),
+    discountCents: bigint("discount_cents", { mode: "number" }).notNull(),
+    redemptionValueCents: bigint("redemption_value_cents", { mode: "number" }).notNull(),
+    minRedemptionPoints: integer("min_redemption_points").notNull(),
+    redemptionStepPoints: integer("redemption_step_points").notNull(),
+    maxRedemptionPercentage: integer("max_redemption_percentage").notNull(),
+    status: loyaltyRedemptionStatusEnum("status").default("reserved").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    redeemedAt: timestamp("redeemed_at", { withTimezone: true }),
+    releasedAt: timestamp("released_at", { withTimezone: true }),
+    createdAt: createdAtColumn(),
+    updatedAt: updatedAtColumn(),
+  },
+  (table) => [
+    uniqueIndex("loyalty_redemptions_order_id_unique").on(table.orderId),
+    index("loyalty_redemptions_account_status_idx").on(table.loyaltyAccountId, table.status),
+    index("loyalty_redemptions_expires_at_idx").on(table.expiresAt),
+    check("loyalty_redemptions_points_positive", sql`${table.points} > 0`),
+    check("loyalty_redemptions_discount_positive", sql`${table.discountCents} > 0`),
+    check("loyalty_redemptions_status_timestamps", sql`(${table.status} = 'reserved' and ${table.redeemedAt} is null and ${table.releasedAt} is null) or (${table.status} = 'redeemed' and ${table.redeemedAt} is not null and ${table.releasedAt} is null) or (${table.status} = 'released' and ${table.releasedAt} is not null and ${table.redeemedAt} is null)`),
   ],
 ).enableRLS();
 

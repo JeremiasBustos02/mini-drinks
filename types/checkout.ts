@@ -57,6 +57,7 @@ export type CheckoutPayload = {
   customer: CheckoutCustomer;
   fulfillment: CheckoutFulfillment;
   notes?: string;
+  requestedPoints?: number;
   lines: CheckoutCartLine[];
 };
 
@@ -110,6 +111,7 @@ export type ResolvedCheckout = {
   discountTotal: number;
   deliveryTotal: number;
   total: number;
+  loyaltyRedemption: { points: number; discountCents: number };
   hasPriceChanges: boolean;
 };
 

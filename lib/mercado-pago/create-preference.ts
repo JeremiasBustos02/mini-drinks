@@ -30,6 +30,7 @@ import {
 import { getReservationExpiresAt } from "@/lib/stock/config";
 import type { CheckoutCreationResult, ResolvedStockRequirement } from "@/types/checkout";
 import { logServerEvent } from "@/lib/observability/logger";
+import { releaseLoyaltyReservation, renewLoyaltyReservation } from "@/lib/loyalty/redemptions";
 
 const CREATION_LEASE_MS = 60_000;
 
@@ -116,10 +117,16 @@ export async function ensureMercadoPagoPreference(
           .update(orders)
           .set({ status: "expired", updatedAt: now })
           .where(eq(orders.id, order.id));
+        await releaseLoyaltyReservation(tx, order.id, now);
         return { kind: "unavailable" as const };
       }
       expiresAt = getReservationExpiresAt(now);
       generation += 1;
+      if (!await renewLoyaltyReservation(tx, order.id, expiresAt, now)) {
+        await tx.update(stockReservations).set({ status: "released", releasedAt: now }).where(eq(stockReservations.id, reservation.id));
+        await tx.update(orders).set({ status: "expired", updatedAt: now }).where(eq(orders.id, order.id));
+        return { kind: "unavailable" as const };
+      }
       await tx
         .update(stockReservations)
         .set({
@@ -196,6 +203,7 @@ export async function ensureMercadoPagoPreference(
         publicNumber: prepared.order.publicNumber,
         customerEmail: prepared.order.customerEmail,
         total: prepared.order.total,
+        discountTotal: prepared.order.discountTotal,
         items: prepared.items,
       },
       appUrl,

@@ -14,6 +14,9 @@ import type { CheckoutCreationResult, CheckoutQuoteResult } from "@/types/checko
 import { logServerEvent } from "@/lib/observability/logger";
 import { getRequestContext } from "@/lib/observability/request-context";
 import { checkRateLimit, rateLimitPolicies } from "@/lib/rate-limit";
+import { getAccountAccess, getCustomerProfileId } from "@/lib/account/auth";
+import { getAvailableLoyaltyBalance, loadLoyaltyRedemptionSettings } from "@/lib/loyalty/redemptions";
+import { applyLoyaltyRedemption, calculateLoyaltyRedemption } from "@/lib/loyalty/redemption";
 
 function isEmptyCart(value: unknown) {
   return Boolean(
@@ -75,7 +78,27 @@ export async function quoteCheckoutAction(input: unknown): Promise<CheckoutQuote
     stage = "catalog_load";
     const catalog = await loadCheckoutCatalog();
     stage = "resolve_cart";
-    const result = resolveCheckout(parsed.data, catalog);
+    const resolved = resolveCheckout(parsed.data, catalog);
+    const access = await getAccountAccess();
+    const customerProfileId = access.status === "authenticated" ? await getCustomerProfileId(access.userId) : null;
+    const result = !resolved.ok
+      ? resolved
+      : parsed.data.requestedPoints
+        ? !customerProfileId
+          ? checkoutFailure("invalid_payload", { message: "Ingresá para usar tus puntos Mini Club." })
+          : (() => resolved)()
+        : resolved;
+    if (result.ok && parsed.data.requestedPoints && customerProfileId) {
+      const [settings, balance] = await Promise.all([
+        loadLoyaltyRedemptionSettings(),
+        getAvailableLoyaltyBalance(customerProfileId),
+      ]);
+      try {
+        result.checkout = applyLoyaltyRedemption(result.checkout, calculateLoyaltyRedemption(parsed.data.requestedPoints, balance, result.checkout.subtotal, settings));
+      } catch {
+        return checkoutFailure("invalid_payload", { message: "Los puntos elegidos ya no están disponibles para este pedido." });
+      }
+    }
     if (!result.ok) {
       const resultStage = result.code === "insufficient_stock"
         ? "stock"

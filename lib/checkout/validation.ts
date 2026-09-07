@@ -98,6 +98,7 @@ export const checkoutSchema = z.strictObject({
   customer: customerSchema,
   fulfillment: fulfillmentSchema,
   notes: z.string().trim().max(500).optional(),
+  requestedPoints: z.int().nonnegative().optional(),
   lines: z.array(cartLineSchema).min(1).max(MAX_LINES),
 });
 

@@ -5,6 +5,7 @@ export type PreferenceOrder = {
   publicNumber: string;
   customerEmail: string | null;
   total: number;
+  discountTotal: number;
   items: Array<{
     id: string;
     displayName: string;
@@ -58,7 +59,7 @@ export function buildMercadoPagoPreference(
     (total, item) => total + item.unitPrice * item.quantity,
     0,
   );
-  if (!Number.isSafeInteger(order.total) || itemTotal !== order.total) {
+  if (!Number.isSafeInteger(order.total) || !Number.isSafeInteger(order.discountTotal) || order.discountTotal < 0 || itemTotal - order.discountTotal !== order.total) {
     throw new Error("Persisted order items do not match the order total.");
   }
   if (expiresAt.getTime() <= createdAt.getTime()) {
@@ -66,13 +67,7 @@ export function buildMercadoPagoPreference(
   }
 
   return {
-    items: order.items.map((item) => ({
-      id: item.id,
-      title: item.displayName.slice(0, 256),
-      quantity: item.quantity,
-      unit_price: centsToMercadoPagoAmount(item.unitPrice),
-      currency_id: "ARS",
-    })),
+    items: preferenceItems(order.items, order.discountTotal),
     payer: order.customerEmail ? { email: order.customerEmail } : undefined,
     external_reference: order.id,
     metadata: { order_id: order.id },
@@ -94,4 +89,27 @@ export function buildMercadoPagoPreference(
       ],
     },
   };
+}
+
+function preferenceItems(orderItems: PreferenceOrder["items"], discountTotal: number) {
+  const itemTotal = orderItems.reduce((total, item) => total + item.unitPrice * item.quantity, 0);
+  let remainingDiscount = discountTotal;
+  const items: Array<{ id: string; title: string; quantity: number; unit_price: number; currency_id: "ARS" }> = [];
+  for (const item of orderItems) {
+    for (let unit = 0; unit < item.quantity; unit += 1) {
+      const proportional = Math.floor(item.unitPrice * discountTotal / itemTotal);
+      const allocated = Math.min(proportional, item.unitPrice - 1, remainingDiscount);
+      remainingDiscount -= allocated;
+      items.push({ id: item.id, title: item.displayName.slice(0, 256), quantity: 1, unit_price: centsToMercadoPagoAmount(item.unitPrice - allocated), currency_id: "ARS" });
+    }
+  }
+  for (const item of items) {
+    if (remainingDiscount === 0) break;
+    const cents = Math.round(item.unit_price * 100);
+    if (cents <= 1) continue;
+    item.unit_price = centsToMercadoPagoAmount(cents - 1);
+    remainingDiscount -= 1;
+  }
+  if (remainingDiscount !== 0) throw new Error("Unable to distribute the order discount across Mercado Pago items.");
+  return items;
 }

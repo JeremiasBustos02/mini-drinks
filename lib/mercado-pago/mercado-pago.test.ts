@@ -53,6 +53,7 @@ test("builds an expiring Checkout Pro preference from persisted order rows", () 
     publicNumber: "MD-TEST",
     customerEmail: "buyer@example.com",
     total: 590000,
+    discountTotal: 0,
     items: [{ id: "item-1", displayName: "Combo Fernet", quantity: 1, unitPrice: 590000 }],
   }, "https://shop.example.com", "22222222-2222-4222-8222-222222222222", from, to);
 
@@ -76,8 +77,21 @@ test("refuses a preference when persisted item totals differ from the order", ()
     publicNumber: "MD-TEST",
     customerEmail: null,
     total: 1000,
+    discountTotal: 0,
     items: [{ id: "item-1", displayName: "Item", quantity: 1, unitPrice: 900 }],
   }, "https://shop.example.com", "token", new Date("2026-09-03T12:00:00Z"), new Date("2026-09-03T12:15:00Z")));
+});
+
+test("distributes a server-side loyalty discount while preserving the final Mercado Pago total", () => {
+  const preference = buildMercadoPagoPreference({
+    id: orderId,
+    publicNumber: "MD-TEST",
+    customerEmail: null,
+    total: 900000,
+    discountTotal: 100000,
+    items: [{ id: "item-1", displayName: "Item", quantity: 2, unitPrice: 500000 }],
+  }, "https://shop.example.com", "token", new Date("2026-09-03T12:00:00Z"), new Date("2026-09-03T12:15:00Z"));
+  assert.equal(preference.items.reduce((total, item) => total + item.quantity * item.unit_price, 0), 9000);
 });
 
 test("reuses only a complete and non-expired preference", () => {

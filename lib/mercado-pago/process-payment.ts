@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, eq, inArray, ne, sql } from "drizzle-orm";
+import { and, asc, eq, ne, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import {
@@ -26,6 +26,7 @@ import {
 import { logServerEvent } from "@/lib/observability/logger";
 import { awardLoyaltyForPaidOrder } from "@/lib/loyalty/award";
 import { tryLoyaltyAwardAfterPaymentCommit } from "@/lib/loyalty/award-utils";
+import { redeemLoyaltyReservation } from "@/lib/loyalty/redemptions";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -213,6 +214,11 @@ export async function processMercadoPagoPayment(payment: MercadoPagoPayment, cor
         .update(stockReservations)
         .set({ status: "consumed", consumedAt: now, releasedAt: null })
         .where(and(eq(stockReservations.id, reservation.id), ne(stockReservations.status, "consumed")));
+      const loyaltyResult = await redeemLoyaltyReservation(tx, order.id, now);
+      if (loyaltyResult === "released" || loyaltyResult === "insufficient_balance") {
+        await tx.update(orders).set({ status: "manual_review", updatedAt: now }).where(eq(orders.id, order.id));
+        return { outcome: "manual_review" as const, reason: `loyalty_${loyaltyResult}` };
+      }
       await tx.update(orders).set({ status: "paid", updatedAt: now }).where(eq(orders.id, order.id));
       logServerEvent("info", "stock.reservation_consumed", { correlationId, orderId: order.id, paymentId: payment.id });
       return { outcome: "approved" as const };
@@ -233,27 +239,9 @@ export async function processMercadoPagoPayment(payment: MercadoPagoPayment, cor
       if (!canPaymentEventChangeOrderStatus(order.status)) {
         return { outcome: "ignored_order_state" as const };
       }
-      const [otherLivePayment] = await tx
-        .select({ id: payments.id })
-        .from(payments)
-        .where(
-          and(
-            eq(payments.orderId, order.id),
-            ne(payments.providerPaymentId, payment.id),
-            inArray(payments.status, ["pending", "in_process", "authorized"]),
-          ),
-        )
-        .limit(1);
-      if (!otherLivePayment && reservation?.status === "active") {
-        await tx
-          .update(stockReservations)
-          .set({ status: "released", releasedAt: now })
-          .where(eq(stockReservations.id, reservation.id));
-        logServerEvent("info", "stock.reservation_released", { correlationId, orderId: order.id, paymentId: payment.id });
-      }
       await tx
         .update(orders)
-        .set({ status: otherLivePayment ? "payment_pending" : "payment_rejected", updatedAt: now })
+        .set({ status: "pending_payment", updatedAt: now })
         .where(eq(orders.id, order.id));
       return { outcome: "rejected" as const };
     }
