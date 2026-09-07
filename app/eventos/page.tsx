@@ -14,21 +14,16 @@ export default function EventsPage() {
   return (
     <StorefrontShell>
       <main id="contenido" className="events-page overflow-hidden bg-canvas">
-        <section className="events-hero relative isolate overflow-hidden bg-mint py-16 sm:py-20 lg:py-24">
-          <div className="events-hero-type" aria-hidden="true">PLAN<br />PLAN</div>
-          <Container className="relative grid min-h-[34rem] items-end gap-8 lg:grid-cols-[1.05fr_.95fr]">
-            <div className="relative z-10 max-w-3xl">
-              <p className="text-xs font-black uppercase tracking-[.2em] text-action">Eventos</p>
+        <section className="events-hero relative isolate overflow-hidden py-16 text-white sm:py-20 lg:py-24">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="events-hero-background" alt="" aria-hidden="true" src="/background-hero.webp" />
+          <div className="events-hero-overlay" aria-hidden="true" />
+          <Container className="relative flex min-h-[34rem] items-end">
+            <div className="relative z-10 max-w-4xl">
+              <p className="text-xs font-black uppercase tracking-[.2em] text-mint">Eventos</p>
               <h1 className="mt-4 font-display text-[clamp(4rem,9vw,8rem)] leading-[.82] tracking-[-.065em] uppercase">El mini también es parte del plan.</h1>
-              <p className="mt-7 max-w-lg text-base leading-7 text-ink/70 sm:text-lg">Cumpleaños, previas, regalos y juntadas con algo chico que se hace notar.</p>
-              <ButtonLink href="/productos?categoria=combos" className="mt-8">Ver packs</ButtonLink>
-            </div>
-            <div className="events-hero-products" aria-hidden="true">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="events-hero-fernet" alt="" src="/fernetsinfondo.png" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="events-hero-coke" alt="" src="/cocacolapng.webp" />
-              <span>PREVIA<br />LISTA</span>
+              <p className="mt-7 max-w-lg text-base leading-7 text-white/75 sm:text-lg">Cumpleaños, previas, regalos y juntadas con algo chico que se hace notar.</p>
+              <ButtonLink href="/productos?categoria=combos" variant="heroPrimary" className="mt-8">Ver packs</ButtonLink>
             </div>
           </Container>
         </section>
@@ -56,20 +51,15 @@ export default function EventsPage() {
 
         <section className="events-plan relative isolate overflow-hidden bg-ink py-16 text-white sm:py-20">
           <div className="events-plan-line" aria-hidden="true"><svg viewBox="0 0 1440 330" preserveAspectRatio="none"><path d="M-28 241C157 82 341 333 526 189c130-102 232-165 368-74 152 102 264-55 578-97" fill="none" stroke="currentColor" strokeWidth="4" /></svg></div>
-          <Container className="relative grid gap-10 lg:grid-cols-[.9fr_1.1fr] lg:items-center">
+          <Container className="relative grid gap-10 lg:grid-cols-[.85fr_1.15fr] lg:items-center">
             <div className="max-w-xl">
               <p className="text-xs font-black uppercase tracking-[.18em] text-mint">Elegí lo que acompaña</p>
               <h2 className="mt-4 font-display text-[clamp(3rem,6vw,5.8rem)] leading-[.87] tracking-[-.06em] uppercase">Armá algo que tenga sentido para tu plan.</h2>
               <p className="mt-6 text-base leading-7 text-white/70">Encontrá packs, combos, minis, mixers y vasos publicados para resolver el brindis a tu manera.</p>
               <div className="mt-8 flex flex-wrap gap-3"><ButtonLink href="/productos?categoria=combos" variant="lightdark">Ver packs</ButtonLink><Link className="events-text-link" href="/productos">Explorar catálogo <span>→</span></Link></div>
             </div>
-            <div className="events-plan-products" aria-hidden="true">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="events-plan-pack" alt="" src="/packx12.webp" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="events-plan-fernet" alt="" src="/fernetsinfondo.png" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="events-plan-coke" alt="" src="/cocacolapng.webp" />
+            <div className="events-plan-categories" aria-label="Packs, combos, minis, vasos y mixers">
+              <span>PACKS</span><span>COMBOS</span><span>MINIS</span><span>VASOS</span><span>MIXERS</span>
             </div>
           </Container>
         </section>

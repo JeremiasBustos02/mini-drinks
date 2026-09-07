@@ -16,20 +16,13 @@ export default function WholesalePage() {
       <main id="contenido" className="wholesale-page overflow-hidden bg-canvas">
         <section className="wholesale-hero relative isolate overflow-hidden bg-ink py-16 text-white sm:py-20 lg:py-24">
           <div className="wholesale-hero-repeat" aria-hidden="true">MINI MINI MINI MINI</div>
-          <Container className="relative grid min-h-[34rem] items-end gap-8 lg:grid-cols-[1.03fr_.97fr]">
-            <div className="relative z-10 max-w-3xl">
+          <div className="wholesale-hero-line" aria-hidden="true"><svg viewBox="0 0 1440 500" preserveAspectRatio="none"><path d="M-34 355C205 172 338 463 585 261c183-150 324-98 455 27 112 107 236 44 434-100" fill="none" stroke="currentColor" strokeWidth="8" /></svg></div>
+          <Container className="relative flex min-h-[34rem] items-end">
+            <div className="relative z-10 max-w-4xl">
               <p className="text-xs font-black uppercase tracking-[.2em] text-mint">Mayoristas</p>
               <h1 className="mt-4 font-display text-[clamp(4rem,9vw,8rem)] leading-[.82] tracking-[-.065em] uppercase">Mini en tamaño.<br /><span className="text-mint">Grande</span> para vender.</h1>
               <p className="mt-7 max-w-lg text-base leading-7 text-white/70 sm:text-lg">Minis, mixers, vasos, combos y packs para sumar una vuelta distinta a tu mostrador.</p>
               <ButtonLink href="/productos" variant="lightdark" className="mt-8">Ver catálogo</ButtonLink>
-            </div>
-            <div className="wholesale-hero-shelf" aria-hidden="true">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="wholesale-shelf-fernet" alt="" src="/fernetsinfondo.png" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="wholesale-shelf-coke" alt="" src="/cocacolapng.webp" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="wholesale-shelf-pack" alt="" src="/packx12.webp" />
             </div>
           </Container>
         </section>
@@ -47,11 +40,15 @@ export default function WholesalePage() {
 
           <section className="wholesale-range relative mt-16 overflow-hidden border-y border-ink/15 py-14 sm:mt-20 sm:py-16">
             <p className="text-xs font-black uppercase tracking-[.18em] text-action">Qué podés vender</p>
-            <div className="wholesale-range-words mt-7" aria-label="Minis, mixers, vasos, combos y packs">
-              <span>MINIS</span><span>MIXERS</span><span>VASOS</span><span>COMBOS</span><span>PACKS</span>
+            <div className="wholesale-range-list mt-7">
+              {[
+                ["MINIS", "Botellas chicas que llaman la atención y entran fácil en exhibición."],
+                ["MIXERS", "La compañía lista para completar cada combinación."],
+                ["VASOS", "El complemento simple para ofrecer el trago completo."],
+                ["COMBOS", "Mini y mixer juntos, fáciles de entender y elegir."],
+                ["PACKS", "Opciones para regalo, variedad o compra compartida."],
+              ].map(([name, copy], index) => <div key={name}><span>0{index + 1}</span><h3>{name}</h3><p>{copy}</p></div>)}
             </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="wholesale-range-product" alt="" aria-hidden="true" src="/packx12.webp" />
           </section>
 
           <section className="wholesale-final mt-16 sm:mt-20">

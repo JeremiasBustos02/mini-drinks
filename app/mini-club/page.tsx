@@ -37,7 +37,7 @@ export default async function MiniClubPage() {
             <div className="relative z-10 max-w-3xl">
               <p className="text-xs font-black uppercase tracking-[.2em] text-action">Mini Club</p>
               <h1 className="mt-4 font-display text-[clamp(4rem,10vw,8.8rem)] leading-[.82] tracking-[-.065em] uppercase">
-                Tomás <span className="mini-club-word-shift text-action">mini.</span>
+                Tomás <span className="text-action">mini.</span>
                 <br />
                 Sumás en grande.
               </h1>
@@ -49,11 +49,17 @@ export default async function MiniClubPage() {
                 {canViewAccount ? <ButtonLink href="/mi-cuenta" variant="secondary">Ver mis puntos</ButtonLink> : null}
               </div>
             </div>
-            <div className="mini-club-hero-score relative z-10 self-center lg:justify-self-end" aria-label={`${formatLoyaltyPoints(settings.minRedemptionPoints)} puntos para empezar a canjear`}>
-              <span className="mini-club-score-label">PUNTOS</span>
-              <strong>{formatLoyaltyPoints(settings.minRedemptionPoints)}</strong>
-              <span className="mini-club-score-sticker">EN<br />GRANDE</span>
-              <p>para empezar a pagar menos.</p>
+            <div className="mini-club-hero-ticket relative z-10 self-center lg:justify-self-end" aria-label="Resumen de beneficios de Mini Club">
+              <p className="mini-club-ticket-kicker">TU PASE MINI</p>
+              <div className="mini-club-ticket-row">
+                <strong>{formatLoyaltyPoints(settings.pointsPerUnit)}</strong>
+                <span>PTS<br />POR CADA<br />{formatArsCents(settings.earnUnitCents)}</span>
+              </div>
+              <div className="mini-club-ticket-row mini-club-ticket-row-accent">
+                <strong>{formatLoyaltyPoints(settings.minRedemptionPoints)}</strong>
+                <span>PTS =<br />{formatArsCents(minimumDiscount)}</span>
+              </div>
+              <p className="mini-club-ticket-limit">HASTA {settings.maxRedemptionPercentage}% <span>de los productos</span></p>
             </div>
           </Container>
         </section>
@@ -61,20 +67,23 @@ export default async function MiniClubPage() {
         <section className="mini-club-numbers relative overflow-hidden bg-ink py-16 text-white sm:py-20">
           <Container className="relative z-10">
             <p className="text-xs font-black uppercase tracking-[.18em] text-mint">La cuenta, sin letra chica</p>
-            <div className="mini-club-number-grid mt-8">
-              <div>
-                <p className="mini-club-big-number">{formatLoyaltyPoints(settings.pointsPerUnit)}</p>
-                <p className="mini-club-big-label">PTS</p>
-                <p className="mini-club-number-copy">por cada {formatArsCents(settings.earnUnitCents)} en productos.</p>
-              </div>
-              <span className="mini-club-number-arrow" aria-hidden="true">→</span>
-              <div className="mini-club-discount-number">
-                <p className="mini-club-big-number">{formatLoyaltyPoints(settings.minRedemptionPoints)}</p>
-                <p className="mini-club-equation">=</p>
-                <p className="mini-club-cash-number">{formatArsCents(minimumDiscount)}</p>
-                <p className="mini-club-number-copy">de descuento en productos.</p>
-              </div>
-            </div>
+            <ol className="mini-club-number-flow mt-8">
+              <li>
+                <span className="mini-club-flow-step">01 · COMPRÁS</span>
+                <strong>{formatArsCents(settings.earnUnitCents)}</strong>
+                <p>en productos</p>
+              </li>
+              <li>
+                <span className="mini-club-flow-step">02 · SUMÁS</span>
+                <strong>{formatLoyaltyPoints(settings.pointsPerUnit)} <small>PTS</small></strong>
+                <p>automáticamente</p>
+              </li>
+              <li>
+                <span className="mini-club-flow-step">03 · CANJEÁS</span>
+                <strong>{formatLoyaltyPoints(settings.minRedemptionPoints)} <small>PTS</small></strong>
+                <p>= {formatArsCents(minimumDiscount)} de descuento · hasta {settings.maxRedemptionPercentage}%</p>
+              </li>
+            </ol>
           </Container>
           <svg className="mini-club-numbers-line" aria-hidden="true" viewBox="0 0 1440 280" preserveAspectRatio="none">
             <path d="M-40 82c179-100 279 141 496 43 184-82 246-142 427-21 183 123 339-43 597-1" fill="none" stroke="currentColor" strokeWidth="3" />
@@ -82,27 +91,7 @@ export default async function MiniClubPage() {
         </section>
 
         <Container className="py-16 sm:py-20">
-          <section className="mini-club-route">
-            <div className="max-w-xl">
-              <p className="text-xs font-black uppercase tracking-[.18em] text-action">Así funciona</p>
-              <h2 className="mt-3 font-display text-[clamp(2.7rem,5vw,4.8rem)] leading-[.9] tracking-[-.055em] uppercase">Tres pasos. Cero vueltas.</h2>
-            </div>
-            <ol className="mini-club-steps mt-10">
-              {[
-                ["01", "SUMÁ", `Cada ${formatArsCents(settings.earnUnitCents)} en productos te da ${formatLoyaltyPoints(settings.pointsPerUnit)} pts.`],
-                ["02", "ACUMULÁ", "Tus puntos quedan en Mini Club hasta que quieras usarlos."],
-                ["03", "CANJEÁ", `Desde ${formatLoyaltyPoints(settings.minRedemptionPoints)} pts empezás a pagar menos.`],
-              ].map(([number, title, copy]) => (
-                <li key={number}>
-                  <span>{number}</span>
-                  <h3>{title}</h3>
-                  <p>{copy}</p>
-                </li>
-              ))}
-            </ol>
-          </section>
-
-          <section className="mini-surprise-feature relative mt-16 overflow-hidden sm:mt-20">
+          <section className="mini-surprise-feature relative overflow-hidden">
             <div className="mini-surprise-ribbon" aria-hidden="true">
               <svg viewBox="0 0 780 510" preserveAspectRatio="none"><path d="M-46 129C93 49 178 171 293 153c141-22 159-137 308-78 90 36 124 63 223 13" fill="none" stroke="currentColor" strokeWidth="13" /></svg>
             </div>
