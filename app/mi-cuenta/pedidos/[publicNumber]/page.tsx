@@ -12,6 +12,8 @@ import { formatLoyaltyPoints } from "@/lib/loyalty/points";
 import { formatArsCents } from "@/lib/money";
 import { shortOrderReference } from "@/lib/account/order-presentation";
 import { OrderTracker } from "@/components/orders/order-tracker";
+import { StorefrontShell } from "@/components/layout/storefront-shell";
+import { Container } from "@/components/ui/container";
 
 export default async function CustomerOrderPage({
   params,
@@ -28,8 +30,10 @@ export default async function CustomerOrderPage({
   if (!result) notFound();
   const { order } = result;
   return (
-    <main className="min-h-screen bg-canvas px-4 py-10 sm:px-6">
-      <div className="mx-auto max-w-3xl">
+    <StorefrontShell>
+      <main id="contenido" className="account-page bg-canvas">
+        <Container className="py-10 sm:py-14">
+          <div className="mx-auto max-w-4xl">
         <Link
           href="/mi-cuenta"
           className="motion-button inline-flex min-h-11 cursor-pointer items-center text-sm font-bold text-ink/65 hover:text-action"
@@ -65,7 +69,7 @@ export default async function CustomerOrderPage({
             </p>
           ) : null}
         </header>
-        <OrderTracker deliveryType={order.deliveryType} status={order.status} />
+        <OrderTracker deliveryType={order.deliveryType} status={order.status} variant="account" />
         <section className="mt-6 rounded-3xl border border-ink/10 bg-paper p-5 sm:p-7">
           <h2 className="font-display text-2xl uppercase">Productos</h2>
           <ol className="mt-5 divide-y divide-ink/10">
@@ -181,7 +185,9 @@ export default async function CustomerOrderPage({
             ) : null}
           </section>
         ) : null}
-      </div>
-    </main>
+          </div>
+        </Container>
+      </main>
+    </StorefrontShell>
   );
 }

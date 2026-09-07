@@ -67,6 +67,283 @@ summary::-webkit-details-marker {
   }
 }
 
+/* Customer account: a compact record of the customer's relationship with MINI. */
+.account-page {
+  min-height: calc(100vh - var(--header-height));
+}
+
+.account-profile {
+  margin-top: 1.5rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 1.5rem;
+  background: var(--paper);
+  box-shadow: 0.45rem 0.45rem 0 color-mix(in srgb, var(--mint) 45%, transparent);
+}
+
+.account-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.account-section-heading p {
+  margin: 0;
+  color: var(--action);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.account-section-heading h2 {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-bowlby), Arial, sans-serif;
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  letter-spacing: -0.04em;
+}
+
+.account-edit-button,
+.account-profile-actions button {
+  min-height: 2.75rem;
+  border-radius: 0.75rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.account-edit-button {
+  border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.account-profile-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.75rem 0 0;
+}
+
+.account-profile-summary div {
+  min-width: 0;
+  padding-top: 0.8rem;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+.account-profile-summary dt {
+  color: color-mix(in srgb, var(--ink) 52%, transparent);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.account-profile-summary dd {
+  overflow-wrap: anywhere;
+  margin: 0.35rem 0 0;
+  font-weight: 700;
+}
+
+.account-profile-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.account-profile-form label {
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.account-profile-form input {
+  width: 100%;
+  min-height: 2.8rem;
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  background: var(--canvas);
+  color: var(--ink);
+  font: inherit;
+}
+
+.account-profile-email,
+.account-form-message,
+.account-profile-actions {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.account-profile-email {
+  color: color-mix(in srgb, var(--ink) 60%, transparent);
+  font-size: 0.875rem;
+}
+
+.account-form-message { font-size: 0.875rem; font-weight: 700; }
+.account-form-error { color: #a62d2d; }
+.account-form-success { color: #2f725a; }
+
+.account-profile-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.account-profile-actions button:first-child { border: 1px solid var(--action); background: var(--action); color: white; }
+.account-profile-actions button:last-child { border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent); background: var(--paper); color: var(--ink); }
+.account-profile-actions button:disabled { cursor: wait; opacity: 0.65; }
+
+.account-order-tracker {
+  border-color: color-mix(in srgb, var(--action) 30%, transparent);
+  box-shadow: 0.45rem 0.45rem 0 color-mix(in srgb, var(--mint) 40%, transparent);
+}
+
+.account-order-tracker ol {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--account-tracker-step-count), minmax(0, 1fr));
+  gap: 0;
+  isolation: isolate;
+}
+
+.account-order-tracker ol::before {
+  position: absolute;
+  top: 1.125rem;
+  right: calc(50% / var(--account-tracker-step-count));
+  left: calc(50% / var(--account-tracker-step-count));
+  z-index: 0;
+  height: 0.25rem;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  content: "";
+}
+
+.account-order-tracker ol::after {
+  position: absolute;
+  top: 1.125rem;
+  left: calc(50% / var(--account-tracker-step-count));
+  z-index: 0;
+  width: var(--account-tracker-active-width);
+  height: 0.25rem;
+  border-radius: 1rem;
+  background: var(--action);
+  transition: width 250ms cubic-bezier(0.2, 0, 0, 1);
+  content: "";
+}
+
+.account-order-tracker li {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: 2.25rem auto;
+  justify-items: center;
+  min-width: 0;
+  text-align: center;
+}
+
+.account-order-tracker li > span:first-child {
+  position: relative;
+  z-index: 1;
+  width: 1.75rem;
+  height: 1.75rem;
+  align-self: center;
+  border: 2px solid color-mix(in srgb, var(--ink) 22%, var(--paper));
+  background: var(--paper);
+  box-shadow: 0 0 0 4px var(--paper);
+  color: color-mix(in srgb, var(--ink) 45%, transparent);
+  transition: transform 250ms cubic-bezier(0.2, 0, 0, 1), border-color 250ms cubic-bezier(0.2, 0, 0, 1), background-color 250ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.account-order-tracker li[data-stage="completed"] > span:first-child {
+  border-color: var(--action);
+  background: var(--action);
+  color: white;
+}
+
+.account-order-tracker li[data-stage="current"] > span:first-child {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0.35rem solid color-mix(in srgb, var(--mint) 72%, var(--paper));
+  background: var(--action);
+  box-shadow: 0 0 0 4px var(--paper), 0 0 0 6px color-mix(in srgb, var(--action) 28%, transparent);
+  color: white;
+  transform: scale(1.03);
+}
+
+.account-order-tracker li p {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 8rem);
+  margin-top: 0.55rem;
+  line-height: 1.2;
+}
+
+.account-order-tracker li[data-stage="completed"] p { color: var(--ink); font-weight: 700; }
+.account-order-tracker li[data-stage="current"] p { color: var(--ink); font-weight: 900; }
+.account-order-tracker li[data-stage="pending"] p { color: color-mix(in srgb, var(--ink) 52%, transparent); }
+
+.account-tracker-now {
+  position: absolute;
+  top: -1.45rem;
+  padding: 0.18rem 0.4rem;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.account-order-exception { border-color: color-mix(in srgb, var(--action) 50%, transparent); }
+
+@media (max-width: 639px) {
+  .account-profile-summary,
+  .account-profile-form { grid-template-columns: 1fr; }
+  .account-order-tracker ol {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-rows: 3.5rem;
+    gap: 0;
+    padding: 0;
+  }
+
+  .account-order-tracker ol::before { display: none; }
+  .account-order-tracker ol::after { display: none; }
+
+  .account-order-tracker li {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    grid-template-rows: 1fr;
+    justify-items: start;
+    text-align: left;
+  }
+
+  .account-order-tracker li:not(:last-child)::after {
+    position: absolute;
+    top: 1.125rem;
+    left: calc(1.125rem - 0.125rem);
+    z-index: 0;
+    width: 0.25rem;
+    height: 3.5rem;
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--ink) 12%, transparent);
+    content: "";
+  }
+
+  .account-order-tracker li[data-stage="completed"]:not(:last-child)::after { background: var(--action); }
+  .account-order-tracker li > span:first-child { grid-column: 1; }
+  .account-order-tracker li p { grid-column: 2; width: auto; margin: 0; align-self: center; }
+  .account-tracker-now { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-order-tracker ol::before,
+  .account-order-tracker ol::after,
+  .account-order-tracker li > span:first-child { transition: none; }
+}
+
 /* Editorial destination pages: shared Mini Drinks surfaces, type and motion without a card-grid layout. */
 .mini-club-page,
 .events-page,
