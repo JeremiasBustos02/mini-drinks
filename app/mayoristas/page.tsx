@@ -14,15 +14,13 @@ export default function WholesalePage() {
   return (
     <StorefrontShell>
       <main id="contenido" className="wholesale-page overflow-hidden bg-canvas">
-        <section className="wholesale-hero relative isolate overflow-hidden bg-ink py-16 text-white sm:py-20 lg:py-24">
-          <div className="wholesale-hero-repeat" aria-hidden="true">MINI MINI MINI MINI</div>
-          <div className="wholesale-hero-line" aria-hidden="true"><svg viewBox="0 0 1440 500" preserveAspectRatio="none"><path d="M-34 355C205 172 338 463 585 261c183-150 324-98 455 27 112 107 236 44 434-100" fill="none" stroke="currentColor" strokeWidth="8" /></svg></div>
-          <Container className="relative flex min-h-[34rem] items-end">
+        <section className="wholesale-hero border-b border-ink/10 bg-paper">
+          <Container className="flex min-h-[23rem] items-end py-12 sm:min-h-[25rem] sm:py-14 lg:py-16">
             <div className="relative z-10 max-w-4xl">
-              <p className="text-xs font-black uppercase tracking-[.2em] text-mint">Mayoristas</p>
-              <h1 className="mt-4 font-display text-[clamp(4rem,9vw,8rem)] leading-[.82] tracking-[-.065em] uppercase">Mini en tamaño.<br /><span className="text-mint">Grande</span> para vender.</h1>
-              <p className="mt-7 max-w-lg text-base leading-7 text-white/70 sm:text-lg">Minis, mixers, vasos, combos y packs para sumar una vuelta distinta a tu mostrador.</p>
-              <ButtonLink href="/productos" variant="lightdark" className="mt-8">Ver catálogo</ButtonLink>
+              <p className="text-xs font-black uppercase tracking-[.2em] text-action">Mayoristas</p>
+              <h1 className="mt-4 font-display text-[clamp(3.7rem,7vw,6.6rem)] leading-[.84] tracking-[-.065em] uppercase">Mini en tamaño.<br /><span className="text-action">Grande</span> para vender.</h1>
+              <p className="mt-6 max-w-lg text-base leading-7 text-ink/70 sm:text-lg">Minis, mixers, vasos, combos y packs para sumar una vuelta distinta a tu mostrador.</p>
+              <ButtonLink href="/productos" className="mt-7">Ver catálogo</ButtonLink>
             </div>
           </Container>
         </section>

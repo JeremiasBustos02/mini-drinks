@@ -27,16 +27,10 @@ export default async function MiniClubPage() {
     <StorefrontShell>
       <main id="contenido" className="mini-club-page overflow-hidden bg-canvas">
         <section className="mini-club-hero relative isolate overflow-hidden border-b border-ink/10 bg-paper">
-          <div className="mini-club-hero-ribbon" aria-hidden="true">
-            <svg viewBox="0 0 420 580" preserveAspectRatio="none">
-              <path d="M-20 83C85 32 111 112 191 130c92 21 142-50 248-2" fill="none" stroke="currentColor" strokeWidth="17" />
-              <path d="M137 109c-8 123 53 152 45 289-5 84-63 132-11 215" fill="none" stroke="currentColor" strokeWidth="10" />
-            </svg>
-          </div>
-          <Container className="relative grid min-h-[34rem] items-end gap-10 py-16 sm:min-h-[38rem] sm:py-20 lg:grid-cols-[1.08fr_.92fr] lg:py-24">
+          <Container className="relative grid min-h-[27rem] items-center gap-8 py-12 sm:min-h-[30rem] sm:py-14 lg:grid-cols-[1.08fr_.92fr] lg:py-16">
             <div className="relative z-10 max-w-3xl">
               <p className="text-xs font-black uppercase tracking-[.2em] text-action">Mini Club</p>
-              <h1 className="mt-4 font-display text-[clamp(4rem,10vw,8.8rem)] leading-[.82] tracking-[-.065em] uppercase">
+              <h1 className="mt-4 font-display text-[clamp(3.7rem,8vw,7rem)] leading-[.84] tracking-[-.065em] uppercase">
                 Tomás <span className="text-action">mini.</span>
                 <br />
                 Sumás en grande.

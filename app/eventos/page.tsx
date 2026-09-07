@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { StorefrontShell } from "@/components/layout/storefront-shell";
+import { OccasionSelector } from "@/components/events/occasion-selector";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Container } from "@/components/ui/container";
 
@@ -14,11 +14,11 @@ export default function EventsPage() {
   return (
     <StorefrontShell>
       <main id="contenido" className="events-page overflow-hidden bg-canvas">
-        <section className="events-hero relative isolate overflow-hidden py-16 text-white sm:py-20 lg:py-24">
+        <section className="events-hero relative isolate -mt-[var(--header-height)] flex min-h-svh items-center overflow-hidden pt-[calc(var(--header-height)+2.5rem)] pb-12 text-white sm:pt-[calc(var(--header-height)+3.5rem)] sm:pb-16 lg:pt-[calc(var(--header-height)+4rem)] lg:pb-20">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="events-hero-background" alt="" aria-hidden="true" src="/background-hero.webp" />
           <div className="events-hero-overlay" aria-hidden="true" />
-          <Container className="relative flex min-h-[34rem] items-end">
+          <Container className="relative w-full">
             <div className="relative z-10 max-w-4xl">
               <p className="text-xs font-black uppercase tracking-[.2em] text-mint">Eventos</p>
               <h1 className="mt-4 font-display text-[clamp(4rem,9vw,8rem)] leading-[.82] tracking-[-.065em] uppercase">El mini también es parte del plan.</h1>
@@ -34,40 +34,35 @@ export default function EventsPage() {
               <p className="text-xs font-black uppercase tracking-[.18em] text-action">Para lo que venga</p>
               <h2 className="mt-3 font-display text-[clamp(2.7rem,5vw,4.8rem)] leading-[.9] tracking-[-.055em] uppercase">No hace falta una excusa gigante.</h2>
             </div>
-            <div className="events-occasion-list mt-10">
-              {[
-                ["01", "CUMPLEAÑOS", "Un detalle que no termina en un cajón."],
-                ["02", "PREVIAS", "Minis y mixers para arrancar el plan."],
-                ["03", "FIESTAS", "Packs para compartir sin complicarla."],
-                ["04", "REGALOS", "Algo distinto para llevar y abrir."],
-              ].map(([number, title, copy]) => (
-                <article key={title}>
-                  <span>{number}</span><h3>{title}</h3><p>{copy}</p>
-                </article>
-              ))}
-            </div>
+            <OccasionSelector />
           </section>
         </Container>
 
-        <section className="events-plan relative isolate overflow-hidden bg-ink py-16 text-white sm:py-20">
-          <div className="events-plan-line" aria-hidden="true"><svg viewBox="0 0 1440 330" preserveAspectRatio="none"><path d="M-28 241C157 82 341 333 526 189c130-102 232-165 368-74 152 102 264-55 578-97" fill="none" stroke="currentColor" strokeWidth="4" /></svg></div>
-          <Container className="relative grid gap-10 lg:grid-cols-[.85fr_1.15fr] lg:items-center">
-            <div className="max-w-xl">
-              <p className="text-xs font-black uppercase tracking-[.18em] text-mint">Elegí lo que acompaña</p>
-              <h2 className="mt-4 font-display text-[clamp(3rem,6vw,5.8rem)] leading-[.87] tracking-[-.06em] uppercase">Armá algo que tenga sentido para tu plan.</h2>
-              <p className="mt-6 text-base leading-7 text-white/70">Encontrá packs, combos, minis, mixers y vasos publicados para resolver el brindis a tu manera.</p>
-              <div className="mt-8 flex flex-wrap gap-3"><ButtonLink href="/productos?categoria=combos" variant="lightdark">Ver packs</ButtonLink><Link className="events-text-link" href="/productos">Explorar catálogo <span>→</span></Link></div>
+        <section className="events-formats relative isolate overflow-hidden bg-ink py-16 text-white sm:py-20">
+          <div className="events-formats-line" aria-hidden="true"><svg viewBox="0 0 1440 360" preserveAspectRatio="none"><path d="M-35 272C185 123 316 319 519 202c170-98 257-131 400-50 160 90 294-35 557-91" fill="none" stroke="currentColor" strokeWidth="4" /></svg></div>
+          <Container className="events-formats-layout relative">
+            <div className="events-formats-intro">
+              <p className="text-xs font-black uppercase tracking-[.18em] text-mint">Formatos para el plan</p>
+              <h2>Elegí cómo llevarlo.</h2>
             </div>
-            <div className="events-plan-categories" aria-label="Packs, combos, minis, vasos y mixers">
-              <span>PACKS</span><span>COMBOS</span><span>MINIS</span><span>VASOS</span><span>MIXERS</span>
+            <div className="events-formats-list" aria-label="Formatos disponibles">
+              <article><h3>PACKS</h3><p>Todo resuelto.</p></article>
+              <article><h3>COMBOS</h3><p>Mezclá tus favoritos.</p></article>
+              <article><h3>MINIS</h3><p>Elegí una por una.</p></article>
+            </div>
+            <div className="events-formats-close">
+              <p>Vos elegís el formato. Nosotros ponemos los minis.</p>
+              <ButtonLink href="/productos?categoria=combos" variant="lightdark">Ver packs</ButtonLink>
             </div>
           </Container>
         </section>
 
         <Container className="py-16 sm:py-20">
           <section className="events-final">
-            <p className="events-final-kicker">CHICO + DISTINTO + LISTO PARA LLEVAR</p>
-            <h2>Que el plan empiece antes del primer brindis.</h2>
+            <div>
+              <p className="events-final-kicker">CHICO + DISTINTO + LISTO PARA LLEVAR</p>
+              <h2>Que el plan empiece antes del primer brindis.</h2>
+            </div>
             <ButtonLink href="/productos">Ver productos</ButtonLink>
           </section>
         </Container>
