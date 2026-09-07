@@ -33,7 +33,7 @@ export default async function MiniClubPage() {
               <h1 className="mt-4 font-display text-[clamp(3.7rem,8vw,7rem)] leading-[.84] tracking-[-.065em] uppercase">
                 Tomás <span className="text-action">mini.</span>
                 <br />
-                Sumás en grande.
+                Sumas en grande.
               </h1>
               <p className="mt-7 max-w-lg text-base leading-7 text-ink/70 sm:text-lg">
                 Comprás minis, acumulás puntos y los convertís en descuento cuando te pinta.
@@ -95,7 +95,7 @@ export default async function MiniClubPage() {
                 <span>Hay puntos</span>
                 <span>que aparecen</span>
                 <span>donde menos</span>
-                <span>los esperás.</span>
+                <span>los esperas.</span>
               </h2>
               <p className="mt-6 max-w-lg text-base leading-7 text-ink/70">Algunos packs y campañas esconden una tarjeta. Encontrala, escaneala e incorporá la sorpresa a tu cuenta.</p>
               <ol className="mini-surprise-flow mt-8" aria-label="Cómo usar una Mini Sorpresa">
