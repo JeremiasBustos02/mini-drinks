@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
+import { logoutAction } from "@/app/auth/actions";
 import { useCartHydration } from "@/components/cart/use-cart-hydration";
-import { CartIcon, MenuIcon } from "@/components/ui/icons";
 import { Container } from "@/components/ui/container";
+import { CartIcon, MenuIcon } from "@/components/ui/icons";
 import { getCartTotalItems } from "@/lib/cart/cart-utils";
 import { useCartStore } from "@/store/cart-store";
 
@@ -18,9 +19,23 @@ const navigation = [
   { label: "Mayoristas", href: "/#mayoristas" },
 ];
 
+type AccountLink = {
+  label: string;
+  href: string;
+  kind: "guest" | "admin" | "customer";
+};
+type AccountSummary = { displayName: string; availablePoints: string };
+
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
-  const [accountLink, setAccountLink] = useState<{ label: string; href: string } | null>(null);
+  const [accountLink, setAccountLink] = useState<AccountLink | null>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [accountSummary, setAccountSummary] = useState<AccountSummary | null>(
+    null,
+  );
+  const [summaryError, setSummaryError] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+  const accountTriggerRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const hydrated = useCartHydration();
   const items = useCartStore((state) => state.items);
@@ -37,11 +52,67 @@ export function Header() {
   useEffect(() => {
     let active = true;
     fetch("/api/account-access", { cache: "no-store" })
-      .then((response) => response.ok ? response.json() : null)
-      .then((value) => { if (active) setAccountLink(value?.label && value?.href ? value : { label: "Ingresar", href: "/login" }); })
-      .catch(() => { if (active) setAccountLink({ label: "Ingresar", href: "/login" }); });
-    return () => { active = false; };
+      .then((response) => (response.ok ? response.json() : null))
+      .then((value) => {
+        if (active)
+          setAccountLink(
+            value?.label && value?.href && value?.kind
+              ? value
+              : { label: "Ingresar", href: "/login", kind: "guest" },
+          );
+      })
+      .catch(() => {
+        if (active)
+          setAccountLink({ label: "Ingresar", href: "/login", kind: "guest" });
+      });
+    return () => {
+      active = false;
+    };
   }, [pathname]);
+
+  useEffect(() => {
+    if (!accountOpen || accountSummary || summaryError) return;
+    let active = true;
+    fetch("/api/account-summary", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : Promise.reject()))
+      .then((summary) => {
+        if (active) setAccountSummary(summary);
+      })
+      .catch(() => {
+        if (active) setSummaryError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [accountOpen, accountSummary, summaryError]);
+
+  const closeAccountMenu = useEffectEvent((restoreFocus = false) => {
+    setAccountOpen(false);
+    if (restoreFocus) accountTriggerRef.current?.focus();
+  });
+
+  useEffect(() => {
+    if (!accountOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!accountMenuRef.current?.contains(event.target as Node))
+        closeAccountMenu();
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeAccountMenu(true);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [accountOpen]);
+
+  const accountControlClass =
+    "header-control motion-button inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-ink/10 bg-white/85 px-3 text-sm font-bold leading-none shadow-[0_2px_0_rgb(13_13_13_/_10%)] transition duration-200 hover:-translate-y-px hover:border-action/35 hover:bg-mint/25 hover:text-action hover:shadow-[0_4px_0_rgb(13_13_13_/_12%)] active:translate-y-0 active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action";
 
   return (
     <>
@@ -51,7 +122,10 @@ export function Header() {
       >
         Saltar al contenido
       </Link>
-      <header className="site-header sticky top-0 z-50 border-b border-white/20 bg-paper/55 backdrop-blur-xl" data-scrolled={scrolled ? "" : undefined}>
+      <header
+        className="site-header sticky top-0 z-50 border-b border-white/20 bg-paper/55 backdrop-blur-xl"
+        data-scrolled={scrolled ? "" : undefined}
+      >
         <Container className="flex h-[var(--header-height)] items-center justify-between gap-4">
           <Link
             href="/"
@@ -60,7 +134,6 @@ export function Header() {
           >
             MINI<span className="text-action">.</span>
           </Link>
-
           <nav
             className="hidden items-center gap-6 md:flex"
             aria-label="Principal"
@@ -69,17 +142,12 @@ export function Header() {
               <Link
                 key={item.label}
                 href={item.href}
-                className={`site-header-link text-sm font-bold transition-colors ${
-                  item.label === "Mayoristas"
-                    ? "text-action hover:text-ink"
-                    : "text-ink/75 hover:text-action"
-                }`}
+                className={`site-header-link text-sm font-bold transition-colors ${item.label === "Mayoristas" ? "text-action hover:text-ink" : "text-ink/75 hover:text-action"}`}
               >
                 {item.label}
               </Link>
             ))}
           </nav>
-
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -88,19 +156,85 @@ export function Header() {
               className="header-control motion-button relative grid size-11 cursor-pointer place-items-center rounded-xl border border-ink/10 bg-white/85 shadow-[0_2px_0_rgb(13_13_13_/_10%)]"
             >
               <CartIcon />
-              <span key={totalItems} className="quantity-value absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-action text-[0.65rem] font-black text-white">
+              <span
+                key={totalItems}
+                className="quantity-value absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-action text-[0.65rem] font-black text-white"
+              >
                 {totalItems > 99 ? "99+" : totalItems}
               </span>
             </button>
-
-            {accountLink && <Link
-              aria-label={accountLink.label}
-              className="header-control motion-button inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-ink/10 bg-white/85 px-3 text-sm font-bold leading-none shadow-[0_2px_0_rgb(13_13_13_/_10%)] transition duration-200 hover:-translate-y-px hover:border-action/35 hover:bg-mint/25 hover:text-action hover:shadow-[0_4px_0_rgb(13_13_13_/_12%)] active:translate-y-0 active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
-              href={accountLink.href}
-            >
-              {accountLink.label}
-            </Link>}
-
+            {accountLink?.kind === "customer" ? (
+              <div ref={accountMenuRef} className="relative">
+                <button
+                  ref={accountTriggerRef}
+                  type="button"
+                  aria-haspopup="dialog"
+                  aria-expanded={accountOpen}
+                  aria-controls="account-popover"
+                  onClick={() => setAccountOpen((open) => !open)}
+                  className={accountControlClass}
+                >
+                  Mi cuenta
+                </button>
+                {accountOpen ? (
+                  <section
+                    id="account-popover"
+                    className="account-popover absolute top-[calc(100%+0.65rem)] right-0 z-50 w-[min(20rem,calc(100vw-2rem))] rounded-2xl border border-ink/10 bg-paper p-4 text-left shadow-[0_16px_38px_rgb(13_13_13_/_18%)]"
+                    aria-label="Resumen de cuenta"
+                  >
+                    <p className="text-sm font-bold">
+                      {accountSummary
+                        ? `Hola, ${accountSummary.displayName}`
+                        : summaryError
+                          ? "Mi cuenta"
+                          : "Cargando tu cuenta..."}
+                    </p>
+                    {!accountSummary && !summaryError ? (
+                      <span
+                        className="account-summary-loader mt-3 block h-px w-20 bg-action/25"
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                    {accountSummary ? (
+                      <div className="mt-4 border-y border-ink/10 py-3">
+                        <p className="text-xs font-black uppercase tracking-[0.14em] text-action">
+                          Mini Club
+                        </p>
+                        <p className="mt-1 text-lg font-black tabular-nums">
+                          {accountSummary.availablePoints} pts{" "}
+                          <span className="text-sm font-normal text-ink/55">
+                            disponibles
+                          </span>
+                        </p>
+                      </div>
+                    ) : null}
+                    <Link
+                      href="/mi-cuenta"
+                      onClick={() => setAccountOpen(false)}
+                      className="motion-button mt-4 flex min-h-11 cursor-pointer items-center justify-center rounded-xl bg-action px-4 text-sm font-black text-white hover:bg-action/85"
+                    >
+                      Ver mi cuenta
+                    </Link>
+                    <form action={logoutAction}>
+                      <button
+                        type="submit"
+                        className="motion-button mt-2 min-h-11 w-full cursor-pointer rounded-xl px-4 text-sm font-bold text-ink/70 hover:bg-mint/25 hover:text-ink"
+                      >
+                        Cerrar sesión
+                      </button>
+                    </form>
+                  </section>
+                ) : null}
+              </div>
+            ) : accountLink ? (
+              <Link
+                aria-label={accountLink.label}
+                className={accountControlClass}
+                href={accountLink.href}
+              >
+                {accountLink.label}
+              </Link>
+            ) : null}
             <details className="mobile-menu group relative md:hidden">
               <summary
                 aria-label="Abrir o cerrar menú"
@@ -121,7 +255,14 @@ export function Header() {
                     {item.label}
                   </Link>
                 ))}
-                {accountLink && <Link href={accountLink.href} className="block cursor-pointer rounded-xl px-4 py-3 text-base font-bold transition-colors hover:bg-mint/25 hover:text-action focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action">{accountLink.label}</Link>}
+                {accountLink && (
+                  <Link
+                    href={accountLink.href}
+                    className="block cursor-pointer rounded-xl px-4 py-3 text-base font-bold transition-colors hover:bg-mint/25 hover:text-action focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
+                  >
+                    {accountLink.label}
+                  </Link>
+                )}
               </nav>
             </details>
           </div>

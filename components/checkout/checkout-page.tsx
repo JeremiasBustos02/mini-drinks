@@ -16,7 +16,10 @@ import {
 } from "@/lib/checkout/quote-ui";
 import { formatArsCents } from "@/lib/money";
 import { formatLoyaltyPoints } from "@/lib/loyalty/points";
-import { maximumRedeemablePoints, type LoyaltyRedemptionSettings } from "@/lib/loyalty/redemption";
+import {
+  maximumRedeemablePoints,
+  type LoyaltyRedemptionSettings,
+} from "@/lib/loyalty/redemption";
 import { useCartStore } from "@/store/cart-store";
 import type { CartItem } from "@/types/cart";
 import type {
@@ -29,7 +32,8 @@ import type {
 const fieldClass =
   "mt-2 min-h-12 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-3 text-base outline-none transition focus:border-action";
 const checkoutAttemptStorageKey = "mini-checkout-attempt-v1";
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const quoteDebounceMs = 550;
 
 type CheckoutFormValues = {
@@ -78,15 +82,32 @@ function toCheckoutLines(items: CartItem[]): CheckoutCartLine[] | null {
       continue;
     }
     if (item.type === "custom_combo") {
-      const quantities = new Map(item.components.map((component) => [component.productId, component.quantity]));
+      const quantities = new Map(
+        item.components.map((component) => [
+          component.productId,
+          component.quantity,
+        ]),
+      );
       lines.push({
         type: "custom_combo",
         quantity: item.quantity,
         displayedUnitPrice: item.unitPrice,
         components: [
-          { role: "miniature", productId: item.configuration.miniatureId, quantity: quantities.get(item.configuration.miniatureId) ?? 1 },
-          { role: "mixer", productId: item.configuration.mixerId, quantity: quantities.get(item.configuration.mixerId) ?? 1 },
-          { role: "glass", productId: item.configuration.glassId, quantity: quantities.get(item.configuration.glassId) ?? 1 },
+          {
+            role: "miniature",
+            productId: item.configuration.miniatureId,
+            quantity: quantities.get(item.configuration.miniatureId) ?? 1,
+          },
+          {
+            role: "mixer",
+            productId: item.configuration.mixerId,
+            quantity: quantities.get(item.configuration.mixerId) ?? 1,
+          },
+          {
+            role: "glass",
+            productId: item.configuration.glassId,
+            quantity: quantities.get(item.configuration.glassId) ?? 1,
+          },
           ...item.configuration.extraIds.map((productId) => ({
             role: "extra" as const,
             productId,
@@ -156,22 +177,54 @@ function getComponents(line: ResolvedCheckout["lines"][number]) {
     : [...configuration.baseComponents, ...configuration.extras];
 }
 
-function CheckoutSummary({ quote, items }: { quote: ResolvedCheckout | null; items: CartItem[] }) {
+function CheckoutSummary({
+  quote,
+  items,
+}: {
+  quote: ResolvedCheckout | null;
+  items: CartItem[];
+}) {
   if (!quote) {
     return (
       <div className="rounded-[1.5rem] bg-white p-5 sm:p-6">
-        <p className="text-xs font-black tracking-[0.16em] text-action uppercase">Resumen actual</p>
+        <p className="text-xs font-black tracking-[0.16em] text-action uppercase">
+          Resumen actual
+        </p>
         <div className="mt-4 space-y-4">
           {items.map((item) => (
-            <div key={item.lineId} className="flex justify-between gap-4 border-b border-ink/10 pb-4 text-sm">
-              <div><p className="font-black">{item.quantity} x {item.name}</p>{item.type !== "product" ? <p className="mt-1 text-xs text-ink/55">{item.components.map((component) => `${component.quantity} x ${component.name}`).join(" · ")}</p> : null}</div>
-              <p className="shrink-0 font-bold">{formatArsCents(item.unitPrice * item.quantity)}</p>
+            <div
+              key={item.lineId}
+              className="flex justify-between gap-4 border-b border-ink/10 pb-4 text-sm"
+            >
+              <div>
+                <p className="font-black">
+                  {item.quantity} x {item.name}
+                </p>
+                {item.type !== "product" ? (
+                  <p className="mt-1 text-xs text-ink/55">
+                    {item.components
+                      .map(
+                        (component) =>
+                          `${component.quantity} x ${component.name}`,
+                      )
+                      .join(" · ")}
+                  </p>
+                ) : null}
+              </div>
+              <p className="shrink-0 font-bold">
+                {formatArsCents(item.unitPrice * item.quantity)}
+              </p>
             </div>
           ))}
         </div>
         <div className="mt-5 flex items-end justify-between border-t-2 border-ink pt-4">
-          <div><p className="font-black">Estimado</p><p className="text-xs text-ink/55">Se recalcula en servidor.</p></div>
-          <p className="text-2xl font-black">{formatArsCents(getCartSubtotal(items))}</p>
+          <div>
+            <p className="font-black">Estimado</p>
+            <p className="text-xs text-ink/55">Se recalcula en servidor.</p>
+          </div>
+          <p className="text-2xl font-black">
+            {formatArsCents(getCartSubtotal(items))}
+          </p>
         </div>
       </div>
     );
@@ -179,18 +232,67 @@ function CheckoutSummary({ quote, items }: { quote: ResolvedCheckout | null; ite
 
   return (
     <div className="rounded-[1.5rem] bg-white p-5 sm:p-6">
-      <p className="text-xs font-black tracking-[0.16em] text-action uppercase">Total validado</p>
+      <p className="text-xs font-black tracking-[0.16em] text-action uppercase">
+        Total validado
+      </p>
       <div className="mt-4 space-y-4">
         {quote.lines.map((line) => (
-          <div key={line.lineIndex} className="border-b border-ink/10 pb-4 text-sm">
-            <div className="flex justify-between gap-4"><p className="font-black">{line.quantity} x {line.displayName}</p><p className="shrink-0 font-bold">{formatArsCents(line.subtotal)}</p></div>
-            {getComponents(line).length > 0 ? <p className="mt-1 text-xs text-ink/55">{getComponents(line).map((component) => `${component.quantity} x ${component.name}`).join(" · ")}</p> : null}
-            {line.priceChanged ? <p className="mt-2 text-xs font-bold text-action">Precio actualizado de {formatArsCents(line.previousUnitPrice!)} a {formatArsCents(line.unitPrice)}.</p> : null}
+          <div
+            key={line.lineIndex}
+            className="border-b border-ink/10 pb-4 text-sm"
+          >
+            <div className="flex justify-between gap-4">
+              <p className="font-black">
+                {line.quantity} x {line.displayName}
+              </p>
+              <p className="shrink-0 font-bold">
+                {formatArsCents(line.subtotal)}
+              </p>
+            </div>
+            {getComponents(line).length > 0 ? (
+              <p className="mt-1 text-xs text-ink/55">
+                {getComponents(line)
+                  .map(
+                    (component) => `${component.quantity} x ${component.name}`,
+                  )
+                  .join(" · ")}
+              </p>
+            ) : null}
+            {line.priceChanged ? (
+              <p className="mt-2 text-xs font-bold text-action">
+                Precio actualizado de {formatArsCents(line.previousUnitPrice!)}{" "}
+                a {formatArsCents(line.unitPrice)}.
+              </p>
+            ) : null}
           </div>
         ))}
       </div>
-      <dl className="mt-5 space-y-2 text-sm"><div className="flex justify-between"><dt>Subtotal</dt><dd className="font-bold">{formatArsCents(quote.subtotal)}</dd></div>{quote.loyaltyRedemption.discountCents > 0 ? <div className="flex justify-between text-action"><dt>Descuento Mini Club</dt><dd className="font-bold">-{formatArsCents(quote.loyaltyRedemption.discountCents)}</dd></div> : null}<div className="flex justify-between"><dt>Envío</dt><dd className="font-bold">{quote.deliveryTotal === 0 ? "Sin cargo definido" : formatArsCents(quote.deliveryTotal)}</dd></div></dl>
-      <div className="mt-4 flex items-end justify-between border-t-2 border-ink pt-4"><p className="font-black">Total</p><p className="text-2xl font-black">{formatArsCents(quote.total)}</p></div>
+      <dl className="mt-5 space-y-2 text-sm">
+        <div className="flex justify-between">
+          <dt>Subtotal</dt>
+          <dd className="font-bold">{formatArsCents(quote.subtotal)}</dd>
+        </div>
+        {quote.loyaltyRedemption.discountCents > 0 ? (
+          <div className="flex justify-between text-action">
+            <dt>Descuento Mini Club</dt>
+            <dd className="font-bold">
+              -{formatArsCents(quote.loyaltyRedemption.discountCents)}
+            </dd>
+          </div>
+        ) : null}
+        <div className="flex justify-between">
+          <dt>Envío</dt>
+          <dd className="font-bold">
+            {quote.deliveryTotal === 0
+              ? "Sin cargo definido"
+              : formatArsCents(quote.deliveryTotal)}
+          </dd>
+        </div>
+      </dl>
+      <div className="mt-4 flex items-end justify-between border-t-2 border-ink pt-4">
+        <p className="font-black">Total</p>
+        <p className="text-2xl font-black">{formatArsCents(quote.total)}</p>
+      </div>
     </div>
   );
 }
@@ -206,25 +308,165 @@ function LoyaltyRedemptionControl({
   requestedPoints: number;
   onChange: (points: number) => void;
 }) {
-  if (!loyalty) return <p className="rounded-[1.5rem] bg-white p-5 text-sm text-ink/60 sm:p-7">Ingresá para usar tus puntos Mini Club.</p>;
-  const maximum = maximumRedeemablePoints(loyalty.balance, subtotal, loyalty.settings);
+  if (!loyalty)
+    return (
+      <p className="rounded-[1.5rem] bg-white p-5 text-sm text-ink/60 sm:p-7">
+        Ingresá para usar tus puntos Mini Club.
+      </p>
+    );
+  const maximum = maximumRedeemablePoints(
+    loyalty.balance,
+    subtotal,
+    loyalty.settings,
+  );
   const step = loyalty.settings.redemptionStepPoints;
   const enabled = requestedPoints > 0;
   const discount = requestedPoints * loyalty.settings.redemptionValueCents;
+  const minimumDiscount =
+    loyalty.settings.minRedemptionPoints *
+    loyalty.settings.redemptionValueCents;
+  const minimumSubtotal = Math.ceil(
+    (minimumDiscount * 100) / loyalty.settings.maxRedemptionPercentage,
+  );
+  const missingSubtotal = Math.max(minimumSubtotal - subtotal, 0);
+  const progress = Math.min((subtotal / minimumSubtotal) * 100, 100);
   return (
-    <section className="rounded-[1.5rem] bg-white p-5 sm:p-7" aria-labelledby="mini-club-title">
-      <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black tracking-[0.16em] text-action uppercase">Mini Club</p><h2 id="mini-club-title" className="mt-1 font-display text-2xl uppercase">Usá tus puntos</h2></div><p className="text-right text-sm font-black">{formatLoyaltyPoints(loyalty.balance)} pts</p></div>
-      {loyalty.balance < loyalty.settings.minRedemptionPoints ? <p className="mt-4 text-sm text-ink/60">Necesitás {formatLoyaltyPoints(loyalty.settings.minRedemptionPoints)} pts para empezar a canjear.</p> : maximum === 0 ? <p className="mt-4 text-sm text-ink/60">En este pedido todavía no podés usar puntos.</p> : <div className="mt-5"><label className="flex items-center gap-3 text-sm font-bold"><input type="checkbox" checked={enabled} onChange={(event) => onChange(event.target.checked ? loyalty.settings.minRedemptionPoints : 0)} /> Usar puntos</label>{enabled ? <div className="mt-4 flex flex-wrap items-center gap-2"><button type="button" onClick={() => onChange(Math.max(loyalty.settings.minRedemptionPoints, requestedPoints - step))} className="motion-button min-h-11 rounded-xl border-2 border-ink/15 px-4 font-black" aria-label="Usar menos puntos">-</button><output className="min-w-32 text-center text-sm font-black">{formatLoyaltyPoints(requestedPoints)} pts</output><button type="button" onClick={() => onChange(Math.min(maximum, requestedPoints + step))} className="motion-button min-h-11 rounded-xl border-2 border-ink/15 px-4 font-black" aria-label="Usar más puntos">+</button><button type="button" onClick={() => onChange(maximum)} className="motion-button min-h-11 rounded-xl bg-action px-4 text-sm font-black text-white">Usar máximo</button></div> : null}{enabled ? <p className="mt-3 text-sm font-bold text-action">{formatLoyaltyPoints(requestedPoints)} pts · Ahorrás {formatArsCents(discount)}</p> : null}</div>}
+    <section
+      className="rounded-[1.5rem] border border-ink/10 bg-paper p-5 sm:p-6"
+      aria-labelledby="mini-club-title"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-black tracking-[0.16em] text-action uppercase">
+            Mini Club
+          </p>
+          <h2
+            id="mini-club-title"
+            className="mt-1 font-display text-xl uppercase"
+          >
+            Tus puntos
+          </h2>
+        </div>
+        <div className="text-right">
+          <p className="text-lg font-black tabular-nums">
+            {formatLoyaltyPoints(loyalty.balance)} pts
+          </p>
+          <p className="text-xs text-ink/55">disponibles</p>
+        </div>
+      </div>
+      {loyalty.balance < loyalty.settings.minRedemptionPoints ? (
+        <p className="mt-4 text-sm leading-5 text-ink/65">
+          Necesitás {formatLoyaltyPoints(loyalty.settings.minRedemptionPoints)}{" "}
+          pts para empezar a canjear.
+        </p>
+      ) : maximum === 0 ? (
+        <div className="mt-4">
+          <p className="text-sm font-bold leading-5">
+            Te faltan {formatArsCents(missingSubtotal)} en productos para usar
+            tus puntos.
+          </p>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-ink/10">
+            <div
+              className="h-full rounded-full bg-action transition-[width] duration-200"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <p className="mt-2 text-xs leading-5 text-ink/60">
+            Desde {formatArsCents(minimumSubtotal)} podés canjear{" "}
+            {formatLoyaltyPoints(loyalty.settings.minRedemptionPoints)} pts por{" "}
+            {formatArsCents(minimumDiscount)}.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-4">
+          <p className="text-sm leading-5 text-ink/65">
+            Podés ahorrar hasta{" "}
+            <span className="font-black text-ink">
+              {formatArsCents(maximum * loyalty.settings.redemptionValueCents)}
+            </span>{" "}
+            en este pedido.
+          </p>
+          <button
+            type="button"
+            aria-pressed={enabled}
+            onClick={() =>
+              onChange(enabled ? 0 : loyalty.settings.minRedemptionPoints)
+            }
+            className={`motion-button mt-4 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl border px-4 text-sm font-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action ${enabled ? "border-action bg-mint/35 text-ink hover:bg-mint/55" : "border-ink/15 bg-white text-ink hover:border-action/50 hover:bg-mint/20"}`}
+          >
+            {enabled ? "Puntos aplicados" : "Usar mis puntos"}
+          </button>
+          {enabled ? (
+            <div className="loyalty-selector mt-4 border-t border-ink/10 pt-4">
+              <p className="text-xs font-black uppercase tracking-[0.12em] text-ink/55">
+                Puntos a usar
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={
+                    requestedPoints <= loyalty.settings.minRedemptionPoints
+                  }
+                  onClick={() =>
+                    onChange(
+                      Math.max(
+                        loyalty.settings.minRedemptionPoints,
+                        requestedPoints - step,
+                      ),
+                    )
+                  }
+                  className="motion-button grid size-11 cursor-pointer place-items-center rounded-xl border border-ink/15 bg-white text-lg font-black hover:border-action/50 hover:bg-mint/20 disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Usar menos puntos"
+                >
+                  −
+                </button>
+                <output className="min-w-28 text-center text-sm font-black tabular-nums">
+                  {formatLoyaltyPoints(requestedPoints)} pts
+                </output>
+                <button
+                  type="button"
+                  disabled={requestedPoints >= maximum}
+                  onClick={() =>
+                    onChange(Math.min(maximum, requestedPoints + step))
+                  }
+                  className="motion-button grid size-11 cursor-pointer place-items-center rounded-xl border border-ink/15 bg-white text-lg font-black hover:border-action/50 hover:bg-mint/20 disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Usar más puntos"
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  disabled={requestedPoints === maximum}
+                  onClick={() => onChange(maximum)}
+                  className="motion-button min-h-11 cursor-pointer rounded-xl px-3 text-sm font-bold text-action hover:bg-mint/25 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Usar máximo
+                </button>
+              </div>
+              <p className="mt-3 text-sm font-black text-action">
+                Ahorrás {formatArsCents(discount)}
+              </p>
+            </div>
+          ) : null}
+        </div>
+      )}
     </section>
   );
 }
 
-export function CheckoutPage({ loyalty }: { loyalty: { balance: number; settings: LoyaltyRedemptionSettings } | null }) {
+export function CheckoutPage({
+  loyalty,
+}: {
+  loyalty: { balance: number; settings: LoyaltyRedemptionSettings } | null;
+}) {
   const hydrated = useCartHydration();
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
-  const [fulfillment, setFulfillment] = useState<"pickup" | "delivery">("pickup");
-  const [formValues, setFormValues] = useState<CheckoutFormValues>(emptyFormValues);
+  const [fulfillment, setFulfillment] = useState<"pickup" | "delivery">(
+    "pickup",
+  );
+  const [formValues, setFormValues] =
+    useState<CheckoutFormValues>(emptyFormValues);
   const [quote, setQuote] = useState<{
     value: ResolvedCheckout;
     hash: string;
@@ -234,7 +476,9 @@ export function CheckoutPage({ loyalty }: { loyalty: { balance: number; settings
     failure: CheckoutFailure;
     signature: string;
   } | null>(null);
-  const [paymentError, setPaymentError] = useState<CheckoutFailure | null>(null);
+  const [paymentError, setPaymentError] = useState<CheckoutFailure | null>(
+    null,
+  );
   const [retryNonce, setRetryNonce] = useState(0);
   const [requestedPoints, setRequestedPoints] = useState(0);
   const [isPaying, startPaymentTransition] = useTransition();
@@ -268,10 +512,14 @@ export function CheckoutPage({ loyalty }: { loyalty: { balance: number; settings
     address: quoteDraft.address,
     requestedPoints,
   });
-  const activeQuote = quote && isCurrentCheckoutQuote(quote.signature, quoteSignature) ? quote : null;
-  const activeQuoteError = quoteError && isCurrentCheckoutQuote(quoteError.signature, quoteSignature)
-    ? quoteError.failure
-    : null;
+  const activeQuote =
+    quote && isCurrentCheckoutQuote(quote.signature, quoteSignature)
+      ? quote
+      : null;
+  const activeQuoteError =
+    quoteError && isCurrentCheckoutQuote(quoteError.signature, quoteSignature)
+      ? quoteError.failure
+      : null;
   const quoteUiState = getCheckoutQuoteUiState({
     ready: quoteReady,
     hasQuote: Boolean(activeQuote),
@@ -282,7 +530,9 @@ export function CheckoutPage({ loyalty }: { loyalty: { balance: number; settings
   function ensureIdentifiers() {
     if (!checkoutAttemptId.current || !accessToken.current) {
       try {
-        const stored = JSON.parse(localStorage.getItem(checkoutAttemptStorageKey) ?? "null") as {
+        const stored = JSON.parse(
+          localStorage.getItem(checkoutAttemptStorageKey) ?? "null",
+        ) as {
           checkoutAttemptId?: unknown;
           accessToken?: unknown;
         } | null;
@@ -301,10 +551,13 @@ export function CheckoutPage({ loyalty }: { loyalty: { balance: number; settings
     }
     checkoutAttemptId.current ||= crypto.randomUUID();
     accessToken.current ||= crypto.randomUUID();
-    localStorage.setItem(checkoutAttemptStorageKey, JSON.stringify({
-      checkoutAttemptId: checkoutAttemptId.current,
-      accessToken: accessToken.current,
-    }));
+    localStorage.setItem(
+      checkoutAttemptStorageKey,
+      JSON.stringify({
+        checkoutAttemptId: checkoutAttemptId.current,
+        accessToken: accessToken.current,
+      }),
+    );
   }
 
   useEffect(() => {
@@ -328,7 +581,11 @@ export function CheckoutPage({ loyalty }: { loyalty: { balance: number; settings
         if (!isLatestQuoteRequest(requestId, quoteRequestId.current)) return;
 
         if (result.ok) {
-          setQuote({ value: result.quote, hash: result.quoteHash, signature: quoteSignature });
+          setQuote({
+            value: result.quote,
+            hash: result.quoteHash,
+            signature: quoteSignature,
+          });
           setQuoteError(null);
         } else {
           setQuote(null);
@@ -349,7 +606,17 @@ export function CheckoutPage({ loyalty }: { loyalty: { balance: number; settings
     }, quoteDebounceMs);
 
     return () => window.clearTimeout(timer);
-  }, [cartSignature, formValues, fulfillment, hydrated, items, quoteReady, quoteSignature, requestedPoints, retryNonce]);
+  }, [
+    cartSignature,
+    formValues,
+    fulfillment,
+    hydrated,
+    items,
+    quoteReady,
+    quoteSignature,
+    requestedPoints,
+    retryNonce,
+  ]);
 
   function handleFormChange(event: React.FormEvent<HTMLFormElement>) {
     const data = new FormData(event.currentTarget);
@@ -389,7 +656,8 @@ export function CheckoutPage({ loyalty }: { loyalty: { balance: number; settings
         });
         if (result.ok) {
           localStorage.removeItem(checkoutAttemptStorageKey);
-          if (JSON.stringify(useCartStore.getState().items) === cartSignature) clearCart();
+          if (JSON.stringify(useCartStore.getState().items) === cartSignature)
+            clearCart();
           window.location.assign(result.paymentUrl);
         } else {
           setPaymentError(result);
@@ -399,34 +667,308 @@ export function CheckoutPage({ loyalty }: { loyalty: { balance: number; settings
             localStorage.removeItem(checkoutAttemptStorageKey);
           }
           if (result.quote && result.quoteHash) {
-            setQuote({ value: result.quote, hash: result.quoteHash, signature: quoteSignature });
+            setQuote({
+              value: result.quote,
+              hash: result.quoteHash,
+              signature: quoteSignature,
+            });
           }
         }
       } catch {
         setPaymentError({
           ok: false,
           code: "order_not_created",
-          message: "No pudimos comunicarnos con el servidor. Tu carrito sigue guardado.",
+          message:
+            "No pudimos comunicarnos con el servidor. Tu carrito sigue guardado.",
         });
       }
     });
   }
 
-  if (!hydrated) return <section className="py-12"><Container><div className="h-96 rounded-[1.5rem] bg-white" /></Container></section>;
-  if (items.length === 0) return <section className="py-16"><Container><div className="mx-auto max-w-xl rounded-[1.5rem] bg-white p-8 text-center"><h1 className="font-display text-4xl uppercase">Tu carrito está vacío</h1><Link href="/productos" className="motion-button mt-6 inline-flex rounded-xl bg-action px-6 py-3 font-black text-white">Ver productos</Link></div></Container></section>;
+  if (!hydrated)
+    return (
+      <section className="py-12">
+        <Container>
+          <div className="h-96 rounded-[1.5rem] bg-white" />
+        </Container>
+      </section>
+    );
+  if (items.length === 0)
+    return (
+      <section className="py-16">
+        <Container>
+          <div className="mx-auto max-w-xl rounded-[1.5rem] bg-white p-8 text-center">
+            <h1 className="font-display text-4xl uppercase">
+              Tu carrito está vacío
+            </h1>
+            <Link
+              href="/productos"
+              className="motion-button mt-6 inline-flex rounded-xl bg-action px-6 py-3 font-black text-white"
+            >
+              Ver productos
+            </Link>
+          </div>
+        </Container>
+      </section>
+    );
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
       <Container>
-        <div className="max-w-3xl"><p className="text-xs font-black tracking-[0.2em] text-action uppercase">Último paso</p><h1 className="mt-2 font-display text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.9] tracking-[-0.04em] uppercase">Completá tu pedido</h1><p className="mt-4 max-w-2xl text-ink/65">Actualizamos el total con el catálogo y stock actuales mientras completás los datos.</p></div>
-        <form onSubmit={handleSubmit} onChange={handleFormChange} className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_25rem]">
+        <div className="max-w-3xl">
+          <p className="text-xs font-black tracking-[0.2em] text-action uppercase">
+            Último paso
+          </p>
+          <h1 className="mt-2 font-display text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.9] tracking-[-0.04em] uppercase">
+            Completá tu pedido
+          </h1>
+          <p className="mt-4 max-w-2xl text-ink/65">
+            Actualizamos el total con el catálogo y stock actuales mientras
+            completás los datos.
+          </p>
+        </div>
+        <form
+          onSubmit={handleSubmit}
+          onChange={handleFormChange}
+          className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_25rem]"
+        >
           <div className="space-y-6">
-            <fieldset className="rounded-[1.5rem] bg-white p-5 sm:p-7"><legend className="px-2 font-display text-2xl uppercase">Tus datos</legend><div className="mt-2 grid gap-4 sm:grid-cols-2"><label className="text-sm font-bold">Nombre<input name="firstName" autoComplete="given-name" required maxLength={80} className={fieldClass} /></label><label className="text-sm font-bold">Apellido<input name="lastName" autoComplete="family-name" required maxLength={80} className={fieldClass} /></label><label className="text-sm font-bold">Teléfono<input name="phone" type="tel" autoComplete="tel" required maxLength={40} className={fieldClass} /></label><label className="text-sm font-bold">Email<input name="email" type="email" autoComplete="email" required maxLength={254} className={fieldClass} /></label></div></fieldset>
-            <fieldset className="rounded-[1.5rem] bg-white p-5 sm:p-7"><legend className="px-2 font-display text-2xl uppercase">Entrega</legend><div className="mt-2 grid gap-3 sm:grid-cols-2"><label className={`cursor-pointer rounded-xl border-2 p-4 ${fulfillment === "pickup" ? "border-action bg-mint/35" : "border-ink/15"}`}><input type="radio" name="fulfillment" value="pickup" checked={fulfillment === "pickup"} onChange={() => setFulfillment("pickup")} className="mr-2" /><span className="font-black">Retiro</span><span className="mt-1 block text-xs text-ink/60">Coordinamos el punto y horario.</span></label><label className={`cursor-pointer rounded-xl border-2 p-4 ${fulfillment === "delivery" ? "border-action bg-mint/35" : "border-ink/15"}`}><input type="radio" name="fulfillment" value="delivery" checked={fulfillment === "delivery"} onChange={() => setFulfillment("delivery")} className="mr-2" /><span className="font-black">Envío local</span><span className="mt-1 block text-xs text-ink/60">Entrega propia, sujeta a coordinación.</span></label></div>{fulfillment === "delivery" ? <div className="mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_8rem]"><label className="text-sm font-bold">Calle<input name="street" autoComplete="address-line1" required maxLength={120} className={fieldClass} /></label><label className="text-sm font-bold">Número<input name="number" required maxLength={20} className={fieldClass} /></label><label className="text-sm font-bold sm:col-span-2">Localidad<input name="locality" autoComplete="address-level2" required maxLength={100} className={fieldClass} /></label><label className="text-sm font-bold sm:col-span-2">Referencia <span className="font-normal text-ink/50">(opcional)</span><input name="reference" maxLength={240} className={fieldClass} /></label></div> : null}</fieldset>
-            <LoyaltyRedemptionControl loyalty={loyalty} subtotal={activeQuote?.value.subtotal ?? getCartSubtotal(items)} requestedPoints={requestedPoints} onChange={setRequestedPoints} />
-            <label className="block rounded-[1.5rem] bg-white p-5 text-sm font-bold sm:p-7">Observaciones <span className="font-normal text-ink/50">(opcional)</span><textarea name="notes" maxLength={500} rows={3} className={fieldClass} /></label>
+            <fieldset className="rounded-[1.5rem] bg-white p-5 sm:p-7">
+              <legend className="px-2 font-display text-2xl uppercase">
+                Tus datos
+              </legend>
+              <div className="mt-2 grid gap-4 sm:grid-cols-2">
+                <label className="text-sm font-bold">
+                  Nombre
+                  <input
+                    name="firstName"
+                    autoComplete="given-name"
+                    required
+                    maxLength={80}
+                    className={fieldClass}
+                  />
+                </label>
+                <label className="text-sm font-bold">
+                  Apellido
+                  <input
+                    name="lastName"
+                    autoComplete="family-name"
+                    required
+                    maxLength={80}
+                    className={fieldClass}
+                  />
+                </label>
+                <label className="text-sm font-bold">
+                  Teléfono
+                  <input
+                    name="phone"
+                    type="tel"
+                    autoComplete="tel"
+                    required
+                    maxLength={40}
+                    className={fieldClass}
+                  />
+                </label>
+                <label className="text-sm font-bold">
+                  Email
+                  <input
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    maxLength={254}
+                    className={fieldClass}
+                  />
+                </label>
+              </div>
+            </fieldset>
+            <fieldset className="rounded-[1.5rem] bg-white p-5 sm:p-7">
+              <legend className="px-2 font-display text-2xl uppercase">
+                Entrega
+              </legend>
+              <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                <label
+                  className={`cursor-pointer rounded-xl border-2 p-4 ${fulfillment === "pickup" ? "border-action bg-mint/35" : "border-ink/15"}`}
+                >
+                  <input
+                    type="radio"
+                    name="fulfillment"
+                    value="pickup"
+                    checked={fulfillment === "pickup"}
+                    onChange={() => setFulfillment("pickup")}
+                    className="mr-2"
+                  />
+                  <span className="font-black">Retiro</span>
+                  <span className="mt-1 block text-xs text-ink/60">
+                    Coordinamos el punto y horario.
+                  </span>
+                </label>
+                <label
+                  className={`cursor-pointer rounded-xl border-2 p-4 ${fulfillment === "delivery" ? "border-action bg-mint/35" : "border-ink/15"}`}
+                >
+                  <input
+                    type="radio"
+                    name="fulfillment"
+                    value="delivery"
+                    checked={fulfillment === "delivery"}
+                    onChange={() => setFulfillment("delivery")}
+                    className="mr-2"
+                  />
+                  <span className="font-black">Envío local</span>
+                  <span className="mt-1 block text-xs text-ink/60">
+                    Entrega propia, sujeta a coordinación.
+                  </span>
+                </label>
+              </div>
+              {fulfillment === "delivery" ? (
+                <div className="mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_8rem]">
+                  <label className="text-sm font-bold">
+                    Calle
+                    <input
+                      name="street"
+                      autoComplete="address-line1"
+                      required
+                      maxLength={120}
+                      className={fieldClass}
+                    />
+                  </label>
+                  <label className="text-sm font-bold">
+                    Número
+                    <input
+                      name="number"
+                      required
+                      maxLength={20}
+                      className={fieldClass}
+                    />
+                  </label>
+                  <label className="text-sm font-bold sm:col-span-2">
+                    Localidad
+                    <input
+                      name="locality"
+                      autoComplete="address-level2"
+                      required
+                      maxLength={100}
+                      className={fieldClass}
+                    />
+                  </label>
+                  <label className="text-sm font-bold sm:col-span-2">
+                    Referencia{" "}
+                    <span className="font-normal text-ink/50">(opcional)</span>
+                    <input
+                      name="reference"
+                      maxLength={240}
+                      className={fieldClass}
+                    />
+                  </label>
+                </div>
+              ) : null}
+            </fieldset>
+            <LoyaltyRedemptionControl
+              loyalty={loyalty}
+              subtotal={activeQuote?.value.subtotal ?? getCartSubtotal(items)}
+              requestedPoints={requestedPoints}
+              onChange={setRequestedPoints}
+            />
+            <label className="block rounded-[1.5rem] bg-white p-5 text-sm font-bold sm:p-7">
+              Observaciones{" "}
+              <span className="font-normal text-ink/50">(opcional)</span>
+              <textarea
+                name="notes"
+                maxLength={500}
+                rows={3}
+                className={fieldClass}
+              />
+            </label>
           </div>
-          <aside className="lg:sticky lg:top-28"><CheckoutSummary quote={activeQuote?.value ?? null} items={items} />{quoteUiState === "incomplete" ? <p className="mt-4 text-sm font-bold text-ink/60">Completá los datos necesarios para continuar.</p> : null}{quoteUiState === "validating" ? <p className="mt-4 text-sm font-bold text-ink/60" aria-live="polite">Actualizando tu pedido...</p> : null}{quoteUiState === "valid" ? <div className="mt-4 rounded-xl border-2 border-action bg-mint/40 p-4 text-sm font-bold">Pedido actualizado. Ya podés continuar al pago.</div> : null}{quoteUiState === "price_changed" ? <div className="mt-4 rounded-xl border-2 border-action bg-mint/40 p-4 text-sm font-bold">Actualizamos el total con la información más reciente.</div> : null}{activeQuoteError ? <div role="alert" className="mt-4 rounded-xl border-2 border-red-800 bg-red-50 p-4 text-sm font-bold text-red-900"><p>{["product_unavailable", "combo_unavailable", "insufficient_stock"].includes(activeQuoteError.code) ? activeQuoteError.message : "No pudimos actualizar tu pedido. Intentá nuevamente."}</p>{activeQuoteError.retryAfterSeconds ? <p className="mt-1 text-xs">Podés reintentar en aproximadamente {activeQuoteError.retryAfterSeconds} segundos.</p> : null}{activeQuoteError.correlationId ? <p className="mt-1 text-xs font-normal">Ref. {activeQuoteError.correlationId}</p> : null}<button type="button" onClick={() => { setQuoteError(null); setRetryNonce((value) => value + 1); }} className="motion-button mt-3 text-sm font-bold text-red-900 underline decoration-2 underline-offset-4">Reintentar</button></div> : null}{paymentError ? <div role="alert" className="mt-4 rounded-xl border-2 border-red-800 bg-red-50 p-4 text-sm font-bold text-red-900"><p>{paymentError.message}</p>{paymentError.correlationId ? <p className="mt-1 text-xs font-normal">Ref. {paymentError.correlationId}</p> : null}</div> : null}<button type="submit" disabled={!activeQuote || isPaying} className="motion-button mt-4 flex min-h-13 w-full items-center justify-center rounded-xl bg-action px-6 py-3 text-base font-black text-white disabled:cursor-not-allowed disabled:opacity-60">{isPaying ? "Preparando pago..." : "Pagar con Mercado Pago"}</button><Link href="/carrito" className="motion-button mt-4 flex min-h-11 items-center justify-center text-sm font-bold text-action underline decoration-2 underline-offset-4">Volver al carrito</Link></aside>
+          <aside className="lg:sticky lg:top-28">
+            <CheckoutSummary quote={activeQuote?.value ?? null} items={items} />
+            {quoteUiState === "incomplete" ? (
+              <p className="mt-4 text-sm font-bold text-ink/60">
+                Completá los datos necesarios para continuar.
+              </p>
+            ) : null}
+            {quoteUiState === "validating" ? (
+              <p
+                className="mt-4 text-sm font-bold text-ink/60"
+                aria-live="polite"
+              >
+                Actualizando tu pedido...
+              </p>
+            ) : null}
+            {quoteUiState === "valid" ? (
+              <div className="mt-4 rounded-xl border-2 border-action bg-mint/40 p-4 text-sm font-bold">
+                Pedido actualizado. Ya podés continuar al pago.
+              </div>
+            ) : null}
+            {quoteUiState === "price_changed" ? (
+              <div className="mt-4 rounded-xl border-2 border-action bg-mint/40 p-4 text-sm font-bold">
+                Actualizamos el total con la información más reciente.
+              </div>
+            ) : null}
+            {activeQuoteError ? (
+              <div
+                role="alert"
+                className="mt-4 rounded-xl border-2 border-red-800 bg-red-50 p-4 text-sm font-bold text-red-900"
+              >
+                <p>
+                  {[
+                    "product_unavailable",
+                    "combo_unavailable",
+                    "insufficient_stock",
+                  ].includes(activeQuoteError.code)
+                    ? activeQuoteError.message
+                    : "No pudimos actualizar tu pedido. Intentá nuevamente."}
+                </p>
+                {activeQuoteError.retryAfterSeconds ? (
+                  <p className="mt-1 text-xs">
+                    Podés reintentar en aproximadamente{" "}
+                    {activeQuoteError.retryAfterSeconds} segundos.
+                  </p>
+                ) : null}
+                {activeQuoteError.correlationId ? (
+                  <p className="mt-1 text-xs font-normal">
+                    Ref. {activeQuoteError.correlationId}
+                  </p>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuoteError(null);
+                    setRetryNonce((value) => value + 1);
+                  }}
+                  className="motion-button mt-3 text-sm font-bold text-red-900 underline decoration-2 underline-offset-4"
+                >
+                  Reintentar
+                </button>
+              </div>
+            ) : null}
+            {paymentError ? (
+              <div
+                role="alert"
+                className="mt-4 rounded-xl border-2 border-red-800 bg-red-50 p-4 text-sm font-bold text-red-900"
+              >
+                <p>{paymentError.message}</p>
+                {paymentError.correlationId ? (
+                  <p className="mt-1 text-xs font-normal">
+                    Ref. {paymentError.correlationId}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+            <button
+              type="submit"
+              disabled={!activeQuote || isPaying}
+              className="motion-button mt-4 flex min-h-13 w-full items-center justify-center rounded-xl bg-action px-6 py-3 text-base font-black text-white disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isPaying ? "Preparando pago..." : "Pagar con Mercado Pago"}
+            </button>
+            <Link
+              href="/carrito"
+              className="motion-button mt-4 flex min-h-11 items-center justify-center text-sm font-bold text-action underline decoration-2 underline-offset-4"
+            >
+              Volver al carrito
+            </Link>
+          </aside>
         </form>
       </Container>
     </section>

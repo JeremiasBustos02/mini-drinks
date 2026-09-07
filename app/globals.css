@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #1D1D1D;
-  --canvas: #F5F3F0;
-  --paper: #FFFFFF;
-  --action: #7392B0;
+  --ink: #1d1d1d;
+  --canvas: #f5f3f0;
+  --paper: #ffffff;
+  --action: #7392b0;
   --mint: #c7dbf0;
-  --accent-yellow: #F4D64E;
+  --accent-yellow: #f4d64e;
   --header-height: 4.5rem;
 }
 
@@ -398,7 +398,6 @@ summary::-webkit-details-marker {
   .wholesale-content p {
     margin-top: 1rem;
   }
-
 }
 
 /* Motion stays progressive: content is visible until the client observer prepares off-screen reveals. */
@@ -527,7 +526,8 @@ summary::-webkit-details-marker {
 }
 
 .combo-builder-option-image {
-  transform: translate(var(--builder-image-x), var(--builder-image-y)) rotate(var(--builder-image-rotate)) scale(var(--builder-image-scale));
+  transform: translate(var(--builder-image-x), var(--builder-image-y))
+    rotate(var(--builder-image-rotate)) scale(var(--builder-image-scale));
 }
 
 .combo-builder-feature-visual {
@@ -544,7 +544,8 @@ summary::-webkit-details-marker {
 }
 
 .combo-builder-feature-image {
-  transform: translate(var(--builder-feature-x), var(--builder-feature-y)) rotate(var(--builder-feature-rotate)) scale(var(--builder-feature-scale));
+  transform: translate(var(--builder-feature-x), var(--builder-feature-y))
+    rotate(var(--builder-feature-rotate)) scale(var(--builder-feature-scale));
 }
 
 .wholesale-section {
@@ -573,7 +574,10 @@ summary::-webkit-details-marker {
 .wholesale-backdrop::after {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgb(245 243 240 / 38%) 0.6px, transparent 0.8px);
+  background-image: radial-gradient(
+    rgb(245 243 240 / 38%) 0.6px,
+    transparent 0.8px
+  );
   background-size: 9px 9px;
   content: "";
   opacity: 0.22;
@@ -663,7 +667,8 @@ summary::-webkit-details-marker {
 
 .wholesale-product-fernet img {
   object-position: var(--cta-fernet-object-position);
-  transform: translate(var(--cta-fernet-x), var(--cta-fernet-y)) rotate(var(--cta-fernet-rotate)) scale(var(--cta-fernet-scale));
+  transform: translate(var(--cta-fernet-x), var(--cta-fernet-y))
+    rotate(var(--cta-fernet-rotate)) scale(var(--cta-fernet-scale));
 }
 
 .wholesale-product-coke {
@@ -672,7 +677,8 @@ summary::-webkit-details-marker {
 
 .wholesale-product-coke img {
   object-position: var(--cta-coke-object-position);
-  transform: translate(var(--cta-coke-x), var(--cta-coke-y)) rotate(var(--cta-coke-rotate)) scale(var(--cta-coke-scale));
+  transform: translate(var(--cta-coke-x), var(--cta-coke-y))
+    rotate(var(--cta-coke-rotate)) scale(var(--cta-coke-scale));
 }
 
 /* Builder step controls: scale, rotate and x/y offsets stay editable in one place. */
@@ -784,18 +790,44 @@ summary::-webkit-details-marker {
 }
 
 .combo-builder-step-fernet img {
-  transform: translate(calc(-50% + var(--builder-promo-fernet-x)), var(--builder-promo-fernet-y)) rotate(var(--builder-promo-fernet-rotate)) scale(var(--builder-promo-fernet-scale));
+  transform: translate(
+      calc(-50% + var(--builder-promo-fernet-x)),
+      var(--builder-promo-fernet-y)
+    )
+    rotate(var(--builder-promo-fernet-rotate))
+    scale(var(--builder-promo-fernet-scale));
 }
 
 .combo-builder-step-coke img {
   height: 78%;
-  transform: translate(calc(-50% + var(--builder-promo-coke-x)), var(--builder-promo-coke-y)) rotate(var(--builder-promo-coke-rotate)) scale(var(--builder-promo-coke-scale));
+  transform: translate(
+      calc(-50% + var(--builder-promo-coke-x)),
+      var(--builder-promo-coke-y)
+    )
+    rotate(var(--builder-promo-coke-rotate))
+    scale(var(--builder-promo-coke-scale));
 }
 
 .combo-builder-step-glass img {
   height: 143%;
-  clip-path: polygon(35% 40%, 65% 40%, 65% 52%, 61% 64%, 63% 78%, 60% 82%, 40% 82%, 37% 78%, 39% 64%, 35% 52%);
-  transform: translate(calc(-50% + var(--builder-promo-glass-x)), var(--builder-promo-glass-y)) rotate(var(--builder-promo-glass-rotate)) scale(var(--builder-promo-glass-scale));
+  clip-path: polygon(
+    35% 40%,
+    65% 40%,
+    65% 52%,
+    61% 64%,
+    63% 78%,
+    60% 82%,
+    40% 82%,
+    37% 78%,
+    39% 64%,
+    35% 52%
+  );
+  transform: translate(
+      calc(-50% + var(--builder-promo-glass-x)),
+      var(--builder-promo-glass-y)
+    )
+    rotate(var(--builder-promo-glass-rotate))
+    scale(var(--builder-promo-glass-scale));
 }
 
 .combo-builder-extra {
@@ -1008,7 +1040,7 @@ summary::-webkit-details-marker {
 }
 
 .combo-builder-category-operator {
-  color: #FFFFFF;
+  color: #ffffff;
   font-family: var(--font-sans);
   font-size: 0.9em;
   font-weight: 900;
@@ -1066,7 +1098,12 @@ summary::-webkit-details-marker {
   left: -8%;
   height: 82%;
   z-index: 2;
-  transform: translate(var(--builder-promo-fernet-x), var(--builder-promo-fernet-y)) rotate(var(--builder-promo-fernet-rotate)) scale(var(--builder-promo-fernet-scale));
+  transform: translate(
+      var(--builder-promo-fernet-x),
+      var(--builder-promo-fernet-y)
+    )
+    rotate(var(--builder-promo-fernet-rotate))
+    scale(var(--builder-promo-fernet-scale));
 }
 
 .combo-builder-visual-coke {
@@ -1075,7 +1112,9 @@ summary::-webkit-details-marker {
   bottom: auto;
   height: 57%;
   z-index: 2;
-  transform: translate(var(--builder-promo-coke-x), var(--builder-promo-coke-y)) rotate(var(--builder-promo-coke-rotate)) scale(var(--builder-promo-coke-scale));
+  transform: translate(var(--builder-promo-coke-x), var(--builder-promo-coke-y))
+    rotate(var(--builder-promo-coke-rotate))
+    scale(var(--builder-promo-coke-scale));
 }
 
 .combo-builder-visual-jack,
@@ -1090,14 +1129,21 @@ summary::-webkit-details-marker {
   bottom: auto;
   left: -8%;
   height: 75%;
-  transform: translate(var(--builder-promo-jack-x), var(--builder-promo-jack-y)) rotate(var(--builder-promo-jack-rotate)) scale(var(--builder-promo-jack-scale));
+  transform: translate(var(--builder-promo-jack-x), var(--builder-promo-jack-y))
+    rotate(var(--builder-promo-jack-rotate))
+    scale(var(--builder-promo-jack-scale));
 }
 
 .combo-builder-visual-bombay {
   right: 20%;
   bottom: -35%;
   height: 72%;
-  transform: translate(var(--builder-promo-bombay-x), var(--builder-promo-bombay-y)) rotate(var(--builder-promo-bombay-rotate)) scale(var(--builder-promo-bombay-scale));
+  transform: translate(
+      var(--builder-promo-bombay-x),
+      var(--builder-promo-bombay-y)
+    )
+    rotate(var(--builder-promo-bombay-rotate))
+    scale(var(--builder-promo-bombay-scale));
 }
 
 .combo-builder-visual-campari {
@@ -1105,7 +1151,12 @@ summary::-webkit-details-marker {
   right: -19%;
   bottom: auto;
   height: 70%;
-  transform: translate(var(--builder-promo-campari-x), var(--builder-promo-campari-y)) rotate(var(--builder-promo-campari-rotate)) scale(var(--builder-promo-campari-scale));
+  transform: translate(
+      var(--builder-promo-campari-x),
+      var(--builder-promo-campari-y)
+    )
+    rotate(var(--builder-promo-campari-rotate))
+    scale(var(--builder-promo-campari-scale));
 }
 
 @media (min-width: 1024px) {
@@ -1212,7 +1263,8 @@ summary::-webkit-details-marker {
   }
 
   .combo-builder-visual-coke {
-    animation: combo-builder-float-reverse 7.5s ease-in-out 500ms infinite alternate;
+    animation: combo-builder-float-reverse 7.5s ease-in-out 500ms infinite
+      alternate;
   }
 
   .combo-builder-visual-jack {
@@ -1220,7 +1272,8 @@ summary::-webkit-details-marker {
   }
 
   .combo-builder-visual-bombay {
-    animation: combo-builder-float-reverse 8.2s ease-in-out 720ms infinite alternate;
+    animation: combo-builder-float-reverse 8.2s ease-in-out 720ms infinite
+      alternate;
   }
 
   .combo-builder-visual-campari {
@@ -1232,18 +1285,27 @@ summary::-webkit-details-marker {
   }
 
   .wholesale-product-coke {
-    animation: combo-builder-float-reverse 7.6s ease-in-out 520ms infinite alternate;
+    animation: combo-builder-float-reverse 7.6s ease-in-out 520ms infinite
+      alternate;
   }
 }
 
 @keyframes combo-builder-float {
-  from { translate: 0 -0.35rem; }
-  to { translate: 0 0.35rem; }
+  from {
+    translate: 0 -0.35rem;
+  }
+  to {
+    translate: 0 0.35rem;
+  }
 }
 
 @keyframes combo-builder-float-reverse {
-  from { translate: 0 0.3rem; }
-  to { translate: 0 -0.3rem; }
+  from {
+    translate: 0 0.3rem;
+  }
+  to {
+    translate: 0 -0.3rem;
+  }
 }
 
 [data-reveal] {
@@ -1271,7 +1333,8 @@ summary::-webkit-details-marker {
 
 .motion-button,
 .motion-cta {
-  transition-property: color, background-color, border-color, opacity, transform;
+  transition-property:
+    color, background-color, border-color, opacity, transform;
   transition-duration: 160ms;
   transition-timing-function: ease;
 }
@@ -1288,6 +1351,46 @@ summary::-webkit-details-marker {
 
 .mobile-menu[open] .mobile-menu-panel {
   animation: menu-enter 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.loyalty-selector,
+.account-popover {
+  animation: mini-ui-enter 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.account-summary-loader {
+  animation: mini-loader-pulse 800ms ease-in-out infinite alternate;
+}
+
+@keyframes mini-ui-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.3rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mini-loader-pulse {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loyalty-selector,
+  .account-popover {
+    animation: none;
+  }
+
+  .account-summary-loader {
+    animation: none;
+  }
 }
 
 .product-card,
@@ -1542,7 +1645,8 @@ summary::-webkit-details-marker {
   }
 
   .hero-float-reverse {
-    animation: hero-float-reverse 7.25s ease-in-out 900ms infinite alternate both;
+    animation: hero-float-reverse 7.25s ease-in-out 900ms infinite alternate
+      both;
   }
 }
 
