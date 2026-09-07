@@ -1,5 +1,14 @@
 import type { DeliveryType, OrderStatus } from "@/types/domain";
 
+export type AdvanceOrderFulfillmentState = {
+  message?: string;
+  status: "idle" | "success" | "concurrent" | "error";
+};
+
+export const initialAdvanceOrderFulfillmentState: AdvanceOrderFulfillmentState = {
+  status: "idle",
+};
+
 export const adminAttentionOrderStatuses = [
   "manual_review",
   "paid",

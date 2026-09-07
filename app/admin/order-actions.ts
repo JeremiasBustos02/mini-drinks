@@ -6,21 +6,13 @@ import { z } from "zod";
 
 import {
   advanceOrderFulfillment,
+  type AdvanceOrderFulfillmentState,
   type FulfillmentOrder,
 } from "@/lib/admin/order-fulfillment";
 import { requireAdmin } from "@/lib/admin/auth";
 import { db } from "@/lib/db";
 import { orders } from "@/lib/db/schema";
 import { logServerEvent } from "@/lib/observability/logger";
-
-export type AdvanceOrderFulfillmentState = {
-  message?: string;
-  status: "idle" | "success" | "concurrent" | "error";
-};
-
-export const initialAdvanceOrderFulfillmentState: AdvanceOrderFulfillmentState = {
-  status: "idle",
-};
 
 const orderIdSchema = z.object({ orderId: z.uuid() });
 
