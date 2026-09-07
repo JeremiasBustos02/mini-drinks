@@ -72,7 +72,7 @@ export default async function MiniClubPage() {
                 <strong>{formatLoyaltyPoints(settings.pointsPerUnit)} <small>PTS</small></strong>
                 <p>automáticamente</p>
               </li>
-              <li>
+              <li className="mini-club-redemption">
                 <span className="mini-club-flow-step">03 · CANJEÁS</span>
                 <strong>{formatLoyaltyPoints(settings.minRedemptionPoints)} <small>PTS</small></strong>
                 <p>= {formatArsCents(minimumDiscount)} de descuento · hasta {settings.maxRedemptionPercentage}%</p>
@@ -91,7 +91,12 @@ export default async function MiniClubPage() {
             </div>
             <div className="mini-surprise-copy relative z-10">
               <p className="text-xs font-black uppercase tracking-[.18em] text-action">Mini Sorpresa</p>
-              <h2 className="mt-4 font-display text-[clamp(3rem,6vw,5.8rem)] leading-[.88] tracking-[-.06em] uppercase">Hay puntos que aparecen donde menos los esperás.</h2>
+              <h2 className="mini-surprise-title mt-4 font-display text-[clamp(3rem,6vw,5.8rem)] leading-[.88] tracking-[-.06em] uppercase">
+                <span>Hay puntos</span>
+                <span>que aparecen</span>
+                <span>donde menos</span>
+                <span>los esperás.</span>
+              </h2>
               <p className="mt-6 max-w-lg text-base leading-7 text-ink/70">Algunos packs y campañas esconden una tarjeta. Encontrala, escaneala e incorporá la sorpresa a tu cuenta.</p>
               <ol className="mini-surprise-flow mt-8" aria-label="Cómo usar una Mini Sorpresa">
                 <li>ENCONTRALA</li><li>ESCANEALA</li><li>CANJEALA</li>
@@ -105,8 +110,8 @@ export default async function MiniClubPage() {
                   {Array.from({ length: 36 }).map((_, index) => <i className={qrPattern.includes(index) ? "bg-ink" : "bg-white"} key={index} />)}
                 </div>
                 <small>ESCANEÁ CUANDO LA ENCUENTRES</small>
+                <span className="mini-surprise-seal">+<br />PTS</span>
               </div>
-              <span className="mini-surprise-seal">+<br />PTS</span>
             </div>
           </section>
 
