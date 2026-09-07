@@ -4,16 +4,19 @@ import { createHash, randomUUID } from "node:crypto";
 
 import { headers } from "next/headers";
 
+import { getClientIdentifier } from "@/lib/rate-limit/client-identifier";
+
 const SAFE_REQUEST_ID = /^[a-zA-Z0-9._:-]{1,100}$/;
 
-export async function getRequestContext() {
+export async function getRequestContext(checkoutAttemptId?: string) {
   const requestHeaders = await headers();
-  const forwardedFor = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim();
-  const clientAddress = forwardedFor || requestHeaders.get("x-real-ip") || "unknown";
   const incomingRequestId = requestHeaders.get("x-request-id") ?? "";
+  const correlationId = SAFE_REQUEST_ID.test(incomingRequestId) ? incomingRequestId : randomUUID();
+  const client = getClientIdentifier(requestHeaders, checkoutAttemptId, correlationId);
 
   return {
-    correlationId: SAFE_REQUEST_ID.test(incomingRequestId) ? incomingRequestId : randomUUID(),
-    clientIdentifier: createHash("sha256").update(clientAddress).digest("hex"),
+    correlationId,
+    clientIdentifier: createHash("sha256").update(client.value).digest("hex"),
+    clientIdentifierSourceType: client.sourceType,
   };
 }

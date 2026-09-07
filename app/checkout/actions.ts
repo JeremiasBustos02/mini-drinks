@@ -27,24 +27,18 @@ function isEmptyCart(value: unknown) {
 
 export async function quoteCheckoutAction(input: unknown): Promise<CheckoutQuoteResult> {
   const startedAt = Date.now();
-  let stage = "rate_limit";
-  const request = await getRequestContext();
-  const ipLimit = await checkRateLimit(rateLimitPolicies.quoteIp, request.clientIdentifier);
-  if (!ipLimit.allowed) {
-    logServerEvent("warn", "checkout.quote_rate_limited", { correlationId: request.correlationId, stage, source: ipLimit.source });
-    return checkoutFailure("rate_limited", { correlationId: request.correlationId, retryAfterSeconds: ipLimit.retryAfterSeconds });
-  }
+  let stage = "validation";
+  const initialRequest = await getRequestContext();
   if (isEmptyCart(input)) {
-    logServerEvent("info", "checkout.quote_rejected", { correlationId: request.correlationId, stage: "validation", code: "empty_cart" });
+    logServerEvent("info", "checkout.quote_rejected", { correlationId: initialRequest.correlationId, stage, code: "empty_cart" });
     return { ok: false, code: "empty_cart", message: "El carrito está vacío." };
   }
-  stage = "validation";
   const parsed = checkoutSchema.safeParse(input);
   if (!parsed.success) {
     stage = parsed.error.issues.some((issue) => issue.path[0] === "fulfillment")
       ? "fulfillment"
       : stage;
-    logServerEvent("info", "checkout.quote_rejected", { correlationId: request.correlationId, stage, code: "invalid_payload" });
+    logServerEvent("info", "checkout.quote_rejected", { correlationId: initialRequest.correlationId, stage, code: "invalid_payload" });
     return {
       ok: false,
       code: "invalid_payload",
@@ -54,9 +48,26 @@ export async function quoteCheckoutAction(input: unknown): Promise<CheckoutQuote
   }
 
   stage = "rate_limit";
+  const request = await getRequestContext(parsed.data.checkoutAttemptId);
   const attemptLimit = await checkRateLimit(rateLimitPolicies.quoteAttempt, parsed.data.checkoutAttemptId);
+  const ipLimit = await checkRateLimit(rateLimitPolicies.quoteIp, request.clientIdentifier);
+  if (!ipLimit.allowed) {
+    logServerEvent("warn", "checkout.quote_rate_limited", {
+      correlationId: request.correlationId,
+      stage,
+      source: ipLimit.source,
+      sourceType: request.clientIdentifierSourceType,
+    });
+    return checkoutFailure("rate_limited", { correlationId: request.correlationId, retryAfterSeconds: ipLimit.retryAfterSeconds });
+  }
   if (!attemptLimit.allowed) {
-    logServerEvent("warn", "checkout.quote_rate_limited", { correlationId: request.correlationId, checkoutAttemptId: parsed.data.checkoutAttemptId, stage, source: attemptLimit.source });
+    logServerEvent("warn", "checkout.quote_rate_limited", {
+      correlationId: request.correlationId,
+      checkoutAttemptId: parsed.data.checkoutAttemptId,
+      stage,
+      source: attemptLimit.source,
+      sourceType: "attempt",
+    });
     return checkoutFailure("rate_limited", { correlationId: request.correlationId, retryAfterSeconds: attemptLimit.retryAfterSeconds });
   }
 
@@ -97,9 +108,6 @@ export async function quoteCheckoutAction(input: unknown): Promise<CheckoutQuote
 
 export async function createOrderAction(input: unknown): Promise<CheckoutCreationResult> {
   const startedAt = Date.now();
-  const request = await getRequestContext();
-  const ipLimit = await checkRateLimit(rateLimitPolicies.createIp, request.clientIdentifier);
-  if (!ipLimit.allowed) return checkoutFailure("rate_limited", { correlationId: request.correlationId, retryAfterSeconds: ipLimit.retryAfterSeconds });
   if (isEmptyCart(input)) {
     return { ok: false, code: "empty_cart", message: "El carrito está vacío." };
   }
@@ -112,6 +120,9 @@ export async function createOrderAction(input: unknown): Promise<CheckoutCreatio
       fieldErrors: getCheckoutFieldErrors(parsed.error),
     };
   }
+  const request = await getRequestContext(parsed.data.checkoutAttemptId);
+  const ipLimit = await checkRateLimit(rateLimitPolicies.createIp, request.clientIdentifier);
+  if (!ipLimit.allowed) return checkoutFailure("rate_limited", { correlationId: request.correlationId, retryAfterSeconds: ipLimit.retryAfterSeconds });
   const attemptLimit = await checkRateLimit(rateLimitPolicies.createAttempt, parsed.data.checkoutAttemptId);
   if (!attemptLimit.allowed) return checkoutFailure("rate_limited", { correlationId: request.correlationId, retryAfterSeconds: attemptLimit.retryAfterSeconds });
   try {
