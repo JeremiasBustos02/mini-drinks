@@ -1362,6 +1362,35 @@ summary::-webkit-details-marker {
   animation: mini-loader-pulse 800ms ease-in-out infinite alternate;
 }
 
+/* The account surface must not inherit the hero navigation's white text state. */
+.site-header .account-popover {
+  background-color: var(--paper);
+  color: var(--ink);
+}
+
+.site-header .account-popover a,
+.site-header .account-popover button {
+  color: var(--ink);
+}
+
+.site-header .account-popover a.bg-action {
+  color: var(--paper);
+}
+
+.site-header .account-popover .text-action {
+  color: var(--action);
+}
+
+.site-header .account-popover .text-ink\/55,
+.site-header .account-popover .text-ink\/65,
+.site-header .account-popover .text-ink\/70 {
+  color: color-mix(in srgb, var(--ink) 65%, transparent);
+}
+
+.site-header .account-popover a.text-ink\/65:hover {
+  color: var(--action);
+}
+
 @keyframes mini-ui-enter {
   from {
     opacity: 0;

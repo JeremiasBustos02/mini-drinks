@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { logoutAction } from "@/app/auth/actions";
 import { getAccountAccess, getCustomerProfile } from "@/lib/account/auth";
 import { getAccountDashboard } from "@/lib/account/dashboard";
+import { formatLoyaltyPoints } from "@/lib/loyalty/points";
+import { loadLoyaltyRedemptionSettings } from "@/lib/loyalty/redemptions";
 import { formatArsCents } from "@/lib/money";
 
 const orderStatusLabels: Record<string, string> = {
@@ -28,9 +30,10 @@ export default async function MyAccountPage() {
   const access = await getAccountAccess();
   if (access.status === "unauthenticated") redirect("/login");
   if (access.isAdmin) redirect("/admin");
-  const [profile, dashboard] = await Promise.all([
+  const [profile, dashboard, loyaltySettings] = await Promise.all([
     getCustomerProfile(access.userId),
     getAccountDashboard(access.userId),
+    loadLoyaltyRedemptionSettings(),
   ]);
   const displayName = profile?.displayName || access.email || "Tu cuenta";
 
@@ -88,16 +91,38 @@ export default async function MyAccountPage() {
               <p className="text-xs font-black uppercase tracking-[0.14em] text-mint">
                 Mini Club
               </p>
-              <p className="mt-2 text-sm text-white/65">
-                Tus puntos disponibles
-              </p>
+              <p className="mt-2 text-sm text-white/65">Mini Club</p>
               <p className="mt-1 font-display text-6xl tracking-[-0.06em]">
-                {dashboard.balance}
+                {dashboard.hasReservedPoints
+                  ? dashboard.totalPoints
+                  : dashboard.availablePoints}
               </p>
+              {dashboard.hasReservedPoints ? (
+                <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-white/70">
+                  <p>{dashboard.reservedPoints} pts reservados</p>
+                  <p>{dashboard.availablePoints} pts disponibles</p>
+                </div>
+              ) : (
+                <p className="mt-1 text-sm text-white/70">puntos disponibles</p>
+              )}
             </div>
-            <p className="max-w-52 text-sm leading-6 text-white/70">
-              Sumás 1 punto cada $1.000 en productos pagados.
-            </p>
+            <div className="max-w-60 text-sm leading-6 text-white/70">
+              <p>
+                Sumás {formatLoyaltyPoints(loyaltySettings.pointsPerUnit)} pts
+                cada {formatArsCents(loyaltySettings.earnUnitCents)} en
+                productos pagados.
+              </p>
+              <p className="mt-2">
+                Desde {formatLoyaltyPoints(loyaltySettings.minRedemptionPoints)}{" "}
+                pts podés empezar a canjear.
+              </p>
+              <Link
+                href="/mini-club"
+                className="motion-button mt-3 inline-flex min-h-11 items-center font-bold text-mint hover:text-white"
+              >
+                Cómo funciona Mini Club →
+              </Link>
+            </div>
           </div>
         </section>
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">

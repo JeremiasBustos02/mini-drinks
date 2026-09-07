@@ -346,6 +346,12 @@ function LoyaltyRedemptionControl({
           >
             Tus puntos
           </h2>
+          <Link
+            href="/mini-club"
+            className="motion-button mt-2 inline-flex min-h-11 items-center text-xs font-bold text-ink/55 hover:text-action"
+          >
+            ¿Cómo funciona?
+          </Link>
         </div>
         <div className="text-right">
           <p className="text-lg font-black tabular-nums">

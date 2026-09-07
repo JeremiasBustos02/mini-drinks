@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 
 import { StorefrontShell } from "@/components/layout/storefront-shell";
+import { AccountSummaryInvalidator } from "@/components/account/account-summary-invalidator";
 import { Container } from "@/components/ui/container";
 import { getPublicOrder } from "@/lib/db/queries/orders";
 
@@ -25,27 +26,52 @@ export default async function PaymentReturnPage({
   searchParams,
 }: {
   params: Promise<{ resultado: string }>;
-  searchParams: Promise<{ order?: string | string[]; token?: string | string[] }>;
+  searchParams: Promise<{
+    order?: string | string[];
+    token?: string | string[];
+  }>;
 }) {
   const [{ resultado }, query] = await Promise.all([params, searchParams]);
   if (!(resultado in resultLabels)) notFound();
   const order = typeof query.order === "string" ? query.order : "";
-  const token = tokenSchema.safeParse(typeof query.token === "string" ? query.token : "");
+  const token = tokenSchema.safeParse(
+    typeof query.token === "string" ? query.token : "",
+  );
   if (!token.success || order.length > 64) notFound();
   const result = await getPublicOrder(order, token.data);
   if (!result) notFound();
 
   const orderUrl = `/pedido/${encodeURIComponent(order)}?token=${encodeURIComponent(token.data)}`;
-  const confirmed = ["paid", "preparing", "ready_for_pickup", "out_for_delivery", "completed"].includes(result.order.status);
+  const confirmed = [
+    "paid",
+    "preparing",
+    "ready_for_pickup",
+    "out_for_delivery",
+    "completed",
+  ].includes(result.order.status);
   return (
     <StorefrontShell>
       <main id="contenido" className="py-14 sm:py-20">
         <Container>
           <section className="mx-auto max-w-2xl rounded-[1.75rem] bg-mint/55 p-7 sm:p-10">
-            <p className="text-xs font-black tracking-[0.2em] text-action uppercase">{resultLabels[resultado as keyof typeof resultLabels]}</p>
-            <h1 className="mt-3 font-display text-[clamp(2.5rem,8vw,4.5rem)] leading-[0.9] uppercase">{confirmed ? "Pago confirmado" : "Estamos confirmando"}</h1>
-            <p className="mt-5 text-ink/65">Estamos actualizando el estado de tu pago. Si todavía figura pendiente, no hace falta que hagas nada: revisalo de nuevo en unos minutos.</p>
-            <Link href={orderUrl} className="motion-button mt-7 inline-flex min-h-12 items-center rounded-xl bg-action px-6 py-3 font-black text-white">Ver estado del pedido</Link>
+            {confirmed ? <AccountSummaryInvalidator /> : null}
+            <p className="text-xs font-black tracking-[0.2em] text-action uppercase">
+              {resultLabels[resultado as keyof typeof resultLabels]}
+            </p>
+            <h1 className="mt-3 font-display text-[clamp(2.5rem,8vw,4.5rem)] leading-[0.9] uppercase">
+              {confirmed ? "Pago confirmado" : "Estamos confirmando"}
+            </h1>
+            <p className="mt-5 text-ink/65">
+              Estamos actualizando el estado de tu pago. Si todavía figura
+              pendiente, no hace falta que hagas nada: revisalo de nuevo en unos
+              minutos.
+            </p>
+            <Link
+              href={orderUrl}
+              className="motion-button mt-7 inline-flex min-h-12 items-center rounded-xl bg-action px-6 py-3 font-black text-white"
+            >
+              Ver estado del pedido
+            </Link>
           </section>
         </Container>
       </main>

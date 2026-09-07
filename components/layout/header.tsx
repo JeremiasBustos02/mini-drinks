@@ -7,6 +7,10 @@ import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { logoutAction } from "@/app/auth/actions";
 import { useCartHydration } from "@/components/cart/use-cart-hydration";
 import { Container } from "@/components/ui/container";
+import {
+  createAccountSummaryCache,
+  type AccountSummary,
+} from "@/lib/account/account-summary-cache";
 import { CartIcon, MenuIcon } from "@/components/ui/icons";
 import { getCartTotalItems } from "@/lib/cart/cart-utils";
 import { useCartStore } from "@/store/cart-store";
@@ -24,7 +28,11 @@ type AccountLink = {
   href: string;
   kind: "guest" | "admin" | "customer";
 };
-type AccountSummary = { displayName: string; availablePoints: string };
+const accountSummaryCache = createAccountSummaryCache(() =>
+  fetch("/api/account-summary", { cache: "no-store" }).then((response) =>
+    response.ok ? response.json() : Promise.reject(),
+  ),
+);
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -71,20 +79,50 @@ export function Header() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!accountOpen || accountSummary || summaryError) return;
-    let active = true;
-    fetch("/api/account-summary", { cache: "no-store" })
-      .then((response) => (response.ok ? response.json() : Promise.reject()))
+    if (accountLink?.kind !== "customer") return;
+    let cancelled = false;
+    const prefetch = () => {
+      void accountSummaryCache
+        .ensure()
+        .then((summary) => {
+          if (!cancelled) setAccountSummary(summary);
+        })
+        .catch(() => {
+          if (!cancelled) setSummaryError(true);
+        });
+    };
+    const idleId = window.setTimeout(prefetch, 250);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(idleId);
+    };
+  }, [accountLink?.kind]);
+
+  useEffect(() => {
+    const invalidate = () => {
+      accountSummaryCache.invalidate();
+      setAccountSummary(null);
+      setSummaryError(false);
+    };
+    window.addEventListener("mini-account-summary-invalidated", invalidate);
+    return () =>
+      window.removeEventListener(
+        "mini-account-summary-invalidated",
+        invalidate,
+      );
+  }, []);
+
+  const loadAccountSummary = () => {
+    void accountSummaryCache
+      .ensure()
       .then((summary) => {
-        if (active) setAccountSummary(summary);
+        setAccountSummary(summary);
+        setSummaryError(false);
       })
       .catch(() => {
-        if (active) setSummaryError(true);
+        setSummaryError(true);
       });
-    return () => {
-      active = false;
-    };
-  }, [accountOpen, accountSummary, summaryError]);
+  };
 
   const closeAccountMenu = useEffectEvent((restoreFocus = false) => {
     setAccountOpen(false);
@@ -171,7 +209,12 @@ export function Header() {
                   aria-haspopup="dialog"
                   aria-expanded={accountOpen}
                   aria-controls="account-popover"
-                  onClick={() => setAccountOpen((open) => !open)}
+                  onClick={() => {
+                    loadAccountSummary();
+                    setAccountOpen((open) => !open);
+                  }}
+                  onPointerEnter={loadAccountSummary}
+                  onFocus={loadAccountSummary}
                   className={accountControlClass}
                 >
                   Mi cuenta
@@ -189,12 +232,6 @@ export function Header() {
                           ? "Mi cuenta"
                           : "Cargando tu cuenta..."}
                     </p>
-                    {!accountSummary && !summaryError ? (
-                      <span
-                        className="account-summary-loader mt-3 block h-px w-20 bg-action/25"
-                        aria-hidden="true"
-                      />
-                    ) : null}
                     {accountSummary ? (
                       <div className="mt-4 border-y border-ink/10 py-3">
                         <p className="text-xs font-black uppercase tracking-[0.14em] text-action">
@@ -207,7 +244,28 @@ export function Header() {
                           </span>
                         </p>
                       </div>
+                    ) : !summaryError ? (
+                      <div
+                        className="mt-4 h-[4.75rem] border-y border-ink/10 py-3"
+                        aria-label="Cargando puntos"
+                      >
+                        <span
+                          className="account-summary-loader block h-px w-20 bg-action/25"
+                          aria-hidden="true"
+                        />
+                        <span
+                          className="mt-3 block h-5 w-36 animate-pulse rounded bg-ink/10"
+                          aria-hidden="true"
+                        />
+                      </div>
                     ) : null}
+                    <Link
+                      href="/mini-club"
+                      onClick={() => setAccountOpen(false)}
+                      className="motion-button mt-3 inline-flex min-h-11 items-center text-sm font-bold text-ink/65 hover:text-action"
+                    >
+                      Cómo funciona
+                    </Link>
                     <Link
                       href="/mi-cuenta"
                       onClick={() => setAccountOpen(false)}
@@ -215,7 +273,10 @@ export function Header() {
                     >
                       Ver mi cuenta
                     </Link>
-                    <form action={logoutAction}>
+                    <form
+                      action={logoutAction}
+                      onSubmit={() => accountSummaryCache.invalidate()}
+                    >
                       <button
                         type="submit"
                         className="motion-button mt-2 min-h-11 w-full cursor-pointer rounded-xl px-4 text-sm font-bold text-ink/70 hover:bg-mint/25 hover:text-ink"

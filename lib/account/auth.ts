@@ -9,7 +9,12 @@ import { createClient } from "@/lib/supabase/server";
 
 export type AccountAccess =
   | { status: "unauthenticated" }
-  | { status: "authenticated"; userId: string; email: string | null; isAdmin: boolean };
+  | {
+      status: "authenticated";
+      userId: string;
+      email: string | null;
+      isAdmin: boolean;
+    };
 
 export async function isAdminUser(userId: string) {
   const [admin] = await db
@@ -36,7 +41,23 @@ export const getAccountAccess = cache(async (): Promise<AccountAccess> => {
 
 export async function getCustomerProfile(userId: string) {
   const [profile] = await db
-    .select({ displayName: customerProfiles.displayName, phone: customerProfiles.phone })
+    .select({
+      displayName: customerProfiles.displayName,
+      phone: customerProfiles.phone,
+    })
+    .from(customerProfiles)
+    .where(eq(customerProfiles.authUserId, userId))
+    .limit(1);
+
+  return profile ?? null;
+}
+
+export async function getCustomerProfileSummary(userId: string) {
+  const [profile] = await db
+    .select({
+      id: customerProfiles.id,
+      displayName: customerProfiles.displayName,
+    })
     .from(customerProfiles)
     .where(eq(customerProfiles.authUserId, userId))
     .limit(1);
