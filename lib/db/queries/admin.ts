@@ -9,6 +9,7 @@ import {
   ilike,
   inArray,
   lte,
+  or,
   sql,
   type SQL,
 } from "drizzle-orm";
@@ -36,7 +37,10 @@ import type { OrderStatus, PaymentStatus, ProductType } from "@/types/domain";
 const availableStock = availableStockSql();
 const DASHBOARD_STATEMENT_TIMEOUT_MS = 15_000;
 
-type AdminReadDatabase = Pick<typeof db, "execute" | "select" | "selectDistinctOn">;
+type AdminReadDatabase = Pick<
+  typeof db,
+  "execute" | "select" | "selectDistinctOn"
+>;
 
 async function authorizeAdminRead() {
   await connection();
@@ -66,7 +70,9 @@ async function traceDashboardMetric<T>(name: string, query: Promise<T>) {
   }
 }
 
-async function withDashboardStatementTimeout<T>(operation: (database: AdminReadDatabase) => Promise<T>) {
+async function withDashboardStatementTimeout<T>(
+  operation: (database: AdminReadDatabase) => Promise<T>,
+) {
   return db.transaction(async (transaction) => {
     await transaction.execute(sql`select set_config(
       'statement_timeout',
@@ -79,14 +85,17 @@ async function withDashboardStatementTimeout<T>(operation: (database: AdminReadD
 
 export async function getAdminDashboardStats() {
   await authorizeAdminRead();
-  const [stats] = await withDashboardStatementTimeout((database) => traceDashboardMetric("query", database.execute(sql<{
-    products: number;
-    publishedProducts: number;
-    lowStockProducts: number;
-    activeCombos: number;
-    pendingOrders: number;
-    paidOrders: number;
-  }>`
+  const [stats] = await withDashboardStatementTimeout((database) =>
+    traceDashboardMetric(
+      "query",
+      database.execute(sql<{
+        products: number;
+        publishedProducts: number;
+        lowStockProducts: number;
+        activeCombos: number;
+        pendingOrders: number;
+        paidOrders: number;
+      }>`
     select
       (select count(*)::integer from ${products}) as "products",
       (
@@ -119,7 +128,9 @@ export async function getAdminDashboardStats() {
         from ${payments}
         where ${payments.status} = 'approved'
       ) as "paidOrders"
-  `)));
+  `),
+    ),
+  );
 
   return {
     products: Number(stats?.products ?? 0),
@@ -142,12 +153,7 @@ export async function getAdminCategories() {
 }
 
 export type AdminProductStatusFilter =
-  | "published"
-  | "hidden"
-  | "active"
-  | "inactive"
-  | "low_stock"
-  | "out_of_stock";
+  "published" | "hidden" | "active" | "inactive" | "low_stock" | "out_of_stock";
 
 export type AdminProductFilters = {
   search?: string;
@@ -159,16 +165,24 @@ export type AdminProductFilters = {
 export async function getAdminProducts(filters: AdminProductFilters = {}) {
   await authorizeAdminRead();
   const conditions: SQL[] = [];
-  if (filters.search?.trim()) conditions.push(ilike(products.name, `%${filters.search.trim()}%`));
-  if (filters.categoryId) conditions.push(eq(products.categoryId, filters.categoryId));
-  if (filters.productType) conditions.push(eq(products.productType, filters.productType));
+  if (filters.search?.trim())
+    conditions.push(ilike(products.name, `%${filters.search.trim()}%`));
+  if (filters.categoryId)
+    conditions.push(eq(products.categoryId, filters.categoryId));
+  if (filters.productType)
+    conditions.push(eq(products.productType, filters.productType));
 
-  if (filters.status === "published") conditions.push(eq(products.published, true));
-  if (filters.status === "hidden") conditions.push(eq(products.published, false));
+  if (filters.status === "published")
+    conditions.push(eq(products.published, true));
+  if (filters.status === "hidden")
+    conditions.push(eq(products.published, false));
   if (filters.status === "active") conditions.push(eq(products.active, true));
-  if (filters.status === "inactive") conditions.push(eq(products.active, false));
-  if (filters.status === "low_stock") conditions.push(and(eq(products.active, true), lte(availableStock, 5))!);
-  if (filters.status === "out_of_stock") conditions.push(lte(availableStock, 0));
+  if (filters.status === "inactive")
+    conditions.push(eq(products.active, false));
+  if (filters.status === "low_stock")
+    conditions.push(and(eq(products.active, true), lte(availableStock, 5))!);
+  if (filters.status === "out_of_stock")
+    conditions.push(lte(availableStock, 0));
 
   return db
     .select({ product: products, category: categories, availableStock })
@@ -183,7 +197,10 @@ export async function getAdminLowStockProducts(limit = 6) {
   return queryAdminLowStockProducts(db, limit);
 }
 
-function queryAdminLowStockProducts(database: AdminReadDatabase, limit: number) {
+function queryAdminLowStockProducts(
+  database: AdminReadDatabase,
+  limit: number,
+) {
   return database
     .select({
       id: products.id,
@@ -201,7 +218,9 @@ function queryAdminLowStockProducts(database: AdminReadDatabase, limit: number) 
 
 export async function getAdminDashboardLowStockProducts(limit = 6) {
   await authorizeAdminRead();
-  return withDashboardStatementTimeout((database) => queryAdminLowStockProducts(database, limit));
+  return withDashboardStatementTimeout((database) =>
+    queryAdminLowStockProducts(database, limit),
+  );
 }
 
 export async function getAdminProductOptions() {
@@ -241,7 +260,11 @@ export async function getAdminCombos(filters: { search?: string } = {}) {
     .from(combos)
     .leftJoin(comboItems, eq(comboItems.comboId, combos.id))
     .leftJoin(products, eq(products.id, comboItems.productId))
-    .where(filters.search?.trim() ? ilike(combos.name, `%${filters.search.trim()}%`) : undefined)
+    .where(
+      filters.search?.trim()
+        ? ilike(combos.name, `%${filters.search.trim()}%`)
+        : undefined,
+    )
     .orderBy(asc(combos.name), asc(products.name));
 
   const grouped = new Map<
@@ -272,7 +295,14 @@ export async function getAdminCombos(filters: { search?: string } = {}) {
       images: [],
     };
 
-    if (row.item && row.product?.id && row.product.name && row.product.price !== null && row.product.productType && row.product.stock !== null) {
+    if (
+      row.item &&
+      row.product?.id &&
+      row.product.name &&
+      row.product.price !== null &&
+      row.product.productType &&
+      row.product.stock !== null
+    ) {
       entry.components.push({
         productId: row.product.id,
         name: row.product.name,
@@ -283,18 +313,28 @@ export async function getAdminCombos(filters: { search?: string } = {}) {
         stock: row.product.stock,
       });
       entry.referencePrice += row.product.price * row.item.quantity;
-      entry.availability = Math.min(entry.availability, Math.floor(row.product.stock / row.item.quantity));
+      entry.availability = Math.min(
+        entry.availability,
+        Math.floor(row.product.stock / row.item.quantity),
+      );
     }
     grouped.set(row.combo.id, entry);
   }
 
-  const imageRows = grouped.size > 0
-    ? await db
-        .select()
-        .from(comboImages)
-        .where(inArray(comboImages.comboId, [...grouped.keys()]))
-        .orderBy(asc(comboImages.comboId), desc(comboImages.isPrimary), asc(comboImages.sortOrder), asc(comboImages.createdAt), asc(comboImages.id))
-    : [];
+  const imageRows =
+    grouped.size > 0
+      ? await db
+          .select()
+          .from(comboImages)
+          .where(inArray(comboImages.comboId, [...grouped.keys()]))
+          .orderBy(
+            asc(comboImages.comboId),
+            desc(comboImages.isPrimary),
+            asc(comboImages.sortOrder),
+            asc(comboImages.createdAt),
+            asc(comboImages.id),
+          )
+      : [];
   for (const image of imageRows) grouped.get(image.comboId)?.images.push(image);
 
   return [...grouped.values()].map((entry) => ({
@@ -308,17 +348,25 @@ export async function getAdminCombos(filters: { search?: string } = {}) {
 }
 
 export type AdminOrderFilters = {
+  attention?: boolean;
   search?: string;
   orderStatus?: OrderStatus;
   paymentStatus?: PaymentStatus;
 };
 
-export async function getAdminOrders(filters: AdminOrderFilters = {}, limit = 100) {
+export async function getAdminOrders(
+  filters: AdminOrderFilters = {},
+  limit = 100,
+) {
   await authorizeAdminRead();
   return queryAdminOrders(db, filters, limit);
 }
 
-async function queryAdminOrders(database: AdminReadDatabase, filters: AdminOrderFilters, limit: number) {
+async function queryAdminOrders(
+  database: AdminReadDatabase,
+  filters: AdminOrderFilters,
+  limit: number,
+) {
   const latestPayment = database
     .selectDistinctOn([payments.orderId], {
       orderId: payments.orderId,
@@ -326,23 +374,51 @@ async function queryAdminOrders(database: AdminReadDatabase, filters: AdminOrder
       updatedAt: payments.updatedAt,
     })
     .from(payments)
-    .orderBy(payments.orderId, desc(payments.updatedAt), desc(payments.createdAt), desc(payments.id))
+    .orderBy(
+      payments.orderId,
+      desc(payments.updatedAt),
+      desc(payments.createdAt),
+      desc(payments.id),
+    )
     .as("latest_payment");
 
   const conditions: SQL[] = [];
-  if (filters.search?.trim()) conditions.push(ilike(orders.publicNumber, `%${filters.search.trim()}%`));
+  if (filters.search?.trim())
+    conditions.push(
+      or(
+        ilike(orders.publicNumber, `%${filters.search.trim()}%`),
+        ilike(orders.customerName, `%${filters.search.trim()}%`),
+        ilike(orders.customerLastName, `%${filters.search.trim()}%`),
+        ilike(orders.customerEmail, `%${filters.search.trim()}%`),
+      )!,
+    );
+  if (filters.attention)
+    conditions.push(
+      or(eq(orders.status, "manual_review"), eq(orders.status, "paid"))!,
+    );
   if (filters.orderStatus === "expired") {
-    conditions.push(sql`(${orders.status} = 'expired' or (${orders.status} in ('pending_payment', 'payment_pending') and ${stockReservations.status} = 'active' and ${stockReservations.expiresAt} <= now()))`);
-  } else if (filters.orderStatus) conditions.push(eq(orders.status, filters.orderStatus));
-  if (filters.orderStatus === "pending_payment" || filters.orderStatus === "payment_pending") {
-    conditions.push(sql`not coalesce(${stockReservations.status} = 'active' and ${stockReservations.expiresAt} <= now(), false)`);
+    conditions.push(
+      sql`(${orders.status} = 'expired' or (${orders.status} in ('pending_payment', 'payment_pending') and ${stockReservations.status} = 'active' and ${stockReservations.expiresAt} <= now()))`,
+    );
+  } else if (filters.orderStatus)
+    conditions.push(eq(orders.status, filters.orderStatus));
+  if (
+    filters.orderStatus === "pending_payment" ||
+    filters.orderStatus === "payment_pending"
+  ) {
+    conditions.push(
+      sql`not coalesce(${stockReservations.status} = 'active' and ${stockReservations.expiresAt} <= now(), false)`,
+    );
   }
-  if (filters.paymentStatus) conditions.push(eq(latestPayment.status, filters.paymentStatus));
+  if (filters.paymentStatus)
+    conditions.push(eq(latestPayment.status, filters.paymentStatus));
 
   const rows = await database
     .select({
       id: orders.id,
       publicNumber: orders.publicNumber,
+      customerName: orders.customerName,
+      customerLastName: orders.customerLastName,
       status: orders.status,
       total: orders.total,
       deliveryType: orders.deliveryType,
@@ -362,8 +438,13 @@ async function queryAdminOrders(database: AdminReadDatabase, filters: AdminOrder
   return rows.map((order) => ({
     ...order,
     status:
-      (order.status === "pending_payment" || order.status === "payment_pending") &&
-      getEffectiveReservationStatus(order.reservationStatus, order.reservationExpiresAt, now) === "expired"
+      (order.status === "pending_payment" ||
+        order.status === "payment_pending") &&
+      getEffectiveReservationStatus(
+        order.reservationStatus,
+        order.reservationExpiresAt,
+        now,
+      ) === "expired"
         ? ("expired" as const)
         : order.status,
     effectiveReservationStatus: getEffectiveReservationStatus(
@@ -376,7 +457,9 @@ async function queryAdminOrders(database: AdminReadDatabase, filters: AdminOrder
 
 export async function getAdminDashboardOrders(limit = 5) {
   await authorizeAdminRead();
-  return withDashboardStatementTimeout((database) => queryAdminOrders(database, {}, limit));
+  return withDashboardStatementTimeout((database) =>
+    queryAdminOrders(database, {}, limit),
+  );
 }
 
 export async function getAdminOrderDetail(id: string) {
@@ -437,7 +520,11 @@ export async function getAdminOrderDetail(id: string) {
       })
       .from(payments)
       .where(eq(payments.orderId, order.id))
-      .orderBy(desc(payments.updatedAt), desc(payments.createdAt), desc(payments.id)),
+      .orderBy(
+        desc(payments.updatedAt),
+        desc(payments.createdAt),
+        desc(payments.id),
+      ),
     db
       .select({
         status: stockReservations.status,
@@ -459,7 +546,8 @@ export async function getAdminOrderDetail(id: string) {
   const effectiveOrder = {
     ...order,
     status:
-      (order.status === "pending_payment" || order.status === "payment_pending") &&
+      (order.status === "pending_payment" ||
+        order.status === "payment_pending") &&
       effectiveReservationStatus === "expired"
         ? ("expired" as const)
         : order.status,
@@ -468,11 +556,14 @@ export async function getAdminOrderDetail(id: string) {
   return {
     order: effectiveOrder,
     items: itemRows.map((item) => {
-      const configuration = parseOrderItemConfigurationSnapshot(item.configurationJson);
+      const configuration = parseOrderItemConfigurationSnapshot(
+        item.configurationJson,
+      );
       return {
         ...item,
         configuration,
-        hasInvalidConfiguration: item.configurationJson !== null && configuration === null,
+        hasInvalidConfiguration:
+          item.configurationJson !== null && configuration === null,
       };
     }),
     payments: paymentRows,
@@ -481,4 +572,6 @@ export async function getAdminOrderDetail(id: string) {
   };
 }
 
-export type AdminOrderDetailData = NonNullable<Awaited<ReturnType<typeof getAdminOrderDetail>>>;
+export type AdminOrderDetailData = NonNullable<
+  Awaited<ReturnType<typeof getAdminOrderDetail>>
+>;
